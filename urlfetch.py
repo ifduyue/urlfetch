@@ -31,6 +31,19 @@ def setcookie2cookiestring(setcookie):
     cookies = setcookie2cookie(setcookie)
     return '; '.join(['%s=%s' % (name, value) for name, value in cookies])
 
+def cookiestring2cookie(cookiestring):
+    return [i.split("=") for i in cookiestring.split("; ")]
+    
+def merge_cookiestring(cs1, cs2):
+    cs1 = cookiestring2cookie(cs1)
+    cs2 = cookiestring2cookie(cs2)
+    cs1 = [i for i in cs1 if i[0] not in [j[0] for j in cs2]]
+    return '; '.join(['%s=%s' % (name, value) for name, value in cs1 + cs2])
+    
+def merge_setcookielist(cs1, cs2):
+    cs2 = setcookielist2cookiestring(cs2)
+    return merge_cookiestring(cs1, cs2)
+ 
 def fetch(url, data=None, headers={}, timeout=None):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     
@@ -123,7 +136,8 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None):
 if __name__ == '__main__':
     import sys
     url = sys.argv[1]
-    response = fetch(url, data='test')
+    response = fetch(url)
     print 'request headers', response.reqheaders
     print 'response headers', response.getheaders()
     print 'body length', len(response.body)
+
