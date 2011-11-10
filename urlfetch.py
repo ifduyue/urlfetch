@@ -6,6 +6,7 @@ import urllib
 import urlparse
 from uas import randua
 
+
 def setcookie2cookie(setcookie):
     cookies = setcookie.split("\n")
     result = []
@@ -39,7 +40,13 @@ def fetch(url, data=None, headers={}, timeout=None):
     else:
         host, port = netloc, 80
     
-    h = httplib.HTTPConnection(host, port)
+    if scheme == 'https':
+        h = httplib.HTTPSConnection(host, port)
+    elif scheme == 'http':
+        h = httplib.HTTPConnection(host, port)
+    else:
+        raise Exception('Unsupported protocol %s' % scheme)
+    
     if timeout is not None:
         h.connect()
         h.sock.settimeout(timeout)
@@ -80,7 +87,13 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None):
     else:
         host, port = netloc, 80
     
-    h = httplib.HTTPConnection(host, port)
+    if scheme == 'https':
+        h = httplib.HTTPSConnection(host, port)
+    elif scheme == 'http':
+        h = httplib.HTTPConnection(host, port)
+    else:
+        raise Exception('Unsupported protocol %s' % scheme)
+        
     if timeout is not None:
         h.connect()
         h.sock.settimeout(timeout)
@@ -110,8 +123,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None):
 if __name__ == '__main__':
     import sys
     url = sys.argv[1]
-    response = fetch(url)
+    response = fetch(url, data='test')
     print 'request headers', response.reqheaders
     print 'response headers', response.getheaders()
     print 'body length', len(response.body)
-    
