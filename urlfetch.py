@@ -45,6 +45,8 @@ def merge_setcookielist(cs1, cs2):
     return merge_cookiestring(cs1, cs2)
  
 def fetch(url, data=None, headers={}, timeout=None, randua=True):
+    if data is not None and isinstance(data, (basestring, dict)):
+        return fetch2(url, method="POST", data=data, headers=headers, timeout=timeout, randua=randua) 
     return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout, randua=randua)
 
 def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
