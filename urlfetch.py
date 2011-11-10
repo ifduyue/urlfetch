@@ -45,48 +45,7 @@ def merge_setcookielist(cs1, cs2):
     return merge_cookiestring(cs1, cs2)
  
 def fetch(url, data=None, headers={}, timeout=None):
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
-    
-    if ':' in netloc:
-        host, port = netloc.rsplit(':', 1)
-        port = int(port)
-    else:
-        host, port = netloc, 80
-    
-    if scheme == 'https':
-        h = httplib.HTTPSConnection(host, port)
-    elif scheme == 'http':
-        h = httplib.HTTPConnection(host, port)
-    else:
-        raise Exception('Unsupported protocol %s' % scheme)
-    
-    if timeout is not None:
-        h.connect()
-        h.sock.settimeout(timeout)
-    
-    reqheaders = {
-        'Accept' : '*/*',
-        'User-Agent': randua(),
-    }
-    
-    if data is not None and isinstance(data, (basestring, dict)):
-        method = "POST"
-        reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
-        # httplib will set 'Content-Length', also you can set it by yourself
-        if isinstance(data, dict):
-            data = urllib.urlencode(data)
-    else:
-        method = "GET"
-        
-    reqheaders.update(headers)
-    
-    h.request(method, url, data, reqheaders)
-    response = h.getresponse()
-    setattr(response, 'reqheaders', reqheaders)
-    setattr(response, 'body', response.read())
-    h.close()
-    
-    return response
+    return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout)
 
 def fetch2(url, method="GET", data=None, headers={}, timeout=None):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
