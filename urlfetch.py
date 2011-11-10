@@ -4,7 +4,7 @@ import httplib
 import socket
 import urllib
 import urlparse
-from uas import randua
+from uas import randua as _randua
 
 
 def setcookie2cookie(setcookie):
@@ -44,10 +44,10 @@ def merge_setcookielist(cs1, cs2):
     cs2 = setcookielist2cookiestring(cs2)
     return merge_cookiestring(cs1, cs2)
  
-def fetch(url, data=None, headers={}, timeout=None):
-    return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout)
+def fetch(url, data=None, headers={}, timeout=None, randua=True):
+    return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout, randua=randua)
 
-def fetch2(url, method="GET", data=None, headers={}, timeout=None):
+def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     method = method.upper()
     if method not in ("GET", "PUT", "DELETE", "POST", "HEAD"):
@@ -72,7 +72,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None):
     
     reqheaders = {
         'Accept' : '*/*',
-        'User-Agent': randua(),
+        'User-Agent': _randua() if randua else 'Python urlfetch by lyxint',
     }
     
     if method == "POST" and data is not None and isinstance(data, (basestring, dict)):
