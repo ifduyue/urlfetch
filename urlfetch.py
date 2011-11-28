@@ -76,13 +76,18 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
         'Accept' : '*/*',
         'User-Agent': _randua() if randua else 'Python urlfetch by lyxint',
     }
+
+    if isinstance(data, dict):
+        data = urllib.urlencode(data)
     
-    if method == "POST" and data is not None and isinstance(data, (basestring, dict)):
-        reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
-        # httplib will set 'Content-Length', also you can set it by yourself
-        if isinstance(data, dict):
-            data = urllib.urlencode(data)
-        
+    if isinstance(data, basestring):
+        if method == "POST":
+            # httplib will set 'Content-Length', also you can set it by yourself
+            reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
+        else:
+            url += "&%s" % data if "?" in url else "?%s" % data
+            data = None
+
     reqheaders.update(headers)
     
     h.request(method, url, data, reqheaders)
