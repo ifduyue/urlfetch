@@ -59,7 +59,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
         host, port = netloc.rsplit(':', 1)
         port = int(port)
     else:
-        host, port = netloc, 80
+        host, port = netloc, None
     
     if scheme == 'https':
         h = httplib.HTTPSConnection(host, port)
@@ -102,6 +102,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
 if __name__ == '__main__':
     import sys
     url = sys.argv[1]
+    
     response = fetch(url)
     print 'request headers', response.reqheaders
     print 'response headers', response.getheaders()
