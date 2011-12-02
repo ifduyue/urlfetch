@@ -4,52 +4,17 @@ import httplib
 import socket
 import urllib
 import urlparse
+import Cookie
 from uas import randua as _randua
 
+__all__ = ['sc2cs', 'fetch', 'fetch2'] 
+
 def sc2cs(sc):
-    import Cookie
+    '''convert response.getheader('set-cookie') to cookie string'''
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
-def setcookie2cookie(setcookie):
-    cookies = setcookie.split("\n")
-    result = []
-    for ck in cookies:
-        frags = ck.split(";")
-        i = frags[0].index("=")
-        name = frags[0][:i]
-        value = frags[0][i+1:]
-        #name = name.replace("+", " ")
-        if name.strip():
-            result.append([name, value])
-    return result
-
-def setcookielist2cookiestring(cookie):
-    cookies = []
-    for i in cookie:
-        cookies.extend(setcookie2cookie(i))
-    cookiestring = "; ".join(["%s=%s" % (name, value) for name, value in cookies])
-    return cookiestring
-
-def setcookie2cookiestring(setcookie):
-    cookies = setcookie2cookie(setcookie)
-    return '; '.join(['%s=%s' % (name, value) for name, value in cookies])
-
-def cookiestring2cookie(cookiestring):
-    return [i.split("=") for i in cookiestring.split("; ")]
-    
-def merge_cookiestring(cs1, cs2):
-    cs1 = cookiestring2cookie(cs1)
-    cs2 = cookiestring2cookie(cs2)
-    cs1 = [i for i in cs1 if i[0] not in [j[0] for j in cs2]]
-    return '; '.join(['%s=%s' % (name, value) for name, value in cs1 + cs2])
-    
-def merge_setcookielist(cs1, cs2):
-    cs2 = setcookielist2cookiestring(cs2)
-    return merge_cookiestring(cs1, cs2)
-
- 
 def fetch(url, data=None, headers={}, timeout=None, randua=True):
     if data is not None and isinstance(data, (basestring, dict)):
         return fetch2(url, method="POST", data=data, headers=headers, timeout=timeout, randua=randua) 
