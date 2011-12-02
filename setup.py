@@ -1,11 +1,15 @@
 from setuptools import setup
+import urlfetch
+import re
 
 setup(
     name = "urlfetch",
-    version = '0.1',
-    author = "Yue Du",
-    author_email = "lyxint@gmail.com",
+    version = urlfetch.__version__,
+    author = re.sub(r'\s+<.*', r'', urlfetch.__author__),
+    author_email = re.sub(r'(^.*<)|(>.*$)', r'', urlfetch.__author__),
+    url = urlfetch.__url__,
     description = ("An easy to use HTTP client based on httplib"),
+    long_description = urlfetch.__doc__,
     license = "BSD",
     keywords = "http urlfetch",
     packages = [
