@@ -29,7 +29,7 @@ def pub2fanfou(username, password, status):
     )
     
     #cookies
-    cookies = setcookielist2cookiestring(response.msg.getheaders('Set-Cookie'))
+    cookies = sc2cs(response.getheader('Set-Cookie'))
     print cookies
     
     #获取表单token

@@ -6,6 +6,11 @@ import urllib
 import urlparse
 from uas import randua as _randua
 
+def sc2cs(sc):
+    import Cookie
+    c = Cookie.SimpleCookie(sc)
+    sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
+    return '; '.join(sc)
 
 def setcookie2cookie(setcookie):
     cookies = setcookie.split("\n")
@@ -43,6 +48,7 @@ def merge_cookiestring(cs1, cs2):
 def merge_setcookielist(cs1, cs2):
     cs2 = setcookielist2cookiestring(cs2)
     return merge_cookiestring(cs1, cs2)
+
  
 def fetch(url, data=None, headers={}, timeout=None, randua=True):
     if data is not None and isinstance(data, (basestring, dict)):
