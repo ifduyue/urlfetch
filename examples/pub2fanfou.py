@@ -1,18 +1,17 @@
 #coding: utf8
 
-from urlfetch import fetch, fetch2, sc2cs
+import urlfetch
 import re
-
 
 def pub2fanfou(username, password, status):
     #获取表单token
-    response = fetch(
+    response = urlfetch.fetch(
         "http://m.fanfou.com/"
     )
     token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
     
     #登录
-    response = fetch(
+    response = urlfetch.fetch(
         "http://m.fanfou.com/",
         data = {
             'loginname': username,
@@ -27,11 +26,11 @@ def pub2fanfou(username, password, status):
     )
     
     #cookies
-    cookies = sc2cs(response.getheader('Set-Cookie'))
+    cookies = urlfetch.sc2cs(response.getheader('Set-Cookie'))
     print cookies
     
     #获取表单token
-    response = fetch(
+    response = urlfetch.fetch(
         "http://m.fanfou.com/home",
         headers = {
             'Cookie': cookies,
@@ -41,7 +40,7 @@ def pub2fanfou(username, password, status):
     token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
     
     #发布状态
-    response = fetch(
+    response = urlfetch.fetch(
         "http://m.fanfou.com/",
         data = {
             'content': status,
