@@ -1,8 +1,6 @@
 #coding: utf8
 
-import sys
-sys.path[0:0] = ['..']
-from urlfetch import *
+from urlfetch import fetch, fetch2, sc2cs
 import re
 
 
