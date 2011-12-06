@@ -19,8 +19,7 @@ def sc2cs(sc):
             >>> sc = response.getheader('Set-Cookie')
     
     Returns:
-        str. cookie string::
-            name=value pairs, joined by '; '
+        str. cookie string, name=value pairs, joined by `'; '`
      
     '''
     c = Cookie.SimpleCookie(sc)
@@ -35,8 +34,11 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True):
 
     Kwargs:
         data (dict/str):  The post data, it can be dict or string
+
         headers (dict):   The request headers
+
         timeout (double): The timeout
+
         randua (bool): Use random User-Agent when this is True
 
     Returns:
@@ -59,9 +61,13 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
 
     Kwargs:
         method (str): The request method, 'GET', 'POST', 'HEAD', 'PUT' OR 'DELETE'
+                      
         data (dict/str):  The post data, it can be dict or string
+
         headers (dict):   The request headers
+
         timeout (double): The timeout
+
         randua (bool): Use random User-Agent when this is True
 
     Returns:
