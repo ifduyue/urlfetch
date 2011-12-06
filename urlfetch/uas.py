@@ -3447,5 +3447,7 @@ uas = [
 ]
 
 def randua():
+    '''Returns a User-Agent string randomly'''
+
     from random import choice
     return choice(uas)
