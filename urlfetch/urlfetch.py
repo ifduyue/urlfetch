@@ -6,6 +6,7 @@ import urllib
 import urlparse
 import Cookie
 from uas import randua as _randua
+import base64
 
 __all__ = ['sc2cs', 'fetch', 'fetch2'] 
 
@@ -81,6 +82,16 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
     method = method.upper()
     if method not in ("GET", "PUT", "DELETE", "POST", "HEAD"):
         method = "GET"
+
+    requrl = path
+    if query: requrl += '?' + query
+    if fragment: requrl += '#' + fragment
+
+    if '@' in netloc:
+        auth, netloc = netloc.split('@', 1)
+        auth = base64.b64encode(auth)
+    else:
+        auth = None
     
     if ':' in netloc:
         host, port = netloc.rsplit(':', 1)
@@ -103,6 +114,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
         'Accept' : '*/*',
         'User-Agent': _randua() if randua else 'Python urlfetch by lyxint',
     }
+    if auth: reqheaders['Authorization'] = 'Basic %s' % auth
 
     if isinstance(data, dict):
         data = urllib.urlencode(data)
@@ -117,7 +129,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
 
     reqheaders.update(headers)
     
-    h.request(method, url, data, reqheaders)
+    h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
     setattr(response, 'reqheaders', reqheaders)
     setattr(response, 'body', response.read())
