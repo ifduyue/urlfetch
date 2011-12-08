@@ -7,6 +7,7 @@ import urlparse
 import Cookie
 from uas import randua as _randua
 import base64
+from __init__ import __version__
 
 __all__ = ['sc2cs', 'fetch', 'fetch2'] 
 
@@ -112,7 +113,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
     
     reqheaders = {
         'Accept' : '*/*',
-        'User-Agent': _randua() if randua else 'Python urlfetch by lyxint',
+        'User-Agent': _randua() if randua else 'urlfetch/' + __version__,
     }
     if auth: reqheaders['Authorization'] = 'Basic %s' % auth
 
