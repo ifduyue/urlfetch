@@ -1,4 +1,13 @@
 #coding: utf8
+#
+#    urlfetch 
+#    ~~~~~~~~
+#
+#    An easy to use HTTP client based on httplib.
+#
+#    :copyright: (c) 2011 by Elyes Du.
+#    :license: BSD, see LICENSE for more details.
+#
 
 import httplib
 import socket
@@ -120,13 +129,11 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
     if isinstance(data, dict):
         data = urllib.urlencode(data)
     
-    if isinstance(data, basestring):
-        if method == "POST":
-            # httplib will set 'Content-Length', also you can set it by yourself
-            reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
-        else:
-            url += "&%s" % data if "?" in url else "?%s" % data
-            data = None
+    if isinstance(data, basestring) and method in ("POST", "PUT"):
+        # httplib will set 'Content-Length', also you can set it by yourself
+        reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
+        # what if the method is GET, HEAD or DELETE 
+        # just do not make so much decisions for users
 
     for k, v in headers.iteritems():
         reqheaders[k.title()] = v 

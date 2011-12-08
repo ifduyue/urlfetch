@@ -1,4 +1,13 @@
 #coding: utf8
+#
+#    urlfetch 
+#    ~~~~~~~~
+#
+#    An easy to use HTTP client based on httplib.
+#
+#    :copyright: (c) 2011 by Elyes Du.
+#    :license: BSD, see LICENSE for more details.
+#
 
 #uas come from http://www.vwp-online.de/ua.php?ua_type=browser
 uas = [
