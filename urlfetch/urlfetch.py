@@ -128,7 +128,8 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
             url += "&%s" % data if "?" in url else "?%s" % data
             data = None
 
-    reqheaders.update(headers)
+    for k, v in headers.iteritems():
+        reqheaders[k.title()] = v 
     
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
