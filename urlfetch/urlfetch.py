@@ -16,9 +16,13 @@ import urlparse
 import Cookie
 from uas import randua as _randua
 import base64
+from functools import partial
 from __init__ import __version__
 
-__all__ = ['sc2cs', 'fetch', 'fetch2'] 
+__all__ = [
+    'sc2cs', 'fetch', 'fetch2', 
+    'get', 'head', 'put', 'post', 'delete'
+] 
 
 def sc2cs(sc):
     '''convert response.getheader('set-cookie') to cookie string
@@ -36,6 +40,7 @@ def sc2cs(sc):
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
+
 
 def fetch(url, data=None, headers={}, timeout=None, randua=True):
     ''' fetch url
@@ -62,6 +67,7 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True):
     if data is not None and isinstance(data, (basestring, dict)):
         return fetch2(url, method="POST", data=data, headers=headers, timeout=timeout, randua=randua) 
     return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout, randua=randua)
+
 
 
 def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
@@ -145,6 +151,13 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True):
     h.close()
     
     return response
+
+# some convient functions
+get = partial(fetch2, method="GET")
+post = partial(fetch2, method="POST")
+put = partial(fetch2, method="PUT")
+delete = partial(fetch2, method="DELETE")
+head = partial(fetch2, method="HEAD")
 
 
 if __name__ == '__main__':

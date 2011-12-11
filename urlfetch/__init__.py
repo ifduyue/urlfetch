@@ -12,6 +12,6 @@
 from urlfetch import *
 from uas import randua
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
