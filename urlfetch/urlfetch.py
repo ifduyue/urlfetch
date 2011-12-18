@@ -63,10 +63,10 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True):
     .. note::
         Default headers: {'Accept': '\*/\*'}
     '''
-
+    local = locals()
     if data is not None and isinstance(data, (basestring, dict)):
-        return fetch2(url, method="POST", data=data, headers=headers, timeout=timeout, randua=randua) 
-    return fetch2(url, method="GET", data=data, headers=headers, timeout=timeout, randua=randua)
+        return post(**local)
+    return get(**local)
 
 
 
