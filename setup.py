@@ -9,7 +9,7 @@ setup(
     author_email = re.sub(r'(^.*<)|(>.*$)', r'', urlfetch.__author__),
     url = urlfetch.__url__,
     description = ("An easy to use HTTP client based on httplib"),
-    long_description = urlfetch.__doc__,
+    long_description = open('README.rst').read(),
     license = "BSD",
     keywords = "http urlfetch",
     packages = [
