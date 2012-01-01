@@ -9,7 +9,7 @@ Installation
 -------------
 ::
     
-    $ pip install pysi -U
+    $ pip install urlfetch -U
 
 
 Hello World
