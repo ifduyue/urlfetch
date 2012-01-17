@@ -21,3 +21,11 @@ Hello World
     response = get('http://python.org/')
     print response.body
 
+Upload file
+-----------
+::
+
+    from urlfetch import post
+    response = post('http://127.0.0.1:8888/', files={'formname': open('/path/to/file', 'rb')})
+    print response.reqheaders
+    print response.body
