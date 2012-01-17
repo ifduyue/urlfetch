@@ -118,6 +118,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files=[]):
 
         randua (bool): Use random User-Agent when this is True
 
+        files (dict): key is form name, value is file data or file object
+
     Returns:
         response object
 
@@ -147,6 +149,8 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
         timeout (double): The timeout
 
         randua (bool): Use random User-Agent when this is True
+
+        files (dict): key is form name, value is file data or file object
 
     Returns:
         response object
