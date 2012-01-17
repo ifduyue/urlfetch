@@ -68,13 +68,14 @@ def _encode_multipart(data, files):
     boundary = choose_boundary()
     part_boundary = '--' + boundary
 
-    for name, value in data.iteritems():
-        parts.extend([
-            part_boundary,
-            'Content-Disposition: form-data; name="%s"' % name,
-            '',
-            str(value),
-        ])
+    if isinstance(data, dict):
+        for name, value in data.iteritems():
+            parts.extend([
+                part_boundary,
+                'Content-Disposition: form-data; name="%s"' % name,
+                '',
+                str(value),
+            ])
 
     for name, f in files.iteritems():
         if hasattr(f, 'name'):
@@ -103,7 +104,7 @@ def _encode_multipart(data, files):
 
     return content_type, body
 
-def fetch(url, data=None, headers={}, timeout=None, randua=True, files=[]):
+def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}):
     ''' fetch url
 
     Args:
@@ -133,7 +134,7 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files=[]):
 
 
 
-def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, files=[]):
+def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, files={}):
     ''' fetch url
 
     Args:
@@ -197,7 +198,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
     }
     if auth: reqheaders['Authorization'] = 'Basic %s' % auth
 
-    if data is not None and files:
+    if files:
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
     elif isinstance(data, dict):
