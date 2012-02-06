@@ -162,7 +162,7 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
 
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     method = method.upper()
-    if method not in ("GET", "PUT", "DELETE", "POST", "HEAD"):
+    if method not in ("GET", "PUT", "DELETE", "POST", "HEAD", "OPTIONS"):
         method = "GET"
 
     requrl = path
@@ -227,6 +227,7 @@ post = partial(fetch2, method="POST")
 put = partial(fetch2, method="PUT")
 delete = partial(fetch2, method="DELETE")
 head = partial(fetch2, method="HEAD")
+options = partial(fetch2, method="OPTIONS")
 
 
 if __name__ == '__main__':
