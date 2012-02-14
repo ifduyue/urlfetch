@@ -26,6 +26,20 @@ Upload file
 ::
 
     from urlfetch import post
-    response = post('http://127.0.0.1:8888/', files={'formname': open('/path/to/file', 'rb')})
+
+    response = post(
+        'http://127.0.0.1:8888/upload', 
+        headers = {
+            'Referer': 'http://127.0.0.1/',
+        },
+        files = {
+            'formname': open('/path/to/file', 'rb')
+        },
+        data = {
+            'foo': 'bar'
+        },
+    )
+
     print response.reqheaders
     print response.body
+
