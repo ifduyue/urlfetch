@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
@@ -24,8 +24,8 @@ from functools import partial
 from __init__ import __version__
 
 __all__ = [
-    'sc2cs', 'fetch', 'fetch2', 
-    'get', 'head', 'put', 'post', 'delete'
+    'sc2cs', 'fetch', 'request', 
+    'get', 'head', 'put', 'post', 'delete', 'options'
 ] 
 
 def sc2cs(sc):
@@ -61,7 +61,7 @@ def choose_boundary():
             _boundary_prefix += "." + pid
         except AttributeError: pass
     import uuid
-    return "%s.%s" % (_boundary_prefix, uuid.uuid4().hex)
+    return "(*^__^*)%s.%s" % (_boundary_prefix, uuid.uuid4().hex)
 
 def _encode_multipart(data, files):
     parts = []
@@ -104,7 +104,7 @@ def _encode_multipart(data, files):
 
     return content_type, body
 
-def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}):
+def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
     ''' fetch url
 
     Args:
@@ -121,6 +121,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}):
 
         files (dict): key is form name, value is file data or file object
 
+        auth (tuple): (username, password) for basic authentication
+
     Returns:
         response object
 
@@ -134,8 +136,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}):
 
 
 
-def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, files={}):
-    ''' fetch url
+def request(url, method="GET", data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
+    ''' request a url
 
     Args:
         url (str): url to fetch
@@ -153,6 +155,8 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
 
         files (dict): key is form name, value is file data or file object
 
+        auth (tuple): (username, password) for basic authentication
+
     Returns:
         response object
 
@@ -169,12 +173,6 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
     if query: requrl += '?' + query
     if fragment: requrl += '#' + fragment
 
-    if '@' in netloc:
-        auth, netloc = netloc.split('@', 1)
-        auth = base64.b64encode(auth)
-    else:
-        auth = None
-    
     if ':' in netloc:
         host, port = netloc.rsplit(':', 1)
         port = int(port)
@@ -194,9 +192,14 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
     
     reqheaders = {
         'Accept' : '*/*',
-        'User-Agent': fetch2.__globals__['randua']() if randua else 'urlfetch/' + __version__,
+        'User-Agent': request.__globals__['randua']() if randua else 'urlfetch/' + __version__,
     }
-    if auth: reqheaders['Authorization'] = 'Basic %s' % auth
+
+    if auth is not None: 
+        if isinstance(auth, (list, tuple)):
+            auth = '%s:%s' % tuple(auth)
+        auth = base64.b64encode(auth)
+        reqheaders['Authorization'] = 'Basic ' + auth
 
     if files:
         content_type, data = _encode_multipart(data, files)
@@ -222,12 +225,12 @@ def fetch2(url, method="GET", data=None, headers={}, timeout=None, randua=True, 
     return response
 
 # some convient functions
-get = partial(fetch2, method="GET")
-post = partial(fetch2, method="POST")
-put = partial(fetch2, method="PUT")
-delete = partial(fetch2, method="DELETE")
-head = partial(fetch2, method="HEAD")
-options = partial(fetch2, method="OPTIONS")
+get = partial(request, method="GET")
+post = partial(request, method="POST")
+put = partial(request, method="PUT")
+delete = partial(request, method="DELETE")
+head = partial(request, method="HEAD")
+options = partial(request, method="OPTIONS")
 
 
 if __name__ == '__main__':
@@ -235,6 +238,4 @@ if __name__ == '__main__':
     url = sys.argv[1]
     
     response = fetch(url)
-    print 'request headers', response.reqheaders
-    print 'response headers', response.getheaders()
-    print 'body length', len(response.body)
+    sys.stdout.write(response.body)
