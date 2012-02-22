@@ -78,8 +78,8 @@ Examples
         },
         files = {
             'fieldname1': open('/path/to/file', 'rb'),
-            'fieldname3': ('formname', open('/path/to/file2', 'rb')),
-            'fieldname4': ('formname', 'file content'),
+            'fieldname3': ('filename', open('/path/to/file2', 'rb')),
+            'fieldname4': ('filename', 'file content'),
         },
         data = {
             'foo': 'bar'

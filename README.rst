@@ -34,9 +34,9 @@ Upload file
         },
         files = {
             'fieldname1': open('/path/to/file', 'rb'),
-            'fieldname2': 'file content',
-            'fieldname3': ('formname', open('/path/to/file2', 'rb')),
-            'fieldname4': ('formname', 'file content'),
+            #'fieldname2': 'file content', # file must have a filename
+            'fieldname3': ('filename', open('/path/to/file2', 'rb')),
+            'fieldname4': ('filename', 'file content'),
         },
         data = {
             'foo': 'bar'
