@@ -33,13 +33,15 @@ Upload file
             'Referer': 'http://127.0.0.1/',
         },
         files = {
-            'formname': open('/path/to/file', 'rb')
+            'fieldname1': open('/path/to/file', 'rb'),
+            'fieldname2': 'file content',
+            'fieldname3': ('formname', open('/path/to/file2', 'rb')),
+            'fieldname4': ('formname', 'file content'),
         },
         data = {
             'foo': 'bar'
         },
     )
 
-    print response.reqheaders
-    print response.body
+    print response.status, response.body
 

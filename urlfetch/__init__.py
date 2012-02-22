@@ -77,25 +77,36 @@ def _encode_multipart(data, files):
                 str(value),
             ])
 
-    for name, f in files.iteritems():
-        if hasattr(f, 'name'):
+    for fieldname, f in files.iteritems():
+        if isinstance(f, tuple):
+            filename, f = f
+        elif hasattr(f, 'name'):
             filename = f.name
         else:
-            filename = name
+            filename = None
+
         if hasattr(f, 'read'):
             value = f.read()
         elif isinstance(f, basestring):
             value = f
         else:
             value = str(f)
-
-        parts.extend([
-            part_boundary,
-            'Content-Disposition: form-data; name="%s"; filename="%s"' % (name, filename),
-            'Content-Type: application/octet-stream',
-            '',
-            value,
-        ])
+        if filename:
+            parts.extend([
+                part_boundary,
+                'Content-Disposition: form-data; name="%s"; filename="%s"' % (fieldname, filename),
+                'Content-Type: application/octet-stream',
+                '',
+                value,
+            ])
+        else:
+            parts.extend([
+                part_boundary,
+                'Content-Disposition: form-data; name="%s"' % fieldname,
+                'Content-Type: application/octet-stream',
+                '',
+                value,
+            ])
     parts.append('--' + boundary + '--')
     parts.append('')
 
@@ -119,7 +130,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
 
         randua (bool): Use random User-Agent when this is True
 
-        files (dict): key is form name, value is file data or file object
+        files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
+                      fileobj can be a file descriptor open for read or simply string
 
         auth (tuple): (username, password) for basic authentication
 
@@ -153,7 +165,8 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
 
         randua (bool): Use random User-Agent when this is True
 
-        files (dict): key is form name, value is file data or file object
+        files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
+                      fileobj can be a file descriptor open for read or simply string
 
         auth (tuple): (username, password) for basic authentication
 

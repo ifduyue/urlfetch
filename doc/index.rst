@@ -13,9 +13,19 @@ Introduction
 =============
 urlfetch is an easy to use HTTP client based on Python_ httplib_ module.
 
+Installation
+=============
+::
+    
+    $ pip install urlfetch -U
+    
+OR::
+
+    $ easy_install urlfetch -U
+
 Examples
 =========
-.. rubric:: get http://python.org/ content 
+.. rubric:: get http://python.org/
 
 ::
 
@@ -55,6 +65,29 @@ Examples
     print response.status
     
     
+.. rubric:: Upload file
+
+::
+
+    from urlfetch import post
+
+    response = post(
+        'http://127.0.0.1:8888/upload', 
+        headers = {
+            'Referer': 'http://127.0.0.1/',
+        },
+        files = {
+            'fieldname1': open('/path/to/file', 'rb'),
+            'fieldname2': 'file content',
+            'fieldname3': ('formname', open('/path/to/file2', 'rb')),
+            'fieldname4': ('formname', 'file content'),
+        },
+        data = {
+            'foo': 'bar'
+        },
+    )
+
+    print response.status, response.body
     
 .. rubric:: more complex: login to http://fanfou.com/ and publish a status
 
@@ -136,7 +169,7 @@ Reference
     
     fetch is equavalent to post if data is specified else get.
 
-.. autofunction:: fetch2
+.. autofunction:: request
 
 .. autofunction:: sc2cs
 
