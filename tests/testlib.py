@@ -7,3 +7,11 @@ def randstr(l=None, chars=string.ascii_letters+string.digits):
 
 
 randint = random.randint
+
+
+def randdict(l=None):
+    i = l or random.randint(1, 100)
+    d = {}
+    for i in xrange(i):
+        query_string[testlib.randstr()] = testlib.randstr()
+    return d

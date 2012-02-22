@@ -22,18 +22,16 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
 
     def test_query_string(self):
-        i = random.randint(5, 50)
-        query_string = {}
-        for i in xrange(i):
-            query_string[testlib.randstr()] = testlib.randstr()
+        qs = testlib.randdict()
+        query_string = urlfetch.urlencode(qs)
         
-        r = urlfetch.get('http://127.0.0.1:8800/?'+ urlfetch.urlencode(query_string))
+        r = urlfetch.get('http://127.0.0.1:8800/?'+ query_string)
         o = json.loads(r.body)
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(o['query_string'], urlfetch.urlencode(query_string))
-        self.assertEqual(o['get'], query_string)
+        self.assertEqual(o['query_string'], query_string)
+        self.assertEqual(o['get'], qs)
 
 
 if __name__ == '__main__':
