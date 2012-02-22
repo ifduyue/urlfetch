@@ -48,8 +48,8 @@ class PostTest(unittest.TestCase):
     def test_file_upload(self):
         content = open('test.file', 'rb').read()
         files = {}
-        files['test.file1'] = ('test.file1', '', content)
-        files['test.file2'] = ('test.file2', '', content)
+        files['test.file1'] = ('test.file1', 'test.file', content)
+        #files['test.file2'] = ('test.file2', '', content)
         files['test.file3'] = ('test.file3', 'wangxiaobo', content)
         files['test.file4'] = ('test.file4', 'wangtwo', content)
 
@@ -57,7 +57,7 @@ class PostTest(unittest.TestCase):
                 'http://127.0.0.1:8800/',
                 files = {
                     'test.file1' : open('test.file'),
-                    'test.file2' : content,
+                    #'test.file2' : content,
                     'test.file3' : ('wangxiaobo', open('test.file')),
                     'test.file4' : ('wangtwo', content)
                 },
@@ -68,16 +68,18 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
         self.assertItemsEqual(o['files'].keys(), files.keys())
         for i in files:
-            self.assertEqual(o['files'][i], files[i])
-        
+            for j in xrange(3):
+                self.assertEqual(o['files'][i][j], files[i][j].decode('utf-8'))
+
+
     def test_one_file_upload(self):
         content = open('test.file', 'rb').read()
-        files = {'test.file': ('test.file', '', content)}
+        files = {'test.file': ('test.file', 'test.file', content)}
 
         r = urlfetch.post(
                 'http://127.0.0.1:8800/',
                 files = {
-                    'test.file' : content,
+                    'test.file' : ('test.file', content),
                 },
             )
         o = json.loads(r.body)
@@ -86,7 +88,8 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
         self.assertItemsEqual(o['files'].keys(), files.keys())
         for i in files:
-            self.assertEqual(o['files'][i], files[i])
+            for j in xrange(3):
+                self.assertEqual(o['files'][i][j], files[i][j].decode('utf-8'))
 
 if __name__ == '__main__':
     unittest.main()
