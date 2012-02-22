@@ -7,7 +7,7 @@ def normal_formsdict(fd):
 
 app = bottle.app()
 
-@app.route('/')
+@app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
 def index():
     d = {}
     
@@ -30,6 +30,9 @@ def index():
     d['get'] = dict(request.GET)
     d['post'] = dict(request.POST)
     d['files'] = dict(request.files)
+    for i in d['files']:
+        del d['post'][i]
+        d['files'][i] = (d['files'][i].name, d['files'][i].filename, d['files'][i].value)
     d['cookies'] = dict(request.cookies)
     return json.dumps(d)
 

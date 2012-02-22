@@ -22,7 +22,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
 
     def test_query_string(self):
-        qs = testlib.randdict()
+        qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
         
         r = urlfetch.get('http://127.0.0.1:8800/?'+ query_string)

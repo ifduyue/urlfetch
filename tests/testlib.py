@@ -13,5 +13,5 @@ def randdict(l=None):
     i = l or random.randint(1, 100)
     d = {}
     for i in xrange(i):
-        query_string[testlib.randstr()] = testlib.randstr()
+        d[randstr()] = randstr()
     return d
