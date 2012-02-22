@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
@@ -25,8 +25,11 @@ from __init__ import __version__
 
 __all__ = [
     'sc2cs', 'fetch', 'request', 
-    'get', 'head', 'put', 'post', 'delete', 'options'
+    'get', 'head', 'put', 'post', 'delete', 'options',
+    'UrlfetchException',
 ] 
+
+class UrlfetchException(Exception): pass
 
 def sc2cs(sc):
     '''convert response.getheader('set-cookie') to cookie string
@@ -84,6 +87,7 @@ def _encode_multipart(data, files):
             filename = f.name
         else:
             filename = None
+            raise UrlfetchException("file must has filename")
 
         if hasattr(f, 'read'):
             value = f.read()
@@ -99,14 +103,7 @@ def _encode_multipart(data, files):
                 '',
                 value,
             ])
-        else:
-            parts.extend([
-                part_boundary,
-                'Content-Disposition: form-data; name="%s"' % fieldname,
-                'Content-Type: application/octet-stream',
-                '',
-                value,
-            ])
+
     parts.append('--' + boundary + '--')
     parts.append('')
 
@@ -197,7 +194,7 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     elif scheme == 'http':
         h = httplib.HTTPConnection(host, port)
     else:
-        raise Exception('Unsupported protocol %s' % scheme)
+        raise UrlfetchException('Unsupported protocol %s' % scheme)
         
     if timeout is not None:
         h.connect()
