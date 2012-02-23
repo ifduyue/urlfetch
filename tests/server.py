@@ -2,13 +2,7 @@ import bottle
 from bottle import request
 import json
 
-def normal_formsdict(fd):
-    pass
-
-app = bottle.app()
-
-@app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
-def index():
+def normal_formsdict():
     d = {}
     
     d['url'] = request.url
@@ -35,6 +29,23 @@ def index():
         d['files'][i] = (d['files'][i].name, d['files'][i].filename, d['files'][i].value)
     d['cookies'] = dict(request.cookies)
     return json.dumps(d)
+
+app = bottle.app()
+
+@app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+def index():
+    return normal_formsdict()
+    
+
+def basic_auth_check(username, password):
+    if username == "urlfetch" and password == "fetchurl":
+        return True
+    return False
+
+@app.route('/basic_auth', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+@bottle.auth_basic(basic_auth_check)
+def basic_auth():
+    return normal_formsdict()
 
 
 bottle.run(app=app, host='127.0.0.1', port=8800)

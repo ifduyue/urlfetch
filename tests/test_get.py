@@ -33,6 +33,27 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
 
+    def test_basic_auth(self):
+        r = urlfetch.get('http://127.0.0.1:8800/basic_auth', auth=('urlfetch', 'fetchurl'))
+        o = json.loads(r.body)
+        
+        self.assertEqual(r.status, 200)
+        self.assertEqual(o['method'], 'GET')
+
+    def test_basic_auth_query_string(self):
+        qs = testlib.randdict(5)
+        query_string = urlfetch.urlencode(qs)
+        
+        r = urlfetch.get(
+                'http://127.0.0.1:8800/basic_auth?'+ query_string, 
+                auth=('urlfetch', 'fetchurl'),
+            )
+        o = json.loads(r.body)
+
+        self.assertEqual(r.status, 200)
+        self.assertEqual(o['method'], 'GET')
+        self.assertEqual(o['query_string'], query_string)
+        self.assertEqual(o['get'], qs)
 
 if __name__ == '__main__':
     unittest.main()
