@@ -18,10 +18,10 @@ import httplib
 from urllib import urlencode, quote as urlquote, quote_plus as urlquote_plus
 import urlparse
 import Cookie
-from uas import randua
 import base64
 from functools import partial
-from __init__ import __version__
+
+import uas
 
 __all__ = [
     'sc2cs', 'fetch', 'request', 
@@ -202,7 +202,7 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     
     reqheaders = {
         'Accept' : '*/*',
-        'User-Agent': request.__globals__['randua']() if randua else 'urlfetch/' + __version__,
+        'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
     }
 
     if auth is not None: 
