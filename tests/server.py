@@ -47,5 +47,14 @@ def basic_auth_check(username, password):
 def basic_auth():
     return normal_formsdict()
 
+@app.route('/sleep/<seconds:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+def sleep(seconds):
+    import time
+    time.sleep(seconds)
+
+    return normaldict()
+
+
+
 
 bottle.run(app=app, host='127.0.0.1', port=8800)
