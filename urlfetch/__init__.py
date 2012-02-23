@@ -181,7 +181,8 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
 
     requrl = path
     if query: requrl += '?' + query
-    if fragment: requrl += '#' + fragment
+    # do not add fragment
+    #if fragment: requrl += '#' + fragment
 
     if ':' in netloc:
         host, port = netloc.rsplit(':', 1)
