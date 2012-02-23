@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
@@ -190,16 +190,18 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
         host, port = netloc, None
     
     if scheme == 'https':
-        h = httplib.HTTPSConnection(host, port)
+        if timeout is None:
+            h = httplib.HTTPSConnection(host, port=port)
+        else:
+            h = httplib.HTTPSConnection(host, port=port, timeout=timeout)
     elif scheme == 'http':
-        h = httplib.HTTPConnection(host, port)
+        if timeout is None:
+            h = httplib.HTTPConnection(host, port=port)
+        else:
+            h = httplib.HTTPConnection(host, port=port, timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
-    if timeout is not None:
-        h.connect()
-        h.sock.settimeout(timeout)
-    
     reqheaders = {
         'Accept' : '*/*',
         'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
