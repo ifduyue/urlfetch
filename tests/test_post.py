@@ -1,9 +1,11 @@
-import unittest
+import testlib
 import urlfetch
+print urlfetch.__version__, urlfetch.__path__
+
+import unittest
 import json
 import random
 
-import testlib
 
 class PostTest(unittest.TestCase):
 
