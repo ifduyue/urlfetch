@@ -8,19 +8,18 @@ setup(
     author = re.sub(r'\s+<.*', r'', urlfetch.__author__),
     author_email = re.sub(r'(^.*<)|(>.*$)', r'', urlfetch.__author__),
     url = urlfetch.__url__,
-    description = ("An easy to use HTTP client based on httplib"),
+    description = ("An easy to use HTTP client"),
     long_description = open('README.rst').read(),
     license = "BSD",
-    keywords = "http urlfetch",
+    keywords = "httpclient urlfetch",
     packages = [
         'urlfetch',
     ],
     classifiers = [
         'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Environment :: Web Environment',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
@@ -28,5 +27,6 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
+    include_package_data = True,
 )
 

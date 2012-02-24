@@ -13,15 +13,24 @@ __version__ = '0.2.3'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
+from . import util
+from . import uas
 
-import httplib
-from urllib import urlencode, quote as urlquote, quote_plus as urlquote_plus
-import urlparse
-import Cookie
+if util.py3k:
+    from http.client import HTTPConnection, HTTPException
+    from http.client import HTTP_PORT, HTTPS_PORT
+    from urllib.parse import urlencode, quote as urlquote, quote_plus as urlquote_plus
+    import urllib.parse as urlparse
+    import http.cookies as Cookie
+else:
+    from httplib import HTTPConnection, HTTPException
+    from httplib import HTTP_PORT, HTTPS_PORT
+    from urllib import urlencode, quote as urlquote, quote_plus as urlquote_plus
+    import urlparse
+    import Cookie
 import base64
 from functools import partial
 
-import uas
 
 __all__ = [
     'sc2cs', 'fetch', 'request', 
@@ -72,7 +81,7 @@ def _encode_multipart(data, files):
     part_boundary = '--' + boundary
 
     if isinstance(data, dict):
-        for name, value in data.iteritems():
+        for name, value in data.items():
             parts.extend([
                 part_boundary,
                 'Content-Disposition: form-data; name="%s"' % name,
@@ -80,7 +89,7 @@ def _encode_multipart(data, files):
                 str(value),
             ])
 
-    for fieldname, f in files.iteritems():
+    for fieldname, f in files.items():
         if isinstance(f, tuple):
             filename, f = f
         elif hasattr(f, 'name'):
@@ -91,7 +100,7 @@ def _encode_multipart(data, files):
 
         if hasattr(f, 'read'):
             value = f.read()
-        elif isinstance(f, basestring):
+        elif isinstance(f, str):
             value = f
         else:
             value = str(f)
@@ -139,7 +148,7 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
         Default headers: {'Accept': '\*/\*'}
     '''
     local = locals()
-    if data is not None and isinstance(data, (basestring, dict)):
+    if data is not None and isinstance(data, (str, dict)):
         return post(**local)
     return get(**local)
 
@@ -192,14 +201,14 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     
     if scheme == 'https':
         if timeout is None:
-            h = httplib.HTTPSConnection(host, port=port)
+            h = HTTPSConnection(host, port=port)
         else:
-            h = httplib.HTTPSConnection(host, port=port, timeout=timeout)
+            h = HTTPSConnection(host, port=port, timeout=timeout)
     elif scheme == 'http':
         if timeout is None:
-            h = httplib.HTTPConnection(host, port=port)
+            h = HTTPConnection(host, port=port)
         else:
-            h = httplib.HTTPConnection(host, port=port, timeout=timeout)
+            h = HTTPConnection(host, port=port, timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
@@ -211,8 +220,10 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     if auth is not None: 
         if isinstance(auth, (list, tuple)):
             auth = '%s:%s' % tuple(auth)
+        if util.py3k:
+            auth = auth.encode('utf-8')
         auth = base64.b64encode(auth)
-        reqheaders['Authorization'] = 'Basic ' + auth
+        reqheaders['Authorization'] = b'Basic ' + auth
 
     if files:
         content_type, data = _encode_multipart(data, files)
@@ -220,19 +231,20 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     elif isinstance(data, dict):
         data = urlencode(data)
     
-    if isinstance(data, basestring) and not files:
+    if isinstance(data, str) and not files:
         # httplib will set 'Content-Length', also you can set it by yourself
         reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
         # what if the method is GET, HEAD or DELETE 
         # just do not make so much decisions for users
 
-    for k, v in headers.iteritems():
+    for k, v in headers.items():
         reqheaders[k.title()] = v 
     
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
     setattr(response, 'reqheaders', reqheaders)
     setattr(response, 'body', response.read())
+    setattr(response, 'text', response.body.decode('utf-8'))
     h.close()
     
     return response
@@ -245,10 +257,3 @@ delete = partial(request, method="DELETE")
 head = partial(request, method="HEAD")
 options = partial(request, method="OPTIONS")
 
-
-if __name__ == '__main__':
-    import sys
-    url = sys.argv[1]
-    
-    response = fetch(url)
-    sys.stdout.write(response.body)
