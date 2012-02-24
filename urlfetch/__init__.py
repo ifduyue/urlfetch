@@ -22,6 +22,7 @@ if util.py3k:
     from urllib.parse import urlencode, quote as urlquote, quote_plus as urlquote_plus
     import urllib.parse as urlparse
     import http.cookies as Cookie
+    basestring = (str, bytes)
 else:
     from httplib import HTTPConnection, HTTPException
     from httplib import HTTP_PORT, HTTPS_PORT
@@ -100,7 +101,7 @@ def _encode_multipart(data, files):
 
         if hasattr(f, 'read'):
             value = f.read()
-        elif isinstance(f, str):
+        elif isinstance(f, basestring):
             value = f
         else:
             value = str(f)
@@ -148,7 +149,7 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
         Default headers: {'Accept': '\*/\*'}
     '''
     local = locals()
-    if data is not None and isinstance(data, (str, dict)):
+    if data is not None and isinstance(data, (basestring, dict)):
         return post(**local)
     return get(**local)
 
@@ -231,7 +232,7 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     elif isinstance(data, dict):
         data = urlencode(data)
     
-    if isinstance(data, str) and not files:
+    if isinstance(data, basestring) and not files:
         # httplib will set 'Content-Length', also you can set it by yourself
         reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
         # what if the method is GET, HEAD or DELETE 
