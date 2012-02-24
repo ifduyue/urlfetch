@@ -31,6 +31,7 @@ else:
     import Cookie
 import base64
 from functools import partial
+import os
 
 
 __all__ = [
@@ -94,7 +95,7 @@ def _encode_multipart(data, files):
         if isinstance(f, tuple):
             filename, f = f
         elif hasattr(f, 'name'):
-            filename = f.name
+            filename = os.path.basename(f.name)
         else:
             filename = None
             raise UrlfetchException("file must has filename")
