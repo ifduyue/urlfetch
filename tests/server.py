@@ -2,9 +2,18 @@ import bottle
 from bottle import request
 import json
 
+
+def mb_code(s, encoding='utf-8'):
+    for c in ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5'):
+        try:
+            return s.decode(c).encode(encoding)
+        except: pass
+    try:
+        return s.encode(encoding)
+    except: raise 
+
 def normal_formsdict():
     d = {}
-    
     d['url'] = request.url
     d['path'] = request.path
     d['fullpath'] = request.fullpath
@@ -15,9 +24,9 @@ def normal_formsdict():
     d['is_ajax'] = request.is_ajax
     d['auth'] = request.auth
     d['remote_addr'] = request.remote_addr
-    
     #d['environ'] = dict(request.environ)
     d['headers'] = dict(request.headers)
+
     #d['query'] = dict(request.query)
     d['forms'] = dict(request.forms)
     d['params'] = dict(request.params)
@@ -26,7 +35,7 @@ def normal_formsdict():
     d['files'] = dict(request.files)
     for i in d['files']:
         del d['post'][i]
-        d['files'][i] = (d['files'][i].name, d['files'][i].filename, d['files'][i].value)
+        d['files'][i] = (d['files'][i].name, d['files'][i].filename, mb_code(d['files'][i].value))
     d['cookies'] = dict(request.cookies)
     return json.dumps(d)
 
@@ -52,9 +61,9 @@ def sleep(seconds):
     import time
     time.sleep(seconds)
 
-    return normaldict()
+    return normal_formsdict()
 
 
 
-
-bottle.run(app=app, host='127.0.0.1', port=8800)
+bottle.debug(True)
+bottle.run(app=app, host='127.0.0.1', port=8800, reloader=True)
