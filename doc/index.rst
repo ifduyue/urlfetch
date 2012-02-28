@@ -11,7 +11,7 @@ urlfetch documentation
 
 Introduction
 =============
-urlfetch is an easy to use HTTP client based on Python_ httplib_ module.
+urlfetch is an easy to use HTTP client.
 
 Installation
 =============
@@ -170,6 +170,27 @@ Reference
 
 .. autofunction:: request
 
+.. autofunction:: get
+
+.. autofunction:: post
+
+.. autofunction:: head
+
+.. autofunction:: put
+
+.. autofunction:: delete
+
+.. autofunction:: options
+
+.. autofunction:: trace
+
+.. autofunction:: patch
+
 .. autofunction:: sc2cs
 
+
+
+.. module:: urlfetch.uas
+   :platform: Unix, Windows
+   
 .. autofunction:: randua

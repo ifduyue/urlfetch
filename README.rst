@@ -3,7 +3,7 @@ urlfetch
 
 Description
 -----------
-An easy to use HTTP client based on httplib
+An easy to use HTTP client.
 
 Installation
 -------------
