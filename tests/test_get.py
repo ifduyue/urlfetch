@@ -99,14 +99,8 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        try:
-            r = None
+        with self.assertRaises(socket.timeout) as tm:
             r = urlfetch.get('http://127.0.0.1:8800/sleep/1', timeout=0.5)
-        except Exception as e:
-            self.assertIsInstance(e, socket.timeout)
-
-        self.assertIs(r, None)
-        
 
 
 if __name__ == '__main__':
