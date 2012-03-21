@@ -17,7 +17,7 @@ from . import util
 from . import uas
 
 if util.py3k:
-    from http.client import HTTPConnection, HTTPException
+    from http.client import HTTPConnection, HTTPSConnection, HTTPException
     from http.client import HTTP_PORT, HTTPS_PORT
     from urllib.parse import urlencode, quote as urlquote, quote_plus as urlquote_plus
     import urllib.parse as urlparse
@@ -28,7 +28,7 @@ if util.py3k:
     def u(s):
         return s
 else:
-    from httplib import HTTPConnection, HTTPException
+    from httplib import HTTPConnection, HTTPSConnection, HTTPException
     from httplib import HTTP_PORT, HTTPS_PORT
     from urllib import urlencode, quote as urlquote, quote_plus as urlquote_plus
     import urlparse
@@ -93,7 +93,6 @@ def choose_boundary():
 
 def _encode_multipart(data, files):
     body = BytesIO()
-    parts = []
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
 
