@@ -267,7 +267,6 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     response = h.getresponse()
     setattr(response, 'reqheaders', reqheaders)
     setattr(response, 'body', response.read())
-    setattr(response, 'text', response.body.decode('utf-8'))
     h.close()
     
     return response
