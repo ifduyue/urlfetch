@@ -298,7 +298,7 @@ class Router(object):
         return r'-?[\d.]+', float, lambda x: str(float(x))
 
     def path_filter(self, conf):
-        return r'.*?', None, None
+        return r'.+?', None, None
 
     def add_filter(self, name, func):
         ''' Add a filter. The provided function is called with the configuration
@@ -526,24 +526,36 @@ class Route(object):
 
 class Bottle(object):
     """ Each Bottle object represents a single, distinct web application and
-        consists of routes, callbacks, plugins and configuration. Instances are
-        callable WSGI applications. """
+        consists of routes, callbacks, plugins, resources and configuration.
+        Instances are callable WSGI applications.
 
-    def __init__(self, catchall=True, autojson=True, config=None):
-        self.routes = [] # List of installed :class:`Route` instances.
-        self.router = Router() # Maps requests to :class:`Route` instances.
-        self.plugins = [] # List of installed plugins.
+        :param catchall: If true (default), handle all exceptions. Turn off to
+                         let debugging middleware handle exceptions.
+    """
 
-        self.error_handler = {}
-        self.config = ConfigDict(config or {})
+    def __init__(self, catchall=True, autojson=True):
         #: If true, most exceptions are catched and returned as :exc:`HTTPError`
         self.catchall = catchall
-        #: An instance of :class:`HooksPlugin`. Empty by default.
+
+        #: A :cls:`ResourceManager` for application files
+        self.resources = ResourceManager()
+
+        #: A :cls:`ConfigDict` for app specific configuration.
+        self.config = ConfigDict()
+        self.config.autojson = autojson
+
+        self.routes = [] # List of installed :class:`Route` instances.
+        self.router = Router() # Maps requests to :class:`Route` instances.
+        self.error_handler = {}
+
+        # Core plugins
+        self.plugins = [] # List of installed plugins.
         self.hooks = HooksPlugin()
         self.install(self.hooks)
-        if autojson:
+        if self.config.autojson:
             self.install(JSONPlugin())
         self.install(TemplatePlugin())
+
 
     def mount(self, prefix, app, **options):
         ''' Mount an application (:class:`Bottle` or plain WSGI) to a specific
@@ -887,6 +899,8 @@ class BaseRequest(object):
     """ A wrapper for WSGI environment dictionaries that adds a lot of
         convenient access methods and properties. Most of them are read-only."""
 
+    __slots__ = ('environ')
+
     #: Maximum size of memory buffer for :attr:`body` in bytes.
     MEMFILE_MAX = 102400
     #: Maximum number pr GET or POST parameters per request
@@ -1202,8 +1216,16 @@ class BaseRequest(object):
         for key in todelete:
             self.environ.pop('bottle.request.'+key, None)
 
+    def __getattr__(self, name):
+        try:
+            var = self.environ['bottle.request.ext.%s'%name]
+            return var.__get__(self) if hasattr(var, '__get__') else var
+        except KeyError:
+            raise AttributeError('Custom attribute %r not found.' % name)
+
     def __repr__(self):
         return '<%s: %s %s>' % (self.__class__.__name__, self.method, self.url)
+
 
 def _hkey(s):
     return s.title().replace('_','-')
@@ -1875,6 +1897,102 @@ class WSGIFileWrapper(object):
             yield part
 
 
+class ResourceManager(object):
+    ''' This class manages a list of search paths and helps to find and open
+        aplication-bound resources (files).
+
+        :param base: path used to resolve relative search paths. It works as a
+                     default for :meth:`add_path`.
+        :param opener: callable used to open resources.
+        :param cachemode: controls which lookups are cached. One of 'all',
+                         'found' or 'none'.
+    '''
+
+    def __init__(self, base='./', opener=open, cachemode='all'):
+
+        self.opener = open
+        self.base = './'
+        self.cachemode = cachemode
+
+        #: A list of search paths. See :meth:`add_path` for details.
+        self.path = []
+        #: A list of file masks. See :meth:`add_mask` for details.
+        self.mask = ['%s']
+        #: A cache for resolved paths. `res.cache.clear()`` clears the cache.
+        self.cache = {}
+
+    def add_path(self, path, base=None, index=None):
+        ''' Add a path to the :attr:`path` list.
+
+            The path is turned into an absolute and normalized form. If it
+            looks like a file (not ending in `/`), the filename is stripped
+            off. The path is not required to exist.
+
+            Relative paths are joined with `base` or :attr:`self.base`, which
+            defaults to the current working directory. This comes in handy if
+            you resources live in a sub-folder of your module or package::
+
+                res.add_path('./resources/', __file__)
+
+            The :attr:`path` list is searched in order and new paths are
+            added to the end of the list. The *index* parameter can change
+            the position (e.g. ``0`` to prepend). Adding a path a second time
+            moves it to the new position.
+        '''
+        base = os.path.abspath(os.path.dirname(base or self.base))
+        path = os.path.abspath(os.path.join(base, os.path.dirname(path)))
+        path += os.sep
+        if path in self.path:
+            self.path.remove(path)
+        if index is None:
+            self.path.append(path)
+        else:
+            self.path.insert(index, path)
+        self.cache.clear()
+
+    def add_mask(self, mask, index=None):
+        ''' Add a new format string to the :attr:`mask` list.
+
+            Masks are used to turn resource names into actual filenames. The
+            mask string must contain exactly one occurence of ``%s``, which
+            is replaced by the supplied resource name on lookup. This can be
+            used to auto-append file extentions (e.g. ``%s.ext``).
+        '''
+        if index is None:
+            self.masks.append(mask)
+        else:
+            self.masks.insert(index, mask)
+        self.cache.clear()
+
+    def lookup(self, name):
+        ''' Search for a resource and return an absolute file path, or `None`.
+
+            The :attr:`path` list is searched in order. For each path, the
+            :attr:`mask` entries are tried in order. The first path that points
+            to an existing file is returned. Symlinks are followed. The result
+            is cached to speed up future lookups. '''
+        if name not in self.cache or DEBUG:
+            for path in self.path:
+                for mask in self.mask:
+                    fpath = os.path.join(path, mask%name)
+                    if os.path.isfile(fpath):
+                        if self.cachemode in ('all', 'found'):
+                            self.cache[name] = fpath
+                        return fpath
+            if self.cachemode == 'all':
+                self.cache[name] = None
+        return self.cache[name]
+
+    def open(self, name, *args, **kwargs):
+        ''' Find a resource and return an opened file object, or raise IOError.
+
+            Additional parameters are passed to the ``open()`` built-in.
+        '''
+        fname = self.lookup(name)
+        if not fname: raise IOError("Resource %r not found." % name)
+        return self.opener(name, *args, **kwargs)
+
+
 
 
 
@@ -2230,6 +2348,12 @@ class CherryPyServer(ServerAdapter):
             server.stop()
 
 
+class WaitressServer(ServerAdapter):
+    def run(self, handler):
+        from waitress import serve
+        serve(handler, host=self.host, port=self.port)
+
+
 class PasteServer(ServerAdapter):
     def run(self, handler): # pragma: no cover
         from paste import httpserver
@@ -2376,7 +2500,7 @@ class BjoernServer(ServerAdapter):
 
 class AutoServer(ServerAdapter):
     """ Untested. """
-    adapters = [PasteServer, TwistedServer, CherryPyServer, WSGIRefServer]
+    adapters = [WaitressServer, PasteServer, TwistedServer, CherryPyServer, WSGIRefServer]
     def run(self, handler):
         for sa in self.adapters:
             try:
@@ -2388,6 +2512,7 @@ server_names = {
     'cgi': CGIServer,
     'flup': FlupFCGIServer,
     'wsgiref': WSGIRefServer,
+    'waitress': WaitressServer,
     'cherrypy': CherryPyServer,
     'paste': PasteServer,
     'fapws3': FapwsServer,
@@ -2992,9 +3117,9 @@ _HTTP_STATUS_LINES = dict((k, '%d %s'%(k,v)) for (k,v) in HTTP_CODES.items())
 
 #: The default template used for error pages. Override with @error()
 ERROR_PAGE_TEMPLATE = """
-%try:
-    %from bottle import DEBUG, HTTP_CODES, request, touni
-    %status_name = HTTP_CODES.get(e.status, 'Unknown').title()
+%%try:
+    %%from %s import DEBUG, HTTP_CODES, request, touni
+    %%status_name = HTTP_CODES.get(e.status, 'Unknown').title()
     <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
     <html>
         <head>
@@ -3011,21 +3136,21 @@ ERROR_PAGE_TEMPLATE = """
             <p>Sorry, the requested URL <tt>{{repr(request.url)}}</tt>
                caused an error:</p>
             <pre>{{e.output}}</pre>
-            %if DEBUG and e.exception:
+            %%if DEBUG and e.exception:
               <h2>Exception:</h2>
               <pre>{{repr(e.exception)}}</pre>
-            %end
-            %if DEBUG and e.traceback:
+            %%end
+            %%if DEBUG and e.traceback:
               <h2>Traceback:</h2>
               <pre>{{e.traceback}}</pre>
-            %end
+            %%end
         </body>
     </html>
-%except ImportError:
+%%except ImportError:
     <b>ImportError:</b> Could not generate the error page. Please add bottle to
     the import path.
-%end
-"""
+%%end
+""" % __name__
 
 #: A thread-safe instance of :class:`LocalRequest`. If accessed from within a 
 #: request callback, this instance always refers to the *current* request
