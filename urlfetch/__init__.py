@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
@@ -144,6 +144,49 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
+    
+
+class Response(object):
+    
+    def __init__(self, r, **kwargs):
+        self._r = r
+        self.msg = r.msg
+        self.status = r.status
+        self.length = r.length
+        self.reason = r.reason
+        self.version = r.version
+        self._body = None
+        self._headers = None
+        self._text = None
+    
+        if kwargs.get('prefetch', False):
+            self._body = self._r.read()
+        
+        for k, v in kwargs:
+            setattr(self, k, v)
+        
+    @classmethod
+    def from_httplib(cls, r, **kwargs):
+        return cls(r)
+        
+    @property
+    def body(self):
+        if self._body is None:
+            self._body = self._r.read()
+        return self._body
+    
+    @property
+    def text(self):
+        if self._text is None:
+            self._text = util.mb_code(self.body)
+        return self._text
+    
+    @property
+    def headers(self):
+        if self._headers is None:
+            self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
+        return self._headers
+        
 
 
 def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
@@ -179,7 +222,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
 
 
 
-def request(url, method="GET", data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
+def request(url, method="GET", data=None, headers={}, timeout=None,
+            randua=True, files={}, auth=None, prefetch=True):
     ''' request a url
 
     Args:
@@ -265,11 +309,7 @@ def request(url, method="GET", data=None, headers={}, timeout=None, randua=True,
     
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
-    setattr(response, 'reqheaders', reqheaders)
-    setattr(response, 'body', response.read())
-    h.close()
-    
-    return response
+    return Response.from_httplib(response, prefetch=prefetch, reqheaders=reqheaders)
 
 # some shortcuts
 get = partial(request, method="GET")
