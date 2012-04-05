@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
