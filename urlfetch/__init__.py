@@ -158,6 +158,9 @@ class Response(object):
         self._body = None
         self._headers = None
         self._text = None
+
+        self.getheader = r.getheader
+        self.getheaders = r.getheaders
     
         if kwargs.get('prefetch', False):
             self._body = self._r.read()
@@ -187,7 +190,6 @@ class Response(object):
             self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
         return self._headers
         
-
 
 def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
     ''' fetch url
