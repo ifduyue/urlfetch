@@ -162,8 +162,8 @@ class Response(object):
         if kwargs.get('prefetch', False):
             self._body = self._r.read()
         
-        for k, v in kwargs.iteritems():
-            setattr(self, k, v)
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
