@@ -307,7 +307,6 @@ _uas = (
     '''Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; MSN OptimizedIE8;DEDE)''',
     '''Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8''',
     '''Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.8) Gecko/2009032609 Firefox/3.0.8''',
-    '''Mozilla/5.0 (000000000; 0; 000 000 00 0 0000000; 00000) 00000000000000000000 0000000 0000 000000 0000000000000 000000000000000''',
     '''Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.8) Gecko/2009033008 GranParadiso/3.0.8''',
     '''Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009033017 GranParadiso/3.0.8''',
     '''Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; GTB5)''',
