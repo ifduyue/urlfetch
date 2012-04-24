@@ -38,6 +38,7 @@ else:
     def u(s):
         return unicode(s, "unicode_escape")
 
+import socket
 import base64
 from functools import partial
 import os
@@ -191,8 +192,8 @@ class Response(object):
         return self._headers
         
 
-def fetch(url, data=None, headers={}, timeout=None, randua=True, 
-            files={}, auth=None, prefetch=True, host=None):
+def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
+            randua=True, files={}, auth=None, prefetch=True, host=None):
     ''' fetch url
 
     Args:
@@ -230,7 +231,8 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True,
 
 
 
-def request(url, method="GET", data=None, headers={}, timeout=None,
+def request(url, method="GET", data=None, headers={},
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
             randua=True, files={}, auth=None, prefetch=True, host=None):
     ''' request a url
 
@@ -284,15 +286,9 @@ def request(url, method="GET", data=None, headers={}, timeout=None,
         host = _host
     
     if scheme == 'https':
-        if timeout is None:
-            h = HTTPSConnection(host, port=port)
-        else:
-            h = HTTPSConnection(host, port=port, timeout=timeout)
+        h = HTTPSConnection(host, port=port, timeout=timeout)
     elif scheme == 'http':
-        if timeout is None:
-            h = HTTPConnection(host, port=port)
-        else:
-            h = HTTPConnection(host, port=port, timeout=timeout)
+        h = HTTPConnection(host, port=port, timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
