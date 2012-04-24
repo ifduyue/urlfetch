@@ -9,7 +9,7 @@
 #    :license: BSD, see LICENSE for more details.
 #
 
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
@@ -191,7 +191,8 @@ class Response(object):
         return self._headers
         
 
-def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=None):
+def fetch(url, data=None, headers={}, timeout=None, randua=True, 
+            files={}, auth=None, prefetch=True, host=None):
     ''' fetch url
 
     Args:
@@ -211,6 +212,11 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
 
         auth (tuple): (username, password) for basic authentication
 
+        prefetch (bool): True for prefetching response body
+
+        host (string): To specify the host, useful when the domain can resolve to many IPs
+
+
     Returns:
         response object
 
@@ -225,7 +231,7 @@ def fetch(url, data=None, headers={}, timeout=None, randua=True, files={}, auth=
 
 
 def request(url, method="GET", data=None, headers={}, timeout=None,
-            randua=True, files={}, auth=None, prefetch=True):
+            randua=True, files={}, auth=None, prefetch=True, host=None):
     ''' request a url
 
     Args:
@@ -247,6 +253,10 @@ def request(url, method="GET", data=None, headers={}, timeout=None,
 
         auth (tuple): (username, password) for basic authentication
 
+        prefetch (bool): True for prefetching response body
+
+        host (string): To specify the host, useful when the domain can resolve to many IPs
+
     Returns:
         response object
 
@@ -263,12 +273,15 @@ def request(url, method="GET", data=None, headers={}, timeout=None,
     if query: requrl += '?' + query
     # do not add fragment
     #if fragment: requrl += '#' + fragment
+    
 
     if ':' in netloc:
-        host, port = netloc.rsplit(':', 1)
+        _host, port = netloc.rsplit(':', 1)
         port = int(port)
     else:
-        host, port = netloc, None
+        _host, port = netloc, None
+    if host is None:
+        host = _host
     
     if scheme == 'https':
         if timeout is None:
