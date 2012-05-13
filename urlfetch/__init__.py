@@ -293,8 +293,9 @@ def request(url, method="GET", data=None, headers={},
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
     reqheaders = {
-        'Accept' : '*/*',
+        'Accept': '*/*',
         'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
+        'Host': _host,
     }
 
     if auth is not None: 
