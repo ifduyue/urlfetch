@@ -270,10 +270,6 @@ def request(url, method="GET", data=None, headers={},
     method = method.upper()
     if method not in _allowed_methods:
         raise UrlfetchException("Method shoud be one of " + ", ".join(_allowed_methods))
-    if method == 'TRACE':
-        # No entity body can be sent with a TRACE request. 
-        files = {}
-        data = None
 
     requrl = path
     if query: requrl += '?' + query
@@ -334,6 +330,7 @@ put = partial(request, method="PUT")
 delete = partial(request, method="DELETE")
 head = partial(request, method="HEAD")
 options = partial(request, method="OPTIONS")
-trace = partial(request, method="TRACE")
+# No entity body can be sent with a TRACE request. 
+trace = partial(request, method="TRACE", files={}, data=None)
 patch = partial(request, method="PATCH")
 
