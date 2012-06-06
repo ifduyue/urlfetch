@@ -308,7 +308,7 @@ def request(url, method="GET", data=None, headers={},
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
     elif isinstance(data, dict):
-        data = urlencode(data)
+        data = urlencode(data, 1)
     
     if isinstance(data, basestring) and not files:
         # httplib will set 'Content-Length', also you can set it by yourself
