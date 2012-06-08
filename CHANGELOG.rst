@@ -8,14 +8,13 @@ Time flies!!
 +++++++++++++++++++
 
 * simplify code
-* support specifying an ip for the url host
 * Trace method without data and files, according to RFC2612
 * urlencode(data, 1) so that urlencode({'param': [1,2,3]}) => 'param=1&param=2&param=3'
 
 0.3.5 (2012-04-24)
 +++++++++++++++++++
 
-* support specifying IP for host, useful for testing API.
+* support specifying an IP for the request host, useful for testing API.
 
 0.3.0 (2012-02-28)
 +++++++++++++++++++
