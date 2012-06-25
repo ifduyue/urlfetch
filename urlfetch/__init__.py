@@ -162,12 +162,14 @@ class Response(object):
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
+
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
     
         if kwargs.get('prefetch', False):
             self._body = self._r.read()
+            self.close()
         
-        for k in kwargs:
-            setattr(self, k, kwargs[k])
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
@@ -190,6 +192,14 @@ class Response(object):
         if self._headers is None:
             self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
         return self._headers
+
+    def close(self):
+        if hasattr(self, 'connection'):
+            self.connection.close()
+        self._r.close()
+
+    def __del__(self):
+        self.close()
         
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
@@ -321,7 +331,7 @@ def request(url, method="GET", data=None, headers={},
     
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
-    return Response.from_httplib(response, prefetch=prefetch, reqheaders=reqheaders)
+    return Response.from_httplib(response, prefetch=prefetch, reqheaders=reqheaders, connection=h)
 
 # some shortcuts
 get = partial(request, method="GET")
