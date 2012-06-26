@@ -1,4 +1,4 @@
-#coding: utf8
+# coding: utf8
 #
 #    urlfetch 
 #    ~~~~~~~~
@@ -50,7 +50,7 @@ writer = codecs.lookup('utf-8')[3]
 __all__ = [
     'sc2cs', 'fetch', 'request', 
     'get', 'head', 'put', 'post', 'delete', 'options',
-    'UrlfetchException',
+    'Headers', 'UrlfetchException',
 ] 
 
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
@@ -145,7 +145,32 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
+
+class Headers(object):
+    ''' Headers
     
+    to simplify fetch() interface, class Headers helps to manipulate parameters
+    '''
+    def __init__(self):
+        ''' make default headers '''
+        self.__headers = {
+            'Accept': '*/*',
+            'User-Agent':  'urlfetch/' + __version__,
+        }
+    
+    def random_user_agent(self):
+        ''' generate random User-Agent string from uas.py collection '''
+        self.__headers['User-Agent'] = uas.randua()
+    
+    def auth(self, username, password):
+        ''' add username/password for basic authentication '''
+        auth = '%s:%s' % (username, password)
+        auth = base64.b64encode(auth.encode('utf-8'))
+        self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+    
+    def items(self):
+        ''' return headers dictionary '''
+        return self.__headers
 
 class Response(object):
     
@@ -168,8 +193,7 @@ class Response(object):
     
         if kwargs.get('prefetch', False):
             self._body = self._r.read()
-            self.close()
-        
+            self.close()        
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
@@ -203,7 +227,7 @@ class Response(object):
         
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+            files={}, prefetch=True):
     ''' fetch url
 
     Args:
@@ -216,17 +240,10 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
         timeout (double): The timeout
 
-        randua (bool): Use random User-Agent when this is True
-
         files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
                       fileobj can be a file descriptor open for read or simply string
 
-        auth (tuple): (username, password) for basic authentication
-
         prefetch (bool): True for prefetching response body
-
-        host (string): To specify the host, useful when the domain can resolve to many IPs
-
 
     Returns:
         response object
@@ -241,9 +258,9 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
 
 
-def request(url, method="GET", data=None, headers={},
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+            files={}, prefetch=True):
+            
     ''' request a url
 
     Args:
@@ -252,22 +269,16 @@ def request(url, method="GET", data=None, headers={},
     Kwargs:
         method (str): The request method, 'GET', 'POST', 'HEAD', 'PUT' OR 'DELETE'
                       
-        data (dict/str):  The post data, it can be dict or string
+        data (dict/str):  The data, it can be dict or string, used for POST or PUT requests
 
         headers (dict):   The request headers
 
         timeout (double): The timeout
 
-        randua (bool): Use random User-Agent when this is True
-
         files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
                       fileobj can be a file descriptor open for read or simply string
 
-        auth (tuple): (username, password) for basic authentication
-
         prefetch (bool): True for prefetching response body
-
-        host (string): To specify the host, useful when the domain can resolve to many IPs
 
     Returns:
         response object
@@ -286,14 +297,13 @@ def request(url, method="GET", data=None, headers={},
     # do not add fragment
     #if fragment: requrl += '#' + fragment
     
-
+    # handle 'Host'
     if ':' in netloc:
-        _host, port = netloc.rsplit(':', 1)
+        host, port = netloc.rsplit(':', 1)
         port = int(port)
     else:
-        _host, port = netloc, None
-    if host is None:
-        host = _host
+        host, port = netloc, None
+    host = host.encode('idna').decode('utf-8')
     
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
@@ -302,18 +312,9 @@ def request(url, method="GET", data=None, headers={},
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
-    reqheaders = {
-        'Accept': '*/*',
-        'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
-        'Host': _host,
-    }
-
-    if auth is not None: 
-        if isinstance(auth, (list, tuple)):
-            auth = '%s:%s' % tuple(auth)
-        auth = base64.b64encode(auth.encode('utf-8'))
-        reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
-
+    # default request headers
+    reqheaders = Headers().items()
+    
     if files:
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
