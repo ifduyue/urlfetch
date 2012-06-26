@@ -50,7 +50,7 @@ writer = codecs.lookup('utf-8')[3]
 __all__ = [
     'sc2cs', 'fetch', 'request', 
     'get', 'head', 'put', 'post', 'delete', 'options',
-    'UrlfetchException',
+    'Headers', 'UrlfetchException',
 ] 
 
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
@@ -168,7 +168,7 @@ class Headers(object):
         auth = base64.b64encode(auth.encode('utf-8'))
         self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
     
-    def __dict__(self):
+    def items(self):
         ''' return headers dictionary '''
         return self.__headers
 
@@ -227,7 +227,7 @@ class Response(object):
         
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-            randua=True, files={}, auth=None, prefetch=True):
+            files={}, prefetch=True):
     ''' fetch url
 
     Args:
@@ -240,12 +240,8 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
         timeout (double): The timeout
 
-        randua (bool): Use random User-Agent when this is True
-
         files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
                       fileobj can be a file descriptor open for read or simply string
-
-        auth (tuple): (username, password) for basic authentication
 
         prefetch (bool): True for prefetching response body
 
@@ -262,9 +258,9 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
 
 
-def request(url, method="GET", data=None, headers={},
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            randua=True, files={}, auth=None, prefetch=True):
+def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+            files={}, prefetch=True):
+            
     ''' request a url
 
     Args:
@@ -279,12 +275,8 @@ def request(url, method="GET", data=None, headers={},
 
         timeout (double): The timeout
 
-        randua (bool): Use random User-Agent when this is True
-
         files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
                       fileobj can be a file descriptor open for read or simply string
-
-        auth (tuple): (username, password) for basic authentication
 
         prefetch (bool): True for prefetching response body
 
@@ -320,17 +312,9 @@ def request(url, method="GET", data=None, headers={},
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
-    reqheaders = {
-        'Accept': '*/*',
-        'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
-    }
-
-    if auth is not None: 
-        if isinstance(auth, (list, tuple)):
-            auth = '%s:%s' % tuple(auth)
-        auth = base64.b64encode(auth.encode('utf-8'))
-        reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
-
+    # default request headers
+    reqheaders = Headers().items()
+    
     if files:
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
