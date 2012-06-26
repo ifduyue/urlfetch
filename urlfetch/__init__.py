@@ -151,7 +151,26 @@ class Headers(object):
     
     to simplify fetch() interface, class Headers helps to manipulate parameters
     '''
-    pass
+    def __init__(self):
+        ''' make default headers '''
+        self.__headers = {
+            'Accept': '*/*',
+            'User-Agent':  'urlfetch/' + __version__,
+        }
+    
+    def random_user_agent(self):
+        ''' generate random User-Agent string from uas.py collection '''
+        self.__headers['User-Agent'] = uas.randua()
+    
+    def auth(self, username, password):
+        ''' add username/password for basic authentication '''
+        auth = '%s:%s' % (username, password)
+        auth = base64.b64encode(auth.encode('utf-8'))
+        self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+    
+    def __dict__(self):
+        ''' return headers dictionary '''
+        return self.__headers
 
 class Response(object):
     
