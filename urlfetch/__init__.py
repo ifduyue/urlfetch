@@ -243,7 +243,7 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
 def request(url, method="GET", data=None, headers={},
             timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+            randua=True, files={}, auth=None, prefetch=True):
     ''' request a url
 
     Args:
@@ -267,8 +267,6 @@ def request(url, method="GET", data=None, headers={},
 
         prefetch (bool): True for prefetching response body
 
-        host (string): To specify the host, useful when the domain can resolve to many IPs
-
     Returns:
         response object
 
@@ -286,14 +284,12 @@ def request(url, method="GET", data=None, headers={},
     # do not add fragment
     #if fragment: requrl += '#' + fragment
     
-
+    # handle 'Host'
     if ':' in netloc:
-        _host, port = netloc.rsplit(':', 1)
+        host, port = netloc.rsplit(':', 1)
         port = int(port)
     else:
-        _host, port = netloc, None
-    if host is None:
-        host = _host
+        host, port = netloc, None
     
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
@@ -305,7 +301,6 @@ def request(url, method="GET", data=None, headers={},
     reqheaders = {
         'Accept': '*/*',
         'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
-        'Host': _host,
     }
 
     if auth is not None: 
