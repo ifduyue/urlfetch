@@ -1,4 +1,4 @@
-#coding: utf8
+# coding: utf8
 #
 #    urlfetch 
 #    ~~~~~~~~
@@ -252,7 +252,7 @@ def request(url, method="GET", data=None, headers={},
     Kwargs:
         method (str): The request method, 'GET', 'POST', 'HEAD', 'PUT' OR 'DELETE'
                       
-        data (dict/str):  The post data, it can be dict or string
+        data (dict/str):  The data, it can be dict or string, used for POST or PUT requests
 
         headers (dict):   The request headers
 
