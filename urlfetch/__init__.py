@@ -145,7 +145,13 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
+
+class Headers(object):
+    ''' Headers
     
+    to simplify fetch() interface, class Headers helps to manipulate parameters
+    '''
+    pass
 
 class Response(object):
     
@@ -168,8 +174,7 @@ class Response(object):
     
         if kwargs.get('prefetch', False):
             self._body = self._r.read()
-            self.close()
-        
+            self.close()        
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
