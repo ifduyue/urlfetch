@@ -175,7 +175,7 @@ class Headers(object):
 class Response(object):
     
     def __init__(self, r, **kwargs):
-        self._r = r
+        self._r = r # httplib.HTTPResponse
         self.msg = r.msg
         self.status = r.status
         self.length = r.length
