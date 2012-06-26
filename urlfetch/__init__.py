@@ -8,6 +8,10 @@
 #    :copyright: (c) 2011  Elyes Du.
 #    :license: BSD, see LICENSE for more details.
 #
+#   TODO: sometimes encoding format coming from server in wrong format, make mapping known errors
+#   TODO: add limitation of max content length to avoid memory leaks
+#   TODO: handling exceptions for h.request/h.response
+#   TODO: add support of chunked transfer encoding http://en.wikipedia.org/wiki/Chunked_transfer_encoding
 
 __version__ = '0.3.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
