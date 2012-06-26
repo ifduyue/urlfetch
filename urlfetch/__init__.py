@@ -203,7 +203,7 @@ class Response(object):
         
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+            randua=True, files={}, auth=None, prefetch=True):
     ''' fetch url
 
     Args:
@@ -224,9 +224,6 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
         auth (tuple): (username, password) for basic authentication
 
         prefetch (bool): True for prefetching response body
-
-        host (string): To specify the host, useful when the domain can resolve to many IPs
-
 
     Returns:
         response object
@@ -290,6 +287,7 @@ def request(url, method="GET", data=None, headers={},
         port = int(port)
     else:
         host, port = netloc, None
+    host = host.encode('idna').decode('utf-8')
     
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
