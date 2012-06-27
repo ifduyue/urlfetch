@@ -185,6 +185,10 @@ class Headers(object):
         auth = '%s:%s' % (username, password)
         auth = base64.b64encode(auth.encode('utf-8'))
         self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+
+    def put(self, k, v):
+        ''' add new parameter to headers '''
+        self.__headers[k.title()] = v
     
     def items(self):
         ''' return headers dictionary '''
