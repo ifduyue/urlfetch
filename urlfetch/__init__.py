@@ -267,6 +267,10 @@ class Response(object):
             self.length_limit = int(kwargs.get('length_limit'))
         except:
             self.length_limit = None
+            
+        if self.length_limit and int(self.getheader('Content-Length'), 0) > self.length_limit:
+            self.close()
+            raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
 
 
     def _download_content(self, chunk_size = 10 * 1024):
