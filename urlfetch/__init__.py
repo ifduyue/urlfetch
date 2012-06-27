@@ -170,7 +170,7 @@ class Response(object):
         >>> 
         >>> response.status, response.reason, response.version
         (200, 'OK', 10)
-        >>> type(response.body), len(response.text)
+        >>> type(response.body), len(response.body)
         (<type 'str'>, 8719)
         >>> type(response.text), len(response.text)
         (<type 'unicode'>, 8719
