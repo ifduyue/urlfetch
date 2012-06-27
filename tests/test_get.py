@@ -10,21 +10,21 @@ import socket
 class GetTest(unittest.TestCase):
 
     def test_fetch(self):
-        r = urlfetch.fetch('http://127.0.0.1:8800/')
+        r = urlfetch.fetch(testlib.test_server_host)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
 
     def test_get(self):
-        r = urlfetch.get('http://127.0.0.1:8800/')
+        r = urlfetch.get(testlib.test_server_host)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
         
     def test_fragment(self):
-        r = urlfetch.get('http://127.0.0.1:8800/#urlfetch')
+        r = urlfetch.get(testlib.test_server_host + '#urlfetch')
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -34,7 +34,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
         
-        r = urlfetch.get('http://127.0.0.1:8800/?'+ query_string)
+        r = urlfetch.get(testlib.test_server_host + '?'+ query_string)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -46,7 +46,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
         
-        r = urlfetch.get('http://127.0.0.1:8800/?'+ query_string + '#urlfetch')
+        r = urlfetch.get(testlib.test_server_host + '?'+ query_string + '#urlfetch')
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -55,14 +55,14 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_basic_auth(self):
-        r = urlfetch.get('http://127.0.0.1:8800/basic_auth', auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth', auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
         
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
         
     def test_fragment_basic_auth(self):
-        r = urlfetch.get('http://127.0.0.1:8800/basic_auth#urlfetch', auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
         
         self.assertEqual(r.status, 200)
@@ -73,7 +73,7 @@ class GetTest(unittest.TestCase):
         query_string = urlfetch.urlencode(qs)
         
         r = urlfetch.get(
-                'http://127.0.0.1:8800/basic_auth?'+ query_string, 
+                testlib.test_server_host + 'basic_auth?'+ query_string, 
                 auth=('urlfetch', 'fetchurl'),
             )
         o = json.loads(r.text)
@@ -88,7 +88,7 @@ class GetTest(unittest.TestCase):
         query_string = urlfetch.urlencode(qs)
         
         r = urlfetch.get(
-                'http://127.0.0.1:8800/basic_auth?'+ query_string + '#urlfetch', 
+                testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', 
                 auth=('urlfetch', 'fetchurl'),
             )
         o = json.loads(r.text)
@@ -100,7 +100,7 @@ class GetTest(unittest.TestCase):
 
     def test_timeout(self):
         with self.assertRaises(socket.timeout) as tm:
-            r = urlfetch.get('http://127.0.0.1:8800/sleep/1', timeout=0.5)
+            r = urlfetch.get(testlib.test_server_host + 'sleep/1', timeout=0.5)
 
 
 if __name__ == '__main__':

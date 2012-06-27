@@ -13,7 +13,7 @@ class PostTest(unittest.TestCase):
         d = testlib.randdict()
         data = urlfetch.urlencode(d)
 
-        r = urlfetch.fetch('http://127.0.0.1:8800/', data=data)
+        r = urlfetch.fetch(testlib.test_server_host, data=data)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -24,7 +24,7 @@ class PostTest(unittest.TestCase):
         d = testlib.randdict()
         data = urlfetch.urlencode(d)
 
-        r = urlfetch.post('http://127.0.0.1:8800/', data=data)
+        r = urlfetch.post(testlib.test_server_host, data=data)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -38,7 +38,7 @@ class PostTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.post('http://127.0.0.1:8800/?'+query_string, data=data)
+        r = urlfetch.post(testlib.test_server_host + '?'+query_string, data=data)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -56,7 +56,7 @@ class PostTest(unittest.TestCase):
         files['test.file4'] = (b'test.file4', b'wangtwo', content)
 
         r = urlfetch.post(
-                'http://127.0.0.1:8800/',
+                testlib.test_server_host,
                 files = {
                     'test.file1' : open('test.file'),
                     #'test.file2' : content,
@@ -80,7 +80,7 @@ class PostTest(unittest.TestCase):
         files = {'test.file': (b'test.file', b'test.file', content)}
 
         r = urlfetch.post(
-                'http://127.0.0.1:8800/',
+                testlib.test_server_host,
                 files = {
                     'test.file' : ('test.file', content),
                 },
@@ -99,7 +99,7 @@ class PostTest(unittest.TestCase):
         files = {'test.file': (b'test.file', b'test.file', content)}
 
         r = urlfetch.post(
-                'http://127.0.0.1:8800/',
+                testlib.test_server_host,
                 files = {
                     'test.file' : ('test.file', content),
                 },
