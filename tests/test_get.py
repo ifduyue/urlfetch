@@ -55,14 +55,18 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_basic_auth(self):
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth', auth=('urlfetch', 'fetchurl'))
+        h = urlfetch.Headers()
+        h.basic_auth('urlfetch', 'fetchurl')
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth', headers=h.items())
         o = json.loads(r.text)
         
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
         
     def test_fragment_basic_auth(self):
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', auth=('urlfetch', 'fetchurl'))
+        h = urlfetch.Headers()
+        h.basic_auth('urlfetch', 'fetchurl')
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', headers=h.items())
         o = json.loads(r.text)
         
         self.assertEqual(r.status, 200)
@@ -72,10 +76,9 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
         
-        r = urlfetch.get(
-                testlib.test_server_host + 'basic_auth?'+ query_string, 
-                auth=('urlfetch', 'fetchurl'),
-            )
+        h = urlfetch.Headers()
+        h.basic_auth('urlfetch', 'fetchurl')
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string, headers=h.items())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -87,10 +90,9 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
         
-        r = urlfetch.get(
-                testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', 
-                auth=('urlfetch', 'fetchurl'),
-            )
+        h = urlfetch.Headers()
+        h.basic_auth('urlfetch', 'fetchurl')
+        r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', headers=h.items())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)

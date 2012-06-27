@@ -10,6 +10,11 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for details.
 '''
 
+#   TODO: sometimes encoding format coming from server in wrong format, make mapping known errors
+#   TODO: add limitation of max content length to avoid memory leaks
+#   TODO: handling exceptions for h.request/h.response
+#   TODO: add support of chunked transfer encoding http://en.wikipedia.org/wiki/Chunked_transfer_encoding
+
 __version__ = '0.3.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
@@ -51,7 +56,7 @@ writer = codecs.lookup('utf-8')[3]
 __all__ = [
     'sc2cs', 'fetch', 'request', 
     'get', 'head', 'put', 'post', 'delete', 'options',
-    'UrlfetchException',
+    'Headers', 'UrlfetchException',
 ] 
 
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
@@ -158,7 +163,32 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
+
+class Headers(object):
+    ''' Headers
     
+    to simplify fetch() interface, class Headers helps to manipulate parameters
+    '''
+    def __init__(self):
+        ''' make default headers '''
+        self.__headers = {
+            'Accept': '*/*',
+            'User-Agent':  'urlfetch/' + __version__,
+        }
+    
+    def random_user_agent(self):
+        ''' generate random User-Agent string from uas.py collection '''
+        self.__headers['User-Agent'] = uas.randua()
+    
+    def basic_auth(self, username, password):
+        ''' add username/password for basic authentication '''
+        auth = '%s:%s' % (username, password)
+        auth = base64.b64encode(auth.encode('utf-8'))
+        self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+    
+    def items(self):
+        ''' return headers dictionary '''
+        return self.__headers
 
 class Response(object):
     '''A Response object.
@@ -208,7 +238,7 @@ class Response(object):
     '''
     
     def __init__(self, r, **kwargs):
-        self._r = r
+        self._r = r # httplib.HTTPResponse
         self.msg = r.msg
         
         #: Status code returned by server.
@@ -295,8 +325,7 @@ class Response(object):
         self.close()
         
 
-def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={}, prefetch=True):
     ''' fetch an URL.
     
     :param url: URL to be fetched.
@@ -305,16 +334,10 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     :type headers: dict, optional
     :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
     :type timeout: integer or float, optional
-    :param randua: if ``True``, automatically fill in an User-Agent HTTP request header
-    :type randua: bool, optional
     :param files: files to be sended
     :type files: dict, optional
-    :param auth: basic auth (username, password)
-    :type auth: tuple, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :meth:`urlfetch.Response.body`
     :type prefetch: bool, optional, default is ``True``
-    :param host: specify the IP address for the host, then urlfetch will connect to it
-    :type host: string, optional
     :rtype: A :class:`~urlfetch.Response` object
     
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
@@ -327,9 +350,10 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
         return post(**local)
     return get(**local)
 
-def request(url, method="GET", data=None, headers={},
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            randua=True, files={}, auth=None, prefetch=True, host=None):
+
+def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+            files={}, prefetch=True):
+            
     ''' request an URL
     
     :param url: URL to be fetched.
@@ -340,16 +364,10 @@ def request(url, method="GET", data=None, headers={},
     :type headers: dict, optional
     :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
     :type timeout: integer or float, optional
-    :param randua: if ``True``, automatically fill in an User-Agent HTTP request header
-    :type randua: bool, optional
     :param files: files to be sended
     :type files: dict, optional
-    :param auth: basic auth (username, password)
-    :type auth: tuple, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :class:`~urlfetch.Response`.body
     :type prefetch: bool, optional, default is ``True``
-    :param host: specify the IP address for the host, then urlfetch will connect to it
-    :type host: string, optional
     :rtype: A :class:`~urlfetch.Response` object
     '''
 
@@ -363,14 +381,13 @@ def request(url, method="GET", data=None, headers={},
     # do not add fragment
     #if fragment: requrl += '#' + fragment
     
-
+    # handle 'Host'
     if ':' in netloc:
-        _host, port = netloc.rsplit(':', 1)
+        host, port = netloc.rsplit(':', 1)
         port = int(port)
     else:
-        _host, port = netloc, None
-    if host is None:
-        host = _host
+        host, port = netloc, None
+    host = host.encode('idna').decode('utf-8')
     
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
@@ -379,18 +396,9 @@ def request(url, method="GET", data=None, headers={},
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
-    reqheaders = {
-        'Accept': '*/*',
-        'User-Agent': uas.randua() if randua else 'urlfetch/' + __version__,
-        'Host': _host,
-    }
-
-    if auth is not None: 
-        if isinstance(auth, (list, tuple)):
-            auth = '%s:%s' % tuple(auth)
-        auth = base64.b64encode(auth.encode('utf-8'))
-        reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
-
+    # default request headers
+    reqheaders = Headers().items()
+    
     if files:
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
