@@ -160,13 +160,9 @@ Reference
    :synopsis: HTTP Client
 .. moduleauthor:: Elyes Du <lyxint@gmail.com>
 
+.. autoclass:: Response
+
 .. autofunction:: fetch
-
-.. note::
-
-    You can use get, post, head, put, delete in a convenience way.
-    
-    fetch is equavalent to post if data is specified else get.
 
 .. autofunction:: request
 
