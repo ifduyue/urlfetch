@@ -13,7 +13,6 @@ An easy to use HTTP client based on httplib.
 #   TODO: sometimes encoding format coming from server in wrong format, make mapping known errors
 #   TODO: add limitation of max content length to avoid memory leaks
 #   TODO: handling exceptions for h.request/h.response
-#   TODO: add support of chunked transfer encoding http://en.wikipedia.org/wiki/Chunked_transfer_encoding
 
 __version__ = '0.3.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
