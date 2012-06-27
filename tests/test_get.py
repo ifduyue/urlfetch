@@ -56,7 +56,7 @@ class GetTest(unittest.TestCase):
 
     def test_basic_auth(self):
         h = urlfetch.Headers()
-        h.auth('urlfetch', 'fetchurl')
+        h.basic_auth('urlfetch', 'fetchurl')
         r = urlfetch.get(testlib.test_server_host + 'basic_auth', headers=h.items())
         o = json.loads(r.text)
         
@@ -65,7 +65,7 @@ class GetTest(unittest.TestCase):
         
     def test_fragment_basic_auth(self):
         h = urlfetch.Headers()
-        h.auth('urlfetch', 'fetchurl')
+        h.basic_auth('urlfetch', 'fetchurl')
         r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', headers=h.items())
         o = json.loads(r.text)
         
@@ -77,7 +77,7 @@ class GetTest(unittest.TestCase):
         query_string = urlfetch.urlencode(qs)
         
         h = urlfetch.Headers()
-        h.auth('urlfetch', 'fetchurl')
+        h.basic_auth('urlfetch', 'fetchurl')
         r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string, headers=h.items())
         o = json.loads(r.text)
 
@@ -91,7 +91,7 @@ class GetTest(unittest.TestCase):
         query_string = urlfetch.urlencode(qs)
         
         h = urlfetch.Headers()
-        h.auth('urlfetch', 'fetchurl')
+        h.basic_auth('urlfetch', 'fetchurl')
         r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', headers=h.items())
         o = json.loads(r.text)
 
