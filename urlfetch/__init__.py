@@ -264,8 +264,33 @@ class Response(object):
             setattr(self, k, kwargs[k])
     
         if kwargs.get('prefetch', False):
-            self._body = self._r.read()
+            self._body = self._download_content()
             self.close()
+
+    def _download_content(self, chunk_size = 10 * 1024, length_limit=None):
+        ''' download content if chunked
+        
+        chunk_size: size of chunk, default: 10 * 1024
+        length_limit: if content (length) size is more than length_limit -> skip
+        '''
+        content = None
+        if self.getheader('Transfer-Encoding', 'chunked'):
+            while True:
+                chunk = self._r.read(chunk_size)
+                if not chunk:
+                    break
+                if content:
+                    content += chunk
+                else:
+                    content = chunk
+                if length_limit and len(content) > length_limit:
+                    raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+        else:
+            try:
+                content = self._r.read()
+            except socket.timeout:
+                raise UrlfetchException("Connection timeout")
+        return content
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
@@ -278,7 +303,7 @@ class Response(object):
         '''Response body.'''
         
         if self._body is None:
-            self._body = self._r.read()
+            self._body = self._download_content()
         return self._body
     
     @property
