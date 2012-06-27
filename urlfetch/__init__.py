@@ -1,13 +1,14 @@
 #coding: utf8
-#
-#    urlfetch 
-#    ~~~~~~~~
-#
-#    An easy to use HTTP client based on httplib.
-#
-#    :copyright: (c) 2011  Elyes Du.
-#    :license: BSD, see LICENSE for more details.
-#
+
+'''
+urlfetch 
+~~~~~~~~~~
+
+An easy to use HTTP client based on httplib.
+
+:copyright: (c) 2011-2012  Elyes Du.
+:license: BSD 2-clause License, see LICENSE for details.
+'''
 
 __version__ = '0.3.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
@@ -58,17 +59,15 @@ _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", 
 class UrlfetchException(Exception): pass
 
 def sc2cs(sc):
-    '''convert response.getheader('set-cookie') to cookie string
+    '''Convert Set-Cookie header to cookie string.
     
-    Args:
-        sc (str): The Set-Cookie string
-        you can get it from::
-
-            >>> sc = response.getheader('Set-Cookie')
+    Set-Cookie can be retrieved from a :class:`~urlfetch.Response` instance::
     
-    Returns:
-        str. cookie string, name=value pairs, joined by `'; '`
-     
+        sc = response.getheader('Set-Cookie')
+    
+    :param sc: Set-Cookie
+    :type sc: string
+    :rtype: cookie string, which is name=value pairs joined by ``\;``.
     '''
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
@@ -77,6 +76,11 @@ def sc2cs(sc):
 
 _boundary_prefix = None
 def choose_boundary():
+    '''Generate a multipart boundry.
+    
+    :rtype: string
+    '''
+    
     global _boundary_prefix
     if _boundary_prefix is None:
         _boundary_prefix = "urlfetch"
@@ -93,6 +97,15 @@ def choose_boundary():
     return "(*^__^*)%s.%s" % (_boundary_prefix, uuid.uuid4().hex)
 
 def _encode_multipart(data, files):
+    '''Encode multipart.
+    
+    :param data: data to be encoded
+    :type data: dict
+    :param files: files to be encoded
+    :type files: dict
+    :rtype: encoded binary string
+    '''
+    
     body = BytesIO()
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
@@ -148,13 +161,63 @@ def _encode_multipart(data, files):
     
 
 class Response(object):
+    '''A Response object.
+    
+    ::
+        
+        >>> import urlfetch
+        >>> response = urlfetch.get("http://docs.python.org/")
+        >>> 
+        >>> response.status, response.reason, response.version
+        (200, 'OK', 10)
+        >>> type(response.body), len(response.text)
+        (<type 'str'>, 8719)
+        >>> type(response.text), len(response.text)
+        (<type 'unicode'>, 8719
+        >>> response.getheader('server')
+        'Apache/2.2.16 (Debian)'
+        >>> response.getheaders()
+        [
+            ('content-length', '8719'),
+            ('x-cache', 'MISS from localhost'),
+            ('accept-ranges', 'bytes'),
+            ('vary', 'Accept-Encoding'),
+            ('server', 'Apache/2.2.16 (Debian)'),
+            ('last-modified', 'Tue, 26 Jun 2012 19:23:18 GMT'),
+            ('connection', 'close'),
+            ('etag', '"13cc5e4-220f-4c36507ded580"'),
+            ('date', 'Wed, 27 Jun 2012 06:50:30 GMT'),
+            ('content-type', 'text/html'),
+            ('x-cache-lookup', 'MISS from localhost:8080')
+        ]
+        >>> response.headers
+        {
+            'content-length': '8719',
+            'x-cache': 'MISS from localhost',
+            'accept-ranges': 'bytes',
+            'vary': 'Accept-Encoding',
+            'server': 'Apache/2.2.16 (Debian)',
+            'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
+            'connection': 'close',
+            'etag': '"13cc5e4-220f-4c36507ded580"',
+            'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
+            'content-type': 'text/html',
+            'x-cache-lookup': 'MISS from localhost:8080'
+        }
+
+    '''
     
     def __init__(self, r, **kwargs):
         self._r = r
         self.msg = r.msg
+        
+        #: Status code returned by server.
         self.status = r.status
-        self.length = r.length
+        
+        #: Reason phrase returned by server.
         self.reason = r.reason
+        
+        #: HTTP protocol version used by server. 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
         self._body = None
         self._headers = None
@@ -170,25 +233,55 @@ class Response(object):
             self._body = self._r.read()
             self.close()
         
-        
     @classmethod
     def from_httplib(cls, r, **kwargs):
+        '''Generate a :class:`~urlfetch.Response` object from an httplib response object.'''
+        
         return cls(r, **kwargs)
         
     @property
     def body(self):
+        '''Response body.'''
+        
         if self._body is None:
             self._body = self._r.read()
         return self._body
     
     @property
     def text(self):
+        '''Response body in unicode.'''
+        
         if self._text is None:
             self._text = util.mb_code(self.body)
         return self._text
     
     @property
     def headers(self):
+        '''Response headers.
+        
+        Response headers is a dict with all keys in lower case.
+        
+        ::
+        
+            >>> import urlfetch
+            >>> response = urlfetch.get("http://docs.python.org/")
+            >>> response.headers
+            {
+                'content-length': '8719',
+                'x-cache': 'MISS from localhost',
+                'accept-ranges': 'bytes',
+                'vary': 'Accept-Encoding',
+                'server': 'Apache/2.2.16 (Debian)',
+                'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
+                'connection': 'close',
+                'etag': '"13cc5e4-220f-4c36507ded580"',
+                'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
+                'content-type': 'text/html',
+                'x-cache-lookup': 'MISS from localhost:8080'
+            }
+        
+        '''
+        
         if self._headers is None:
             self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
         return self._headers
@@ -204,76 +297,60 @@ class Response(object):
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
             randua=True, files={}, auth=None, prefetch=True, host=None):
-    ''' fetch url
-
-    Args:
-        url (str): url to fetch
-
-    Kwargs:
-        data (dict/str):  The post data, it can be dict or string
-
-        headers (dict):   The request headers
-
-        timeout (double): The timeout
-
-        randua (bool): Use random User-Agent when this is True
-
-        files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
-                      fileobj can be a file descriptor open for read or simply string
-
-        auth (tuple): (username, password) for basic authentication
-
-        prefetch (bool): True for prefetching response body
-
-        host (string): To specify the host, useful when the domain can resolve to many IPs
-
-
-    Returns:
-        response object
-
-    .. note::
-        Default headers: {'Accept': '\*/\*'}
+    ''' fetch an URL.
+    
+    :param url: URL to be fetched.
+    :type url: string
+    :param headers: HTTP request headers
+    :type headers: dict, optional
+    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
+    :type timeout: integer or float, optional
+    :param randua: if ``True``, automatically fill in an User-Agent HTTP request header
+    :type randua: bool, optional
+    :param files: files to be sended
+    :type files: dict, optional
+    :param auth: basic auth (username, password)
+    :type auth: tuple, optional
+    :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :meth:`urlfetch.Response.body`
+    :type prefetch: bool, optional, default is ``True``
+    :param host: specify the IP address for the host, then urlfetch will connect to it
+    :type host: string, optional
+    :rtype: A :class:`~urlfetch.Response` object
+    
+    :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
+    It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
+    or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     '''
+    
     local = locals()
     if data is not None and isinstance(data, (basestring, dict)):
         return post(**local)
     return get(**local)
 
-
-
 def request(url, method="GET", data=None, headers={},
             timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
             randua=True, files={}, auth=None, prefetch=True, host=None):
-    ''' request a url
-
-    Args:
-        url (str): url to fetch
-
-    Kwargs:
-        method (str): The request method, 'GET', 'POST', 'HEAD', 'PUT' OR 'DELETE'
-                      
-        data (dict/str):  The post data, it can be dict or string
-
-        headers (dict):   The request headers
-
-        timeout (double): The timeout
-
-        randua (bool): Use random User-Agent when this is True
-
-        files (dict): key is field name, value is (filename, fileobj) OR simply fileobj.
-                      fileobj can be a file descriptor open for read or simply string
-
-        auth (tuple): (username, password) for basic authentication
-
-        prefetch (bool): True for prefetching response body
-
-        host (string): To specify the host, useful when the domain can resolve to many IPs
-
-    Returns:
-        response object
-
-    .. note::
-        Default headers: {'Accept': '\*/\*'}
+    ''' request an URL
+    
+    :param url: URL to be fetched.
+    :type url: string
+    :param method: HTTP method, one of ``GET``, ``DELETE``, ``HEAD``, ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``. ``GET`` by default.
+    :type method: string, optional
+    :param headers: HTTP request headers
+    :type headers: dict, optional
+    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
+    :type timeout: integer or float, optional
+    :param randua: if ``True``, automatically fill in an User-Agent HTTP request header
+    :type randua: bool, optional
+    :param files: files to be sended
+    :type files: dict, optional
+    :param auth: basic auth (username, password)
+    :type auth: tuple, optional
+    :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :class:`~urlfetch.Response`.body
+    :type prefetch: bool, optional, default is ``True``
+    :param host: specify the IP address for the host, then urlfetch will connect to it
+    :type host: string, optional
+    :rtype: A :class:`~urlfetch.Response` object
     '''
 
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
