@@ -266,11 +266,17 @@ class Response(object):
             self._body = self._download_content()
             self.close()
 
-    def _download_content(self, chunk_size = 10 * 1024, length_limit=None):
+        # length_limit: if content (length) size is more than length_limit -> skip
+        try:
+            self.length_limit = int(kwargs.get('length_limit'))
+        except:
+            self.length_limit = None
+
+
+    def _download_content(self, chunk_size = 10 * 1024):
         ''' download content if chunked
         
         chunk_size: size of chunk, default: 10 * 1024
-        length_limit: if content (length) size is more than length_limit -> skip
         '''
         content = None
         if self.getheader('Transfer-Encoding', 'chunked'):
@@ -282,7 +288,7 @@ class Response(object):
                     content += chunk
                 else:
                     content = chunk
-                if length_limit and len(content) > length_limit:
+                if self.length_limit and len(content) > self.length_limit:
                     raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
         else:
             try:
@@ -353,7 +359,7 @@ class Response(object):
         self.close()
         
 
-def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={}, prefetch=True):
+def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={}, prefetch=True, length_limit=None):
     ''' fetch an URL.
     
     :param url: URL to be fetched.
@@ -366,6 +372,8 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, fi
     :type files: dict, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :meth:`urlfetch.Response.body`
     :type prefetch: bool, optional, default is ``True``
+    :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
+    :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
     
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
@@ -380,7 +388,7 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, fi
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            files={}, prefetch=True):
+            files={}, prefetch=True, length_limit=None):
             
     ''' request an URL
     
@@ -396,6 +404,8 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     :type files: dict, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :class:`~urlfetch.Response`.body
     :type prefetch: bool, optional, default is ``True``
+    :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
+    :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
     '''
 
@@ -444,7 +454,7 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
-    return Response.from_httplib(response, prefetch=prefetch, reqheaders=reqheaders, connection=h)
+    return Response.from_httplib(response, prefetch=prefetch, reqheaders=reqheaders, connection=h, length_limit=length_limit)
 
 # some shortcuts
 get = partial(request, method="GET")
