@@ -1,5 +1,4 @@
 - sometimes encoding format coming from server in wrong format, make mapping known errors
-- add limitation of max content length to avoid memory leaks
 - handling exceptions for h.request/h.response
 - HTTP proxy support
 - working in Pool
