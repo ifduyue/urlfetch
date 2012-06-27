@@ -60,19 +60,26 @@ except ImportError: # pragma: no cover
 py   = sys.version_info
 py3k = py >= (3,0,0)
 py25 = py <  (2,6,0)
+py31 = (3,1,0) <= py < (3,2,0)
 
 # Workaround for the missing "as" keyword in py3k.
 def _e(): return sys.exc_info()[1]
 
-# Workaround for the "print is a keyword/function" dilemma.
-_stdout, _stderr = sys.stdout.write, sys.stderr.write
+# Workaround for the "print is a keyword/function" Python 2/3 dilemma
+# and a fallback for mod_wsgi (resticts stdout/err attribute access)
+try:
+    _stdout, _stderr = sys.stdout.write, sys.stderr.write
+except IOError:
+    _stdout = lambda x: sys.stdout.write(x)
+    _stderr = lambda x: sys.stderr.write(x)
 
 # Lots of stdlib and builtin differences.
 if py3k:
     import http.client as httplib
     import _thread as thread
-    from urllib.parse import urljoin, parse_qsl, SplitResult as UrlSplitResult
+    from urllib.parse import urljoin, SplitResult as UrlSplitResult
     from urllib.parse import urlencode, quote as urlquote, unquote as urlunquote
+    urlunquote = functools.partial(urlunquote, encoding='latin1')
     from http.cookies import SimpleCookie
     from collections import MutableMapping as DictMixin
     import pickle
@@ -94,12 +101,10 @@ else: # 2.x
     if py25:
         msg = "Python 2.5 support may be dropped in future versions of Bottle."
         warnings.warn(msg, DeprecationWarning)
-        from cgi import parse_qsl
         from UserDict import DictMixin
         def next(it): return it.next()
         bytes = str
     else: # 2.6, 2.7
-        from urlparse import parse_qsl
         from collections import MutableMapping as DictMixin
     json_loads = json_lds
 
@@ -112,8 +117,7 @@ tonat = touni if py3k else tob
 
 # 3.2 fixes cgi.FieldStorage to accept bytes (which makes a lot of sense).
 # 3.1 needs a workaround.
-NCTextIOWrapper = None
-if (3,0,0) < py < (3,2,0):
+if py31:
     from io import TextIOWrapper
     class NCTextIOWrapper(TextIOWrapper):
         def close(self): pass # Keep wrapped buffer open.
@@ -534,7 +538,7 @@ class Bottle(object):
     """
 
     def __init__(self, catchall=True, autojson=True):
-        #: If true, most exceptions are catched and returned as :exc:`HTTPError`
+        #: If true, most exceptions are caught and returned as :exc:`HTTPError`
         self.catchall = catchall
 
         #: A :cls:`ResourceManager` for application files
@@ -573,14 +577,11 @@ class Bottle(object):
             prefix, app = app, prefix
             depr('Parameter order of Bottle.mount() changed.') # 0.10
 
-        parts = [p for p in prefix.split('/') if p]
-        if not parts: raise ValueError('Empty path prefix.')
-        path_depth = len(parts)
-        options.setdefault('skip', True)
-        options.setdefault('method', 'ANY')
+        segments = [p for p in prefix.split('/') if p]
+        if not segments: raise ValueError('Empty path prefix.')
+        path_depth = len(segments)
 
-        @self.route('/%s/:#.*#' % '/'.join(parts), **options)
-        def mountpoint():
+        def mountpoint_wrapper():
             try:
                 request.path_shift(path_depth)
                 rs = BaseResponse([], 200)
@@ -588,16 +589,23 @@ class Bottle(object):
                     rs.status = status
                     for name, value in header: rs.add_header(name, value)
                     return rs.body.append
-                rs.body = itertools.chain(rs.body, app(request.environ, start_response))
-                return HTTPResponse(rs.body, rs.status_code, rs.headers)
+                body = app(request.environ, start_response)
+                body = itertools.chain(rs.body, body)
+                return HTTPResponse(body, rs.status_code, rs.headers)
             finally:
                 request.path_shift(-path_depth)
 
+        options.setdefault('skip', True)
+        options.setdefault('method', 'ANY')
+        options.setdefault('mountpoint', {'prefix': prefix, 'target': app})
+        options['callback'] = mountpoint_wrapper
+
+        self.route('/%s/<:re:.*>' % '/'.join(segments), **options)
         if not prefix.endswith('/'):
-            self.route('/' + '/'.join(parts), callback=mountpoint, **options)
+            self.route('/' + '/'.join(segments), **options)
 
     def merge(self, routes):
-        ''' Merge the routes of another :cls:`Bottle` application or a list of
+        ''' Merge the routes of another :class:`Bottle` application or a list of
             :class:`Route` objects into this application. The routes keep their
             'owner', meaning that the :data:`Route.app` attribute is not
             changed. '''
@@ -754,8 +762,8 @@ class Bottle(object):
 
     def handle(self, path, method='GET'):
         """ (deprecated) Execute the first matching route callback and return
-            the result. :exc:`HTTPResponse` exceptions are catched and returned.
-            If :attr:`Bottle.catchall` is true, other exceptions are catched as
+            the result. :exc:`HTTPResponse` exceptions are caught and returned.
+            If :attr:`Bottle.catchall` is true, other exceptions are caught as
             well and returned as :exc:`HTTPError` instances (500).
         """
         depr("This method will change semantics in 0.10. Try to avoid it.")
@@ -781,7 +789,7 @@ class Bottle(object):
             raise
         except Exception:
             if not self.catchall: raise
-            stacktrace = format_exc(10)
+            stacktrace = format_exc()
             environ['wsgi.errors'].write(stacktrace)
             return HTTPError(500, "Internal Server Error", _e(), stacktrace)
 
@@ -840,7 +848,7 @@ class Bottle(object):
             raise
         except Exception:
             if not self.catchall: raise
-            first = HTTPError(500, 'Unhandled exception', _e(), format_exc(10))
+            first = HTTPError(500, 'Unhandled exception', _e(), format_exc())
 
         # These are the inner types allowed in iterator or generator objects.
         if isinstance(first, HTTPResponse):
@@ -875,7 +883,7 @@ class Bottle(object):
             if DEBUG:
                 err += '<h2>Error:</h2>\n<pre>\n%s\n</pre>\n' \
                        '<h2>Traceback:</h2>\n<pre>\n%s\n</pre>\n' \
-                       % (html_escape(repr(_e())), html_escape(format_exc(10)))
+                       % (html_escape(repr(_e())), html_escape(format_exc()))
             environ['wsgi.errors'].write(err)
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
             start_response('500 INTERNAL SERVER ERROR', headers)
@@ -969,8 +977,8 @@ class BaseRequest(object):
             values are sometimes called "URL arguments" or "GET parameters", but
             not to be confused with "URL wildcards" as they are provided by the
             :class:`Router`. '''
-        pairs = parse_qsl(self.query_string, keep_blank_values=True)
         get = self.environ['bottle.get'] = FormsDict()
+        pairs = _parse_qsl(self.environ.get('QUERY_STRING', ''))
         for key, value in pairs[:self.MAX_PARAMS]:
             get[key] = value
         return get
@@ -1066,14 +1074,25 @@ class BaseRequest(object):
             instances of :class:`cgi.FieldStorage` (file uploads).
         """
         post = FormsDict()
+        # We default to application/x-www-form-urlencoded for everything that
+        # is not multipart and take the fast path (also: 3.1 workaround)
+        if not self.content_type.startswith('multipart/'):
+            maxlen = max(0, min(self.content_length, self.MEMFILE_MAX))
+            pairs = _parse_qsl(tonat(self.body.read(maxlen), 'latin1'))
+            for key, value in pairs[:self.MAX_PARAMS]:
+                post[key] = value
+            return post
+
         safe_env = {'QUERY_STRING':''} # Build a safe environment for cgi
         for key in ('REQUEST_METHOD', 'CONTENT_TYPE', 'CONTENT_LENGTH'):
             if key in self.environ: safe_env[key] = self.environ[key]
-        if NCTextIOWrapper:
-            fb = NCTextIOWrapper(self.body, encoding='ISO-8859-1', newline='\n')
-        else:
-            fb = self.body
-        data = cgi.FieldStorage(fp=fb, environ=safe_env, keep_blank_values=True)
+        args = dict(fp=self.body, environ=safe_env, keep_blank_values=True)
+        if py31:
+            args['fp'] = NCTextIOWrapper(args['fp'], encoding='ISO-8859-1',
+                                         newline='\n')
+        elif py3k:
+            args['encoding'] = 'ISO-8859-1'
+        data = cgi.FieldStorage(**args)
         for item in (data.list or [])[:self.MAX_PARAMS]:
             post[item.name] = item if item.filename else item.value
         return post
@@ -1146,6 +1165,11 @@ class BaseRequest(object):
             set this header. Otherwise, the real length of the body is unknown
             and -1 is returned. In this case, :attr:`body` will be empty. '''
         return int(self.environ.get('CONTENT_LENGTH') or -1)
+
+    @property
+    def content_type(self):
+        ''' The Content-Type header as a lowercase-string (default: empty). '''
+        return self.environ.get('CONTENT_TYPE', '').lower()
 
     @property
     def is_xhr(self):
@@ -1245,21 +1269,20 @@ def _hkey(s):
 
 class HeaderProperty(object):
     def __init__(self, name, reader=None, writer=str, default=''):
-        self.name, self.reader, self.writer, self.default = name, reader, writer, default
+        self.name, self.default = name, default
+        self.reader, self.writer = reader, writer
         self.__doc__ = 'Current value of the %r header.' % name.title()
 
     def __get__(self, obj, cls):
         if obj is None: return self
-        value = obj.headers.get(self.name)
-        return self.reader(value) if (value and self.reader) else (value or self.default)
+        value = obj.headers.get(self.name, self.default)
+        return self.reader(value) if self.reader else value
 
     def __set__(self, obj, value):
-        if self.writer: value = self.writer(value)
-        obj.headers[self.name] = value
+        obj.headers[self.name] = self.writer(value)
 
     def __delete__(self, obj):
-        if self.name in obj.headers:
-            del obj.headers[self.name]
+        del obj.headers[self.name]
 
 
 class BaseResponse(object):
@@ -1485,10 +1508,16 @@ class BaseResponse(object):
 _lctx = threading.local()
 
 def local_property(name):
-    return property(lambda self: getattr(_lctx, name),
-                    lambda self, value: setattr(_lctx, name, value),
-                    lambda self: delattr(_lctx, name),
-                    'Thread-local property stored in :data:`_lctx.%s`' % name)
+    def fget(self):
+        try:
+            return getattr(_lctx, name)
+        except AttributeError:
+            raise RuntimeError("Request context not initialized.")
+    def fset(self, value): setattr(_lctx, name, value)
+    def fdel(self): delattr(_lctx, name)
+    return property(fget, fset, fdel,
+        'Thread-local property stored in :data:`_lctx.%s`' % name)
+
 
 class LocalRequest(BaseRequest):
     ''' A thread-local subclass of :class:`BaseRequest` with a different
@@ -1765,6 +1794,9 @@ class FormsDict(MultiDict):
             return default
 
     def __getattr__(self, name, default=unicode()):
+        # Without this guard, pickle generates a cryptic TypeError:
+        if name.startswith('__') and name.endswith('__'):
+            return super(FormsDict, self).__getattr__(name)
         return self.getunicode(name, default=default)
 
 
@@ -1908,96 +1940,86 @@ class ResourceManager(object):
     ''' This class manages a list of search paths and helps to find and open
         aplication-bound resources (files).
 
-        :param base: path used to resolve relative search paths. It works as a
-                     default for :meth:`add_path`.
+        :param base: default value for same-named :meth:`add_path` parameter.
         :param opener: callable used to open resources.
         :param cachemode: controls which lookups are cached. One of 'all',
                          'found' or 'none'.
     '''
 
     def __init__(self, base='./', opener=open, cachemode='all'):
-
         self.opener = open
-        self.base = './'
+        self.base = base
         self.cachemode = cachemode
 
         #: A list of search paths. See :meth:`add_path` for details.
         self.path = []
-        #: A list of file masks. See :meth:`add_mask` for details.
-        self.mask = ['%s']
         #: A cache for resolved paths. `res.cache.clear()`` clears the cache.
         self.cache = {}
 
-    def add_path(self, path, base=None, index=None):
-        ''' Add a path to the :attr:`path` list.
+    def add_path(self, path, base=None, index=None, create=False):
+        ''' Add a new path to the list of search paths. Return False if it does
+            not exist.
 
-            The path is turned into an absolute and normalized form. If it
-            looks like a file (not ending in `/`), the filename is stripped
-            off. The path is not required to exist.
+            :param path: The new search path. Relative paths are turned into an
+                absolute and normalized form. If the path looks like a file (not
+                ending in `/`), the filename is stripped off.
+            :param base: Path used to absolutize relative search paths.
+                Defaults to `:attr:base` which defaults to ``./``.
+            :param index: Position within the list of search paths. Defaults to
+                last index (appends to the list).
+            :param create: Create non-existent search paths. Off by default.
 
-            Relative paths are joined with `base` or :attr:`self.base`, which
-            defaults to the current working directory. This comes in handy if
-            you resources live in a sub-folder of your module or package::
-
+            The `base` parameter makes it easy to reference files installed
+            along with a python module or package::
+            
                 res.add_path('./resources/', __file__)
-
-            The :attr:`path` list is searched in order and new paths are
-            added to the end of the list. The *index* parameter can change
-            the position (e.g. ``0`` to prepend). Adding a path a second time
-            moves it to the new position.
         '''
         base = os.path.abspath(os.path.dirname(base or self.base))
         path = os.path.abspath(os.path.join(base, os.path.dirname(path)))
         path += os.sep
         if path in self.path:
             self.path.remove(path)
+        if create and not os.path.isdir(path):
+            os.mkdir(path)
         if index is None:
             self.path.append(path)
         else:
             self.path.insert(index, path)
         self.cache.clear()
 
-    def add_mask(self, mask, index=None):
-        ''' Add a new format string to the :attr:`mask` list.
-
-            Masks are used to turn resource names into actual filenames. The
-            mask string must contain exactly one occurence of ``%s``, which
-            is replaced by the supplied resource name on lookup. This can be
-            used to auto-append file extentions (e.g. ``%s.ext``).
-        '''
-        if index is None:
-            self.masks.append(mask)
-        else:
-            self.masks.insert(index, mask)
-        self.cache.clear()
+    def __iter__(self):
+        ''' Iterate over all existing files in all registered paths. '''
+        search = self.path[:]
+        while search:
+            path = search.pop()
+            if not os.path.isdir(path): continue
+            for name in os.listdir(path):
+                full = os.path.join(path, name)
+                if os.path.isdir(full): search.append(full)
+                else: yield full
 
     def lookup(self, name):
         ''' Search for a resource and return an absolute file path, or `None`.
 
-            The :attr:`path` list is searched in order. For each path, the
-            :attr:`mask` entries are tried in order. The first path that points
-            to an existing file is returned. Symlinks are followed. The result
-            is cached to speed up future lookups. '''
+            The :attr:`path` list is searched in order. The first match is
+            returend. Symlinks are followed. The result is cached to speed up
+            future lookups. '''
         if name not in self.cache or DEBUG:
             for path in self.path:
-                for mask in self.mask:
-                    fpath = os.path.join(path, mask%name)
-                    if os.path.isfile(fpath):
-                        if self.cachemode in ('all', 'found'):
-                            self.cache[name] = fpath
-                        return fpath
+                fpath = os.path.join(path, name)
+                if os.path.isfile(fpath):
+                    if self.cachemode in ('all', 'found'):
+                        self.cache[name] = fpath
+                    return fpath
             if self.cachemode == 'all':
                 self.cache[name] = None
         return self.cache[name]
 
-    def open(self, name, *args, **kwargs):
-        ''' Find a resource and return an opened file object, or raise IOError.
-
-            Additional parameters are passed to the ``open()`` built-in.
-        '''
+    def open(self, name, mode='r', *args, **kwargs):
+        ''' Find a resource and return a file object, or raise IOError. '''
         fname = self.lookup(name)
         if not fname: raise IOError("Resource %r not found." % name)
-        return self.opener(name, *args, **kwargs)
+        return self.opener(name, mode=mode, *args, **kwargs)
 
 
 
@@ -2142,8 +2164,19 @@ def parse_range_header(header, maxlen=0):
         except ValueError:
             pass
 
+def _parse_qsl(qs):
+    r = []
+    for pair in qs.replace(';','&').split('&'):
+        if not pair: continue
+        nv = pair.split('=', 1)
+        if len(nv) != 2: nv.append('')
+        key = urlunquote(nv[0].replace('+', ' '))
+        value = urlunquote(nv[1].replace('+', ' '))
+        r.append((key, value))
+    return r
+
 def _lscmp(a, b):
-    ''' Compares two strings in a cryptographically save way:
+    ''' Compares two strings in a cryptographically safe way:
         Runtime is not affected by length of common prefix. '''
     return not sum(0 if x==y else 1 for x, y in zip(a, b)) and len(a) == len(b)
 

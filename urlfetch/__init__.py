@@ -10,6 +10,11 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for details.
 '''
 
+#   TODO: sometimes encoding format coming from server in wrong format, make mapping known errors
+#   TODO: add limitation of max content length to avoid memory leaks
+#   TODO: handling exceptions for h.request/h.response
+#   TODO: add support of chunked transfer encoding http://en.wikipedia.org/wiki/Chunked_transfer_encoding
+
 __version__ = '0.3.6'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
@@ -233,7 +238,7 @@ class Response(object):
     '''
     
     def __init__(self, r, **kwargs):
-        self._r = r
+        self._r = r # httplib.HTTPResponse
         self.msg = r.msg
         
         #: Status code returned by server.
@@ -333,8 +338,6 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, fi
     :type files: dict, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :meth:`urlfetch.Response.body`
     :type prefetch: bool, optional, default is ``True``
-    :param host: specify the IP address for the host, then urlfetch will connect to it
-    :type host: string, optional
     :rtype: A :class:`~urlfetch.Response` object
     
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
@@ -365,8 +368,6 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     :type files: dict, optional
     :param prefetch: if ``True``, reponse body will be read in automatically, else reponse body will be read in the first you access :class:`~urlfetch.Response`.body
     :type prefetch: bool, optional, default is ``True``
-    :param host: specify the IP address for the host, then urlfetch will connect to it
-    :type host: string, optional
     :rtype: A :class:`~urlfetch.Response` object
     '''
 
