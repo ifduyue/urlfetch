@@ -41,7 +41,7 @@ def normal_formsdict():
 
 app = bottle.app()
 
-@app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+@app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def index():
     return normal_formsdict()
     
@@ -51,12 +51,12 @@ def basic_auth_check(username, password):
         return True
     return False
 
-@app.route('/basic_auth', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+@app.route('/basic_auth', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 @bottle.auth_basic(basic_auth_check)
 def basic_auth():
     return normal_formsdict()
 
-@app.route('/sleep/<seconds:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'])
+@app.route('/sleep/<seconds:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def sleep(seconds):
     import time
     time.sleep(seconds)

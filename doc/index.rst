@@ -23,6 +23,12 @@ OR::
 
     $ easy_install urlfetch -U
 
+OR grab the source from `github lyxint/urlfetch <https://github.com/lyxint/urlfetch>`_::
+    
+    $ git clone git://github.com/lyxint/urlfetch.git
+    $ cd urlfetch
+    $ python setup.py install
+
 Examples
 =========
 .. rubric:: get http://python.org/
