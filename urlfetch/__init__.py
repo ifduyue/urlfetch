@@ -166,7 +166,7 @@ class Headers(object):
         ''' generate random User-Agent string from uas.py collection '''
         self.__headers['User-Agent'] = uas.randua()
     
-    def auth(self, username, password):
+    def basic_auth(self, username, password):
         ''' add username/password for basic authentication '''
         auth = '%s:%s' % (username, password)
         auth = base64.b64encode(auth.encode('utf-8'))
