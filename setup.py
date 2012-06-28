@@ -12,9 +12,7 @@ setup(
     long_description = open('README.rst').read(),
     license = "BSD",
     keywords = "httpclient urlfetch",
-    packages = [
-        'urlfetch',
-    ],
+    py_modules = ['urlfetch'],
     classifiers = [
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
