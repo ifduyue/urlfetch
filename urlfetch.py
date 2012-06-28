@@ -175,9 +175,9 @@ class Headers(object):
             'User-Agent':  'urlfetch/' + __version__,
         }
     
-    def random_user_agent(self):
-        ''' generate random User-Agent string from uas.py collection '''
-        self.__headers['User-Agent'] = uas.randua()
+    def random_user_agent(self, filename):
+        ''' generate random User-Agent string from collection in filename'''
+        self.__headers['User-Agent'] = uas.randua(filename)
     
     def basic_auth(self, username, password):
         ''' add username/password for basic authentication '''
