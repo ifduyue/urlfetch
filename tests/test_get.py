@@ -101,8 +101,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        with self.assertRaises(socket.timeout) as tm:
-            r = urlfetch.get(testlib.test_server_host + 'sleep/1', timeout=0.5)
+        self.assertRaises(socket.timeout, lambda:urlfetch.get(testlib.test_server_host + 'sleep/1', timeout=0.5))
 
 
 if __name__ == '__main__':
