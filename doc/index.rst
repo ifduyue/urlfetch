@@ -188,11 +188,11 @@ Reference
 
 .. autofunction:: patch
 
+helpers
+~~~~~~~~~~~
+
 .. autofunction:: sc2cs
 
-
-
-.. module:: urlfetch.uas
-   :platform: Unix, Windows
-   
 .. autofunction:: randua
+
+.. autofunction:: mb_code
