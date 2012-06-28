@@ -279,7 +279,7 @@ class Response(object):
         
         chunk_size: size of chunk, default: 10 * 1024
         '''
-        content = ""
+        content = b("")
         while True:
             chunk = self._r.read(chunk_size)
 
