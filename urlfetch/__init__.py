@@ -381,8 +381,8 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     local.update(kwargs)
 
     if data is not None and isinstance(data, (basestring, dict)):
-        return post(**local, **kwargs)
-    return get(**local, **kwargs)
+        return post(**local)
+    return get(**local)
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
