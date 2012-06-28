@@ -355,7 +355,8 @@ class Response(object):
         self.close()
         
 
-def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={}, length_limit=None):
+def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
+        files={}, length_limit=None, **kwargs):
     ''' fetch an URL.
     
     :param url: URL to be fetched.
@@ -376,13 +377,16 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, fi
     '''
     
     local = locals()
+    local.pop('kwargs')
+    local.update(kwargs)
+
     if data is not None and isinstance(data, (basestring, dict)):
-        return post(**local)
-    return get(**local)
+        return post(**local, **kwargs)
+    return get(**local, **kwargs)
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            files={}, length_limit=None):
+            files={}, length_limit=None, **kwargs):
             
     ''' request an URL
     
