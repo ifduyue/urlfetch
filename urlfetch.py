@@ -261,7 +261,6 @@ class Response(object):
 
         for k in kwargs:
             setattr(self, k, kwargs[k])
-    
 
         # length_limit: if content (length) size is more than length_limit -> skip
         try:
@@ -273,10 +272,7 @@ class Response(object):
             self.close()
             raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
 
-        
-        self._body = self._download_content()
         self.close()
-
 
     def _download_content(self, chunk_size = 10 * 1024):
         ''' download content if chunked
