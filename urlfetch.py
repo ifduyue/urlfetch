@@ -1,7 +1,7 @@
 #coding: utf8
 
 '''
-urlfetch 
+urlfetch
 ~~~~~~~~~~
 
 An easy to use HTTP client based on httplib.
@@ -14,7 +14,8 @@ __version__ = '0.3.7'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 
-import os, sys
+import os
+import sys
 
 if sys.version_info >= (3, 0):
     py3k = True
@@ -23,24 +24,26 @@ else:
     py3k = False
 
 if py3k:
-    from http.client import HTTPConnection, HTTPSConnection, HTTPException
-    from http.client import HTTP_PORT, HTTPS_PORT
-    from urllib.parse import urlencode, quote as urlquote, quote_plus as urlquote_plus
+    from http.client import HTTPConnection, HTTPSConnection
+    from urllib.parse import urlencode
     import urllib.parse as urlparse
     import http.cookies as Cookie
     basestring = (str, bytes)
+
     def b(s):
         return s.encode('latin-1')
+
     def u(s):
         return s
 else:
-    from httplib import HTTPConnection, HTTPSConnection, HTTPException
-    from httplib import HTTP_PORT, HTTPS_PORT
-    from urllib import urlencode, quote as urlquote, quote_plus as urlquote_plus
+    from httplib import HTTPConnection, HTTPSConnection
+    from urllib import urlencode
     import urlparse
     import Cookie
+
     def b(s):
         return s
+
     def u(s):
         return unicode(s, "unicode_escape")
 
@@ -58,24 +61,28 @@ except ImportError:
 
 
 __all__ = [
-    'fetch', 'request', 
+    'fetch', 'request',
     'get', 'head', 'put', 'post', 'delete', 'options',
     'UrlfetchException',
     'sc2cs', 'random_useragent', 'mb_code',
-] 
+]
 
-_allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
+_allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS",
+                    "PUT", "POST", "TRACE", "PATCH")
 
-class UrlfetchException(Exception): pass
 
+class UrlfetchException(Exception):
+    pass
 
 _boundary_prefix = None
+
+
 def choose_boundary():
     '''Generate a multipart boundry.
-    
+
     :rtype: string
     '''
-    
+
     global _boundary_prefix
     if _boundary_prefix is None:
         _boundary_prefix = "urlfetch"
@@ -83,24 +90,27 @@ def choose_boundary():
         try:
             uid = repr(os.getuid())
             _boundary_prefix += "." + uid
-        except AttributeError: pass
+        except AttributeError:
+            pass
         try:
             pid = repr(os.getpid())
             _boundary_prefix += "." + pid
-        except AttributeError: pass
+        except AttributeError:
+            pass
     import uuid
     return "(*^__^*)%s.%s" % (_boundary_prefix, uuid.uuid4().hex)
 
+
 def _encode_multipart(data, files):
     '''Encode multipart.
-    
+
     :param data: data to be encoded
     :type data: dict
     :param files: files to be encoded
     :type files: dict
     :rtype: encoded binary string
     '''
-    
+
     body = BytesIO()
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
@@ -108,14 +118,14 @@ def _encode_multipart(data, files):
     if isinstance(data, dict):
         for name, value in data.items():
             body.write(part_boundary)
-            writer(body).write('Content-Disposition: form-data; name="%s"\r\n' % name)
+            writer(body).write('Content-Disposition: form-data; '
+                               'name="%s"\r\n' % name)
             body.write(b'Content-Type: text/plain\r\n\r\n')
-            if py3k and isinstance(value, str): 
+            if py3k and isinstance(value, str):
                 writer(body).write(value)
             else:
                 body.write(value)
             body.write(b'\r\n')
-            
 
     for fieldname, f in files.items():
         if isinstance(f, tuple):
@@ -135,10 +145,12 @@ def _encode_multipart(data, files):
 
         body.write(part_boundary)
         if filename:
-            writer(body).write('Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (fieldname, filename))
+            writer(body).write('Content-Disposition: form-data; name="%s"; '
+                               'filename="%s"\r\n' % (fieldname, filename))
             body.write(b'Content-Type: application/octet-stream\r\n\r\n')
         else:
-            writer(body).write('Content-Disposition: form-data; name="%s"\r\n' % name)
+            writer(body).write('Content-Disposition: form-data; name="%s"'
+                               '\r\n' % name)
             body.write(b'Content-Type: text/plain\r\n\r\n')
 
         if py3k and isinstance(value, str):
@@ -154,15 +166,16 @@ def _encode_multipart(data, files):
 
     return content_type, body.getvalue()
 
+
 ## classes ##
 class Response(object):
     '''A Response object.
-    
+
     ::
-        
+
         >>> import urlfetch
         >>> response = urlfetch.get("http://docs.python.org/")
-        >>> 
+        >>>
         >>> response.status, response.reason, response.version
         (200, 'OK', 10)
         >>> type(response.body), len(response.body)
@@ -201,18 +214,19 @@ class Response(object):
         }
 
     '''
-    
+
     def __init__(self, r, **kwargs):
-        self._r = r # httplib.HTTPResponse
+        self._r = r  # httplib.HTTPResponse
         self.msg = r.msg
-        
+
         #: Status code returned by server.
         self.status = r.status
-        
+
         #: Reason phrase returned by server.
         self.reason = r.reason
-        
-        #: HTTP protocol version used by server. 10 for HTTP/1.0, 11 for HTTP/1.1.
+
+        #: HTTP protocol version used by server.
+        #: 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
         self._body = None
         self._headers = None
@@ -224,26 +238,25 @@ class Response(object):
 
         for k in kwargs:
             setattr(self, k, kwargs[k])
-    
 
-        # length_limit: if content (length) size is more than length_limit -> skip
+        # if content (length) size is more than length_limit, skip
         try:
             self.length_limit = int(kwargs.get('length_limit'))
         except:
             self.length_limit = None
-            
-        if self.length_limit and int(self.getheader('Content-Length', 0)) > self.length_limit:
-            self.close()
-            raise UrlfetchException("Content length is more than %d bytes" % self.length_limit)  
 
-        
+        content_length = int(self.getheader('Content-Length', 0))
+        if self.length_limit and  content_length > self.length_limit:
+            self.close()
+            raise UrlfetchException("Content length is more than %d bytes"
+                                    % self.length_limit)
+
         self._body = self._download_content()
         self.close()
 
-
-    def _download_content(self, chunk_size = 10 * 1024):
+    def _download_content(self, chunk_size=10 * 1024):
         ''' download content if chunked
-        
+
         chunk_size: size of chunk, default: 10 * 1024
         '''
         content = b("")
@@ -256,31 +269,34 @@ class Response(object):
             content += chunk
 
             if self.length_limit and len(content) > self.length_limit:
-                raise UrlfetchException("Content length is more than %d bytes" % self.length_limit)  
+                raise UrlfetchException("Content length is more than %d bytes"
+                                        % self.length_limit)
 
         return content
-        
+
     @classmethod
     def from_httplib(cls, r, **kwargs):
-        '''Generate a :class:`~urlfetch.Response` object from an httplib response object.'''
-        
+        '''Generate a :class:`~urlfetch.Response` object from an httplib
+        response object.
+        '''
+
         return cls(r, **kwargs)
-        
+
     @property
     def body(self):
         '''Response body.'''
-        
+
         if self._body is None:
             self._body = self._download_content()
         return self._body
 
     # compatible with requests
     content = body
-    
+
     @property
     def text(self):
         '''Response body in unicode.'''
-        
+
         if self._text is None:
             self._text = mb_code(self.body)
         return self._text
@@ -292,17 +308,18 @@ class Response(object):
         if self._json is None:
             try:
                 self._json = json.loads(self.text, encoding=encoding)
-            except: pass
+            except:
+                pass
         return self._json
-    
+
     @property
     def headers(self):
         '''Response headers.
-        
+
         Response headers is a dict with all keys in lower case.
-        
+
         ::
-        
+
             >>> import urlfetch
             >>> response = urlfetch.get("http://docs.python.org/")
             >>> response.headers
@@ -319,21 +336,21 @@ class Response(object):
                 'content-type': 'text/html',
                 'x-cache-lookup': 'MISS from localhost:8080'
             }
-        
+
         '''
-        
+
         if self._headers is None:
-            self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
+            self._headers = dict((k.lower(), v) for k, v in self.getheaders())
         return self._headers
-    
+
     @property
     def cookies(self):
         '''Cookies in dict'''
-        
+
         c = Cookie.SimpleCookie(self.getheader('set-cookie'))
         sc = [(i.key, i.value) for i in c.itervalues()]
         return dict(sc)
-        
+
     @property
     def cookiestring(self):
         cookies = self.cookies
@@ -346,157 +363,156 @@ class Response(object):
 
     def __del__(self):
         self.close()
-        
+
 
 class Session(object):
     '''A session object.'''
-    
+
     def __init__(self, headers={}, cookies={}):
         self._headers = {}
         self._cookies = cookies
-        
+
         for k, v in headers.items():
             self.headers[k.title()] = v
-            
-    
+
     def putheader(self, header, value):
         '''Add an header to default headers'''
         self.headers[header.title()] = value
-        
+
     def popheader(self, header):
         '''Remove an header from default headers'''
         return self.headers.pop(header.title())
-        
+
     @property
     def headers(self):
-        return self._headers
-        
+        return dict((k.lower(), v) for k, v in self._headers)
+
     @property
     def cookies(self):
         return self._cookies
-    
+
     @property
     def cookiestring(self):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
-        
+
     def request(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = request(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def get(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = get(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def post(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = post(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def put(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = put(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def delete(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = delete(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-        
+
     def head(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = head(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def options(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = options(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-        
+
     def trace(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = trace(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
+
     def patch(self, *args, **kwargs):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
-        
+
         r = patch(*args, **kwargs)
-        
+
         cookies = r.cookies
         self._cookies.update(cookies)
-        
+
         return r
-    
-    
+
+
 ## methods ##
 def fetch(*args, **kwargs):
     ''' fetch an URL.
-    
+
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     '''
-    
+
     data = kwargs.get('data', None)
     files = kwargs.get('files', {})
 
@@ -505,26 +521,33 @@ def fetch(*args, **kwargs):
     return get(*args, **kwargs)
 
 
-def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            files={}, randua=False, auth=None, length_limit=None, **kwargs):
-            
+def request(url, method="GET", data=None, headers={},
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
+            randua=False, auth=None, length_limit=None, **kwargs):
+
     ''' request an URL
-    
+
     :param url: URL to be fetched.
     :type url: string
-    :param method: HTTP method, one of ``GET``, ``DELETE``, ``HEAD``, ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``. ``GET`` by default.
+    :param method: HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
+                   ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``.
+                   ``GET`` by default.
     :type method: string, optional
     :param headers: HTTP request headers
     :type headers: dict, optional
-    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
+    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT
+                    by default
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
-    :param randua: if ``True``, use a random user-agent in headers, instead of ``'urlfetch/' + __version__``
+    :param randua: if ``True``, use a random user-agent in headers,
+                   instead of ``'urlfetch/' + __version__``
     :type randua: bool, default is ``False``
     :param auth: (username, password) for basic authentication
     :type auth: tuple, optional
-    :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
+    :param length_limit: if ``None``, no limits on content length, if the limit
+                         reached raised exception 'Content length is more
+                         than ...'
     :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
     '''
@@ -532,13 +555,15 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     method = method.upper()
     if method not in _allowed_methods:
-        raise UrlfetchException("Method shoud be one of " + ", ".join(_allowed_methods))
+        raise UrlfetchException("Method shoud be one of " +
+                                ", ".join(_allowed_methods))
 
     requrl = path
-    if query: requrl += '?' + query
+    if query:
+        requrl += '?' + query
     # do not add fragment
     #if fragment: requrl += '#' + fragment
-    
+
     # handle 'Host'
     if ':' in netloc:
         host, port = netloc.rsplit(':', 1)
@@ -546,45 +571,47 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     else:
         host, port = netloc, None
     host = host.encode('idna').decode('utf-8')
-    
+
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
     elif scheme == 'http':
         h = HTTPConnection(host, port=port, timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
-        
+
     # default request headers
     reqheaders = {
         'Accept': '*/*',
-        'User-Agent': random_useragent() if randua else 'urlfetch/' + __version__,
+        'User-Agent': random_useragent() if randua else 'urlfetch/' +
+                      __version__,
         'Host': host,
     }
-    
-    if auth is not None: 
+
+    if auth is not None:
         if isinstance(auth, (list, tuple)):
             auth = '%s:%s' % tuple(auth)
         auth = base64.b64encode(auth.encode('utf-8'))
         reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
-    
+
     if files:
         content_type, data = _encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
     elif isinstance(data, dict):
         data = urlencode(data, 1)
-    
+
     if isinstance(data, basestring) and not files:
         # httplib will set 'Content-Length', also you can set it by yourself
         reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
-        # what if the method is GET, HEAD or DELETE 
+        # what if the method is GET, HEAD or DELETE
         # just do not make so much decisions for users
 
     for k, v in headers.items():
-        reqheaders[k.title()] = v 
-    
+        reqheaders[k.title()] = v
+
     h.request(method, requrl, data, reqheaders)
     response = h.getresponse()
-    return Response.from_httplib(response, reqheaders=reqheaders, connection=h, length_limit=length_limit)
+    return Response.from_httplib(response, reqheaders=reqheaders,
+                                 connection=h, length_limit=length_limit)
 
 # some shortcuts
 get = partial(request, method="GET")
@@ -593,12 +620,9 @@ put = partial(request, method="PUT")
 delete = partial(request, method="DELETE")
 head = partial(request, method="HEAD")
 options = partial(request, method="OPTIONS")
-# No entity body can be sent with a TRACE request. 
+# No entity body can be sent with a TRACE request.
 trace = partial(request, method="TRACE", files={}, data=None)
 patch = partial(request, method="PATCH")
-
-
-       
 
 # Mapping status codes to official W3C names
 HTTP_STATUS_CODES = {
@@ -649,6 +673,7 @@ HTTP_STATUS_CODES = {
     505: 'HTTP Version Not Supported',
 }
 
+
 ## helpers ##
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
@@ -659,16 +684,18 @@ def mb_code(s, coding=None):
         try:
             s = s.decode(c, errors='replace')
             return s if coding is None else s.encode(coding, errors='replace')
-        except: pass
+        except:
+            pass
     return s
+
 
 def sc2cs(sc):
     '''Convert Set-Cookie header to cookie string.
-    
+
     Set-Cookie can be retrieved from a :class:`~urlfetch.Response` instance::
-    
+
         sc = response.getheader('Set-Cookie')
-    
+
     :param sc: Set-Cookie
     :type sc: string
     :rtype: cookie string, which is name=value pairs joined by ``\;``.
@@ -677,33 +704,34 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
+
 def random_useragent(filename=None):
     '''Returns a User-Agent string randomly from file'''
     import os
     import random
     from time import time
-    
+
     if filename is None:
-        filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'extra', 'USER_AGENTS.list')
+        filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                'extra', 'USER_AGENTS.list')
     if os.path.isfile(filename):
         f = open(filename)
         filesize = os.stat(filename)[6]
         r = random.Random(time())
-        
+
         while True:
             pos = f.tell() + r.randint(0, filesize)
             pos %= filesize
             f.seek(pos)
-            
+
             # in case we are in middle of a line
             f.readline()
-            
+
             line = f.readline().strip()
             if line:
                 break
-            
+
         f.close()
         return line
-        
+
     return 'urlfetch/%s' % __version__
- 
