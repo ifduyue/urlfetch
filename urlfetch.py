@@ -234,7 +234,7 @@ class Response(object):
             
         if self.length_limit and int(self.getheader('Content-Length', 0)) > self.length_limit:
             self.close()
-            raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+            raise UrlfetchException("Content length is more than %d bytes" % self.length_limit)  
 
         
         self._body = self._download_content()
@@ -256,7 +256,7 @@ class Response(object):
             content += chunk
 
             if self.length_limit and len(content) > self.length_limit:
-                raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+                raise UrlfetchException("Content length is more than %d bytes" % self.length_limit)  
 
         return content
         
@@ -291,7 +291,7 @@ class Response(object):
 
         if self._json is None:
             try:
-                self._json = json.loads(r.text, encoding=encoding)
+                self._json = json.loads(self.text, encoding=encoding)
             except: pass
         return self._json
     
@@ -361,7 +361,7 @@ class Session(object):
     
     def putheader(self, header, value):
         '''Add an header to default headers'''
-        self.headers[header.title()] = v
+        self.headers[header.title()] = value
         
     def popheader(self, header):
         '''Remove an header from default headers'''
