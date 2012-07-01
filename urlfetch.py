@@ -682,11 +682,28 @@ def random_useragent(filename=None):
     import os
     import random
     from time import time
+    
     if filename is None:
         filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'extra', 'USER_AGENTS.list')
     if os.path.isfile(filename):
-        uas = [ua.strip() for ua in open(filename).readlines() if not ua.strip().startswith('#')]
-        r_ua = random.Random(time())
-        return r_ua.choice(uas)
+        f = open(filename)
+        filesize = os.stat(filename)[6]
+        r = random.Random(time())
+        
+        while True:
+            pos = f.tell() + r.randint(0, filesize)
+            pos %= filesize
+            f.seek(pos)
+            
+            # in case we are in middle of a line
+            f.readline()
+            
+            line = f.readline().strip()
+            if line:
+                break
+            
+        f.close()
+        return line
+        
     return 'urlfetch/%s' % __version__
  
