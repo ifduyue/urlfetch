@@ -167,9 +167,6 @@ class Headers(object):
     
     def random_user_agent(self, filename=None):
         ''' generate random User-Agent string from collection in filename'''
-
-        if filename is None:
-            filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'extra', 'USER_AGENTS.list')
         self.__headers['User-Agent'] = randua(filename)
     
     def basic_auth(self, username, password):
@@ -397,7 +394,7 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            files={}, length_limit=None, **kwargs):
+            files={}, auth=None, length_limit=None, **kwargs):
             
     ''' request an URL
     
@@ -411,6 +408,8 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
+    :param auth: (username, password) for basic authentication
+    :type auth: tuple, optional
     :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
     :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
@@ -443,6 +442,12 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
         
     # default request headers
     reqheaders = Headers().items()
+    
+    if auth is not None: 
+        if isinstance(auth, (list, tuple)):
+            auth = '%s:%s' % tuple(auth)
+        auth = base64.b64encode(auth.encode('utf-8'))
+        reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
     
     if files:
         content_type, data = _encode_multipart(data, files)
@@ -554,11 +559,13 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
-def randua(filename):
+def randua(filename=None):
     '''Returns a User-Agent string randomly from file'''
     import os
     import random
     from time import time
+    if filename is None:
+        filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'extra', 'USER_AGENTS.list')
     if os.path.isfile(filename):
         uas = [ua.strip() for ua in open(filename).readlines() if not ua.strip().startswith('#')]
         r_ua = random.Random(time())
