@@ -335,36 +335,20 @@ class Response(object):
         self.close()
         
 
-def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-        files={}, auth=None, length_limit=None, **kwargs):
+def fetch(**kwargs):
     ''' fetch an URL.
-    
-    :param url: URL to be fetched.
-    :type url: string
-    :param headers: HTTP request headers
-    :type headers: dict, optional
-    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT by default
-    :type timeout: integer or float, optional
-    :param files: files to be sended
-    :type files: dict, optional
-    :param auth: (username, password) for basic authentication
-    :type auth: tuple, optional
-    :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
-    :type length_limit: integer or None, default is ``none``
-    :rtype: A :class:`~urlfetch.Response` object
     
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     '''
     
-    local = locals()
-    local.pop('kwargs')
-    local.update(kwargs)
+    data = kwargs.get('data', None)
+    files = kwargs.get('files', {})
 
-    if data is not None and isinstance(data, (basestring, dict)):
-        return post(**local)
-    return get(**local)
+    if data is not None and isinstance(data, (basestring, dict)) or files:
+        return post(**kwargs)
+    return get(**kwargs)
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
