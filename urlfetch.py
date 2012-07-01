@@ -153,8 +153,8 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
-    
 
+## classes ##
 class Response(object):
     '''A Response object.
     
@@ -325,6 +325,19 @@ class Response(object):
         if self._headers is None:
             self._headers = dict((k.lower(), v) for k, v in self._r.getheaders())
         return self._headers
+    
+    @property
+    def cookies(self):
+        '''Cookies in dict'''
+        
+        c = Cookie.SimpleCookie(self.getheader('set-cookie'))
+        sc = [(i.key, i.value) for i in c.itervalues()]
+        return dict(sc)
+        
+    @property
+    def cookiestring(self):
+        cookies = self.cookies
+        return '; '.join(['%s=%s' for k, v in cookies.items()])
 
     def close(self):
         if hasattr(self, 'connection'):
@@ -335,6 +348,147 @@ class Response(object):
         self.close()
         
 
+class Session(object):
+    '''A session object.'''
+    
+    def __init__(self, headers={}, cookies={}):
+        self._headers = {}
+        self._cookies = cookies
+        
+        for k, v in headers.items():
+            self.headers[k.title()] = v
+            
+    
+    def putheader(self, header, value):
+        '''Add an header to default headers'''
+        self.headers[header.title()] = v
+        
+    def popheader(self, header):
+        '''Remove an header from default headers'''
+        return self.headers.pop(header.title())
+        
+    @property
+    def headers(self):
+        return self._headers
+        
+    @property
+    def cookies(self):
+        return self._cookies
+    
+    @property
+    def cookiestring(self):
+        return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
+        
+    def request(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = request(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def get(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = get(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def post(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = post(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def put(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = put(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def delete(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = delete(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+        
+    def head(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = head(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def options(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = options(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+        
+    def trace(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = trace(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    def patch(self, *args, **kwargs):
+        headers = self.headers.copy()
+        headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        
+        r = patch(*args, **kwargs)
+        
+        cookies = r.cookies
+        self._cookies.update(cookies)
+        
+        return r
+    
+    
+## methods ##
 def fetch(*args, **kwargs):
     ''' fetch an URL.
     
