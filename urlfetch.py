@@ -399,6 +399,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = request(*args, **kwargs)
 
@@ -411,6 +412,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = get(*args, **kwargs)
 
@@ -423,6 +425,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = post(*args, **kwargs)
 
@@ -435,6 +438,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = put(*args, **kwargs)
 
@@ -447,6 +451,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = delete(*args, **kwargs)
 
@@ -459,6 +464,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = head(*args, **kwargs)
 
@@ -471,6 +477,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = options(*args, **kwargs)
 
@@ -483,6 +490,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = trace(*args, **kwargs)
 
@@ -495,6 +503,7 @@ class Session(object):
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
 
         r = patch(*args, **kwargs)
 
