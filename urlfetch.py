@@ -165,9 +165,12 @@ class Headers(object):
             'User-Agent':  'urlfetch/' + __version__,
         }
     
-    def random_user_agent(self, filename):
+    def random_user_agent(self, filename=None):
         ''' generate random User-Agent string from collection in filename'''
-        self.__headers['User-Agent'] = uas.randua(filename)
+
+        if filename is None:
+            filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'extra', 'USER_AGENTS.list')
+        self.__headers['User-Agent'] = randua(filename)
     
     def basic_auth(self, username, password):
         ''' add username/password for basic authentication '''
@@ -472,17 +475,7 @@ trace = partial(request, method="TRACE", files={}, data=None)
 patch = partial(request, method="PATCH")
 
 
-def randua(filename):
-    '''Returns a User-Agent string randomly from file'''
-    import os
-    import random
-    from time import time
-    if os.path.isfile(filename):
-        uas = [ua.strip() for ua in open(filename).readlines() if not ua.strip().startswith('#')]
-        r_ua = random.Random(time())
-        return r_ua.choice(uas)
-    return 'urlfetch/%s' % __version__
-        
+       
 
 # Mapping status codes to official W3C names
 HTTP_STATUS_CODES = {
@@ -561,4 +554,14 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
-
+def randua(filename):
+    '''Returns a User-Agent string randomly from file'''
+    import os
+    import random
+    from time import time
+    if os.path.isfile(filename):
+        uas = [ua.strip() for ua in open(filename).readlines() if not ua.strip().startswith('#')]
+        r_ua = random.Random(time())
+        return r_ua.choice(uas)
+    return 'urlfetch/%s' % __version__
+ 
