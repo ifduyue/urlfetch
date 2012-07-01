@@ -67,21 +67,6 @@ _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", 
 
 class UrlfetchException(Exception): pass
 
-def sc2cs(sc):
-    '''Convert Set-Cookie header to cookie string.
-    
-    Set-Cookie can be retrieved from a :class:`~urlfetch.Response` instance::
-    
-        sc = response.getheader('Set-Cookie')
-    
-    :param sc: Set-Cookie
-    :type sc: string
-    :rtype: cookie string, which is name=value pairs joined by ``\;``.
-    '''
-    c = Cookie.SimpleCookie(sc)
-    sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
-    return '; '.join(sc)
-
 
 _boundary_prefix = None
 def choose_boundary():
@@ -1672,6 +1657,7 @@ HTTP_STATUS_CODES = {
     505: 'HTTP Version Not Supported',
 }
 
+## helpers ##
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
 
@@ -1683,3 +1669,20 @@ def mb_code(s, coding=None):
             return s if coding is None else s.encode(coding, errors='replace')
         except: pass
     return s
+
+def sc2cs(sc):
+    '''Convert Set-Cookie header to cookie string.
+    
+    Set-Cookie can be retrieved from a :class:`~urlfetch.Response` instance::
+    
+        sc = response.getheader('Set-Cookie')
+    
+    :param sc: Set-Cookie
+    :type sc: string
+    :rtype: cookie string, which is name=value pairs joined by ``\;``.
+    '''
+    c = Cookie.SimpleCookie(sc)
+    sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
+    return '; '.join(sc)
+
+
