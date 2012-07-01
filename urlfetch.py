@@ -168,7 +168,7 @@ class Response(object):
         >>> type(response.body), len(response.body)
         (<type 'str'>, 8719)
         >>> type(response.text), len(response.text)
-        (<type 'unicode'>, 8719
+        (<type 'unicode'>, 8719)
         >>> response.getheader('server')
         'Apache/2.2.16 (Debian)'
         >>> response.getheaders()
