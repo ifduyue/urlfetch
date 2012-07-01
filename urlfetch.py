@@ -58,9 +58,10 @@ except ImportError:
 
 
 __all__ = [
-    'sc2cs', 'fetch', 'request', 
+    'fetch', 'request', 
     'get', 'head', 'put', 'post', 'delete', 'options',
-    'Headers', 'UrlfetchException',
+    'UrlfetchException',
+    'sc2cs', 'randua', 'mb_code',
 ] 
 
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
@@ -152,36 +153,7 @@ def _encode_multipart(data, files):
     #body.write(b(content_type))
 
     return content_type, body.getvalue()
-
-class Headers(object):
-    ''' Headers
     
-    to simplify fetch() interface, class Headers helps to manipulate parameters
-    '''
-    def __init__(self):
-        ''' make default headers '''
-        self.__headers = {
-            'Accept': '*/*',
-            'User-Agent':  'urlfetch/' + __version__,
-        }
-    
-    def random_user_agent(self, filename=None):
-        ''' generate random User-Agent string from collection in filename'''
-        self.__headers['User-Agent'] = randua(filename)
-    
-    def basic_auth(self, username, password):
-        ''' add username/password for basic authentication '''
-        auth = '%s:%s' % (username, password)
-        auth = base64.b64encode(auth.encode('utf-8'))
-        self.__headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
-
-    def put(self, k, v):
-        ''' add new parameter to headers '''
-        self.__headers[k.title()] = v
-    
-    def items(self):
-        ''' return headers dictionary '''
-        return self.__headers
 
 class Response(object):
     '''A Response object.
@@ -364,7 +336,7 @@ class Response(object):
         
 
 def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
-        files={}, length_limit=None, **kwargs):
+        files={}, auth=None, length_limit=None, **kwargs):
     ''' fetch an URL.
     
     :param url: URL to be fetched.
@@ -375,6 +347,8 @@ def fetch(url, data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
+    :param auth: (username, password) for basic authentication
+    :type auth: tuple, optional
     :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
     :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
@@ -441,7 +415,11 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
         raise UrlfetchException('Unsupported protocol %s' % scheme)
         
     # default request headers
-    reqheaders = Headers().items()
+    reqheaders = {
+        'Accept': '*/*',
+        'User-Agent': 'urlfetch/' + __version__,
+        'Host': host,
+    }
     
     if auth is not None: 
         if isinstance(auth, (list, tuple)):
