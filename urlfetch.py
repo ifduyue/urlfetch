@@ -61,7 +61,7 @@ __all__ = [
     'fetch', 'request', 
     'get', 'head', 'put', 'post', 'delete', 'options',
     'UrlfetchException',
-    'sc2cs', 'randua', 'mb_code',
+    'sc2cs', 'random_useragent', 'mb_code',
 ] 
 
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE", "PATCH")
@@ -335,7 +335,7 @@ class Response(object):
         self.close()
         
 
-def fetch(**kwargs):
+def fetch(*args, **kwargs):
     ''' fetch an URL.
     
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
@@ -347,12 +347,12 @@ def fetch(**kwargs):
     files = kwargs.get('files', {})
 
     if data is not None and isinstance(data, (basestring, dict)) or files:
-        return post(**kwargs)
-    return get(**kwargs)
+        return post(*args, **kwargs)
+    return get(*args, **kwargs)
 
 
 def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-            files={}, auth=None, length_limit=None, **kwargs):
+            files={}, randua=False, auth=None, length_limit=None, **kwargs):
             
     ''' request an URL
     
@@ -366,6 +366,8 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
+    :param randua: if ``True``, use a random user-agent in headers, instead of ``'urlfetch/' + __version__``
+    :type randua: bool, default is ``False``
     :param auth: (username, password) for basic authentication
     :type auth: tuple, optional
     :param length_limit: if ``None``, no limits on content length, if the limit reached raised exception 'Content length is more than ...'
@@ -401,7 +403,7 @@ def request(url, method="GET", data=None, headers={}, timeout=socket._GLOBAL_DEF
     # default request headers
     reqheaders = {
         'Accept': '*/*',
-        'User-Agent': 'urlfetch/' + __version__,
+        'User-Agent': random_useragent() if randua else 'urlfetch/' + __version__,
         'Host': host,
     }
     
@@ -521,7 +523,7 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
-def randua(filename=None):
+def random_useragent(filename=None):
     '''Returns a User-Agent string randomly from file'''
     import os
     import random
