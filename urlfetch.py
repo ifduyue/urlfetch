@@ -271,9 +271,7 @@ class Response(object):
         if self.length_limit and int(self.getheader('Content-Length', 0)) > self.length_limit:
             self.close()
             raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
-
-        self.close()
-
+        
     def read_content(self, chunk_size = 10 * 1024):
         ''' read content (for streaming and large files)
         
@@ -281,7 +279,6 @@ class Response(object):
         '''
         while True:
             chunk = self._r.read(chunk_size)
-            print 'chunk: "%s"' % chunk
             if not chunk:
                 break
             yield chunk
@@ -289,7 +286,6 @@ class Response(object):
     @classmethod
     def from_httplib(cls, r, **kwargs):
         '''Generate a :class:`~urlfetch.Response` object from an httplib response object.'''
-        print cls, r
         return cls(r, **kwargs)
         
     @property
@@ -310,7 +306,7 @@ class Response(object):
         '''Response content in unicode.'''
         
         if self._text is None:
-            self._text = mb_code(self._content)
+            self._text = mb_code(self.content)
         return self._text
     
     @property
