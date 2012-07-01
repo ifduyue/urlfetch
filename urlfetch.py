@@ -177,7 +177,7 @@ class Headers(object):
     
     def random_user_agent(self, filename):
         ''' generate random User-Agent string from collection in filename'''
-        self.__headers['User-Agent'] = uas.randua(filename)
+        self.__headers['User-Agent'] = randua(filename)
     
     def basic_auth(self, username, password):
         ''' add username/password for basic authentication '''
@@ -252,7 +252,7 @@ class Response(object):
         
         #: HTTP protocol version used by server. 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
-        self._body = None
+        self._content = None
         self._headers = None
         self._text = None
 
@@ -274,45 +274,43 @@ class Response(object):
 
         self.close()
 
-    def _download_content(self, chunk_size = 10 * 1024):
-        ''' download content if chunked
+    def read_content(self, chunk_size = 10 * 1024):
+        ''' read content (for streaming and large files)
         
-        chunk_size: size of chunk, default: 10 * 1024
+        chunk_size: size of chunk, default: 10 * 1024        
         '''
-        content = b("")
         while True:
             chunk = self._r.read(chunk_size)
-
+            print 'chunk: "%s"' % chunk
             if not chunk:
                 break
-
-            content += chunk
-
-            if self.length_limit and len(content) > self.length_limit:
-                raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
-
-        return content
+            yield chunk
         
     @classmethod
     def from_httplib(cls, r, **kwargs):
         '''Generate a :class:`~urlfetch.Response` object from an httplib response object.'''
-        
+        print cls, r
         return cls(r, **kwargs)
         
     @property
-    def body(self):
-        '''Response body.'''
+    def content(self):
+        '''Response content.'''
         
-        if self._body is None:
-            self._body = self._download_content()
-        return self._body
+        if self._content is None:
+            content = b("")
+            for chunk in self.read_content():
+                content += chunk
+                if self.length_limit and len(content) > self.length_limit:
+                    raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+            self._content = content
+        return self._content
     
     @property
     def text(self):
-        '''Response body in unicode.'''
+        '''Response content in unicode.'''
         
         if self._text is None:
-            self._text = mb_code(self.body)
+            self._text = mb_code(self._content)
         return self._text
     
     @property
