@@ -51,6 +51,11 @@ from io import BytesIO
 import codecs
 writer = codecs.lookup('utf-8')[3]
 
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
 
 __all__ = [
     'sc2cs', 'fetch', 'request', 
@@ -255,6 +260,7 @@ class Response(object):
         self._body = None
         self._headers = None
         self._text = None
+        self._json = None
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
@@ -310,6 +316,9 @@ class Response(object):
         if self._body is None:
             self._body = self._download_content()
         return self._body
+
+    # compatible with requests
+    content = body
     
     @property
     def text(self):
@@ -318,6 +327,16 @@ class Response(object):
         if self._text is None:
             self._text = mb_code(self.body)
         return self._text
+
+    @property
+    def json(self, encoding=None):
+        '''Load response body as json'''
+
+        if self._json is None:
+            try:
+                self._json = json.loads(r.text, encoding=encoding)
+            except: pass
+        return self._json
     
     @property
     def headers(self):
