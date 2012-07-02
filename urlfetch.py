@@ -290,7 +290,6 @@ class Response(object):
 
     # compatible with requests
     content = body
-    content.__doc__ = body.__doc__
 
     @property
     def text(self):
