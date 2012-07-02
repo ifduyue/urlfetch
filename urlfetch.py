@@ -171,47 +171,45 @@ def _encode_multipart(data, files):
 class Response(object):
     '''A Response object.
 
-    ::
-
-        >>> import urlfetch
-        >>> response = urlfetch.get("http://docs.python.org/")
-        >>>
-        >>> response.status, response.reason, response.version
-        (200, 'OK', 10)
-        >>> type(response.body), len(response.body)
-        (<type 'str'>, 8719)
-        >>> type(response.text), len(response.text)
-        (<type 'unicode'>, 8719)
-        >>> response.getheader('server')
-        'Apache/2.2.16 (Debian)'
-        >>> response.getheaders()
-        [
-            ('content-length', '8719'),
-            ('x-cache', 'MISS from localhost'),
-            ('accept-ranges', 'bytes'),
-            ('vary', 'Accept-Encoding'),
-            ('server', 'Apache/2.2.16 (Debian)'),
-            ('last-modified', 'Tue, 26 Jun 2012 19:23:18 GMT'),
-            ('connection', 'close'),
-            ('etag', '"13cc5e4-220f-4c36507ded580"'),
-            ('date', 'Wed, 27 Jun 2012 06:50:30 GMT'),
-            ('content-type', 'text/html'),
-            ('x-cache-lookup', 'MISS from localhost:8080')
-        ]
-        >>> response.headers
-        {
-            'content-length': '8719',
-            'x-cache': 'MISS from localhost',
-            'accept-ranges': 'bytes',
-            'vary': 'Accept-Encoding',
-            'server': 'Apache/2.2.16 (Debian)',
-            'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
-            'connection': 'close',
-            'etag': '"13cc5e4-220f-4c36507ded580"',
-            'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
-            'content-type': 'text/html',
-            'x-cache-lookup': 'MISS from localhost:8080'
-        }
+    >>> import urlfetch
+    >>> response = urlfetch.get("http://docs.python.org/")
+    >>>
+    >>> response.status, response.reason, response.version
+    (200, 'OK', 10)
+    >>> type(response.body), len(response.body)
+    (<type 'str'>, 8719)
+    >>> type(response.text), len(response.text)
+    (<type 'unicode'>, 8719)
+    >>> response.getheader('server')
+    'Apache/2.2.16 (Debian)'
+    >>> response.getheaders()
+    [
+        ('content-length', '8719'),
+        ('x-cache', 'MISS from localhost'),
+        ('accept-ranges', 'bytes'),
+        ('vary', 'Accept-Encoding'),
+        ('server', 'Apache/2.2.16 (Debian)'),
+        ('last-modified', 'Tue, 26 Jun 2012 19:23:18 GMT'),
+        ('connection', 'close'),
+        ('etag', '"13cc5e4-220f-4c36507ded580"'),
+        ('date', 'Wed, 27 Jun 2012 06:50:30 GMT'),
+        ('content-type', 'text/html'),
+        ('x-cache-lookup', 'MISS from localhost:8080')
+    ]
+    >>> response.headers
+    {
+        'content-length': '8719',
+        'x-cache': 'MISS from localhost',
+        'accept-ranges': 'bytes',
+        'vary': 'Accept-Encoding',
+        'server': 'Apache/2.2.16 (Debian)',
+        'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
+        'connection': 'close',
+        'etag': '"13cc5e4-220f-4c36507ded580"',
+        'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
+        'content-type': 'text/html',
+        'x-cache-lookup': 'MISS from localhost:8080'
+    }
 
     '''
 
@@ -318,24 +316,22 @@ class Response(object):
 
         Response headers is a dict with all keys in lower case.
 
-        ::
-
-            >>> import urlfetch
-            >>> response = urlfetch.get("http://docs.python.org/")
-            >>> response.headers
-            {
-                'content-length': '8719',
-                'x-cache': 'MISS from localhost',
-                'accept-ranges': 'bytes',
-                'vary': 'Accept-Encoding',
-                'server': 'Apache/2.2.16 (Debian)',
-                'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
-                'connection': 'close',
-                'etag': '"13cc5e4-220f-4c36507ded580"',
-                'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
-                'content-type': 'text/html',
-                'x-cache-lookup': 'MISS from localhost:8080'
-            }
+        >>> import urlfetch
+        >>> response = urlfetch.get("http://docs.python.org/")
+        >>> response.headers
+        {
+            'content-length': '8719',
+            'x-cache': 'MISS from localhost',
+            'accept-ranges': 'bytes',
+            'vary': 'Accept-Encoding',
+            'server': 'Apache/2.2.16 (Debian)',
+            'last-modified': 'Tue, 26 Jun 2012 19:23:18 GMT',
+            'connection': 'close',
+            'etag': '"13cc5e4-220f-4c36507ded580"',
+            'date': 'Wed, 27 Jun 2012 06:50:30 GMT',
+            'content-type': 'text/html',
+            'x-cache-lookup': 'MISS from localhost:8080'
+        }
 
         '''
 
@@ -375,7 +371,7 @@ class Session(object):
         self._cookies = cookies
 
         for k, v in headers.items():
-            self.headers[k.title()] = v
+            self._headers[k.title()] = v
 
     def putheader(self, header, value):
         '''Add an header to default headers'''
@@ -404,6 +400,71 @@ class Session(object):
     @property
     def cookiestring(self):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
+
+    def dump(self, fileobj, cls='marshal'):
+        '''pack a session and write packed bytes to fileobj
+
+        :param fileobj: a file(-like) object which have ``write`` method
+        :type fileobj: file
+        :param cls: use which class to pack the session
+        :type cls: string, ``marshal``, ``pickle``, etc...
+
+        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
+        >>> f = open('session.jar', 'wb')
+        >>> s.dump(f)
+        >>> f.close()
+        '''
+        dump = import_object('%s.dump' % cls)
+        return dump(self.dumps(cls), fileobj)
+
+    def dumps(self, cls='marshal'):
+        '''pack a seesion and return packed bytes
+        
+        :param cls: use which class to pack the session
+        :type cls: string, ``marshal``, ``pickle``, etc...
+        :rtype: packed bytes
+
+        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
+        >>> s.dumps()
+        ...
+        '''
+        session = {'headers': self._headers, 'cookies': self._cookies}
+        dumps = import_object('%s.dumps' % cls)
+        return dumps(session)
+
+    def load(self, fileobj, cls='marshal'):
+        '''unpack a session from fileobj
+
+        :param fileobj: a file(-like) object which have ``read`` method
+        :type fileobj: file
+        :param cls: use which class to unpack the session
+        :type cls: string, ``marshal``, ``pickle``, etc...
+
+        >>> s = urlfetch.Session()
+        >>> s = open('session.jar', 'rb')
+        >>> s.load(f)
+        >>> f.close()
+        '''
+        load = import_object('%s.load' % cls)
+        session = load(fileobj)
+        self._headers.update(session['headers'])
+        self._cookies.update(session['cookies'])
+
+    def loads(self, string, cls='marshal'):
+        '''unpack a seesion from string
+        
+        :param string: the string to be unpacked
+        :type string: bytes
+        :param cls: use which class to pack the session
+        :type cls: string, ``marshal``, ``pickle``, etc...
+        :rtype: unpacked bytes
+
+        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
+        >>> s.loads(s.dumps())
+        {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
+        '''
+        loads = import_object('%s.loads' % cls)
+        return loads(string)
 
     def request(self, *args, **kwargs):
         '''Issue a request'''
@@ -777,3 +838,18 @@ def random_useragent(filename=None):
         return line
 
     return 'urlfetch/%s' % __version__
+
+def import_object(name):
+    """Imports an object by name.
+
+    import_object('x.y.z') is equivalent to 'from x.y import z'.
+    
+    >>> import tornado.escape
+    >>> import_object('os.path') is os.path
+    True
+    >>> import_object('os.path.dirname') is os.path.dirname
+    True
+    """
+    parts = name.split('.')
+    obj = __import__('.'.join(parts[:-1]), None, None, [parts[-1]], 0)
+    return getattr(obj, parts[-1])
