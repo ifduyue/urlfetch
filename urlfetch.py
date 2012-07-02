@@ -379,11 +379,19 @@ class Session(object):
 
     def putheader(self, header, value):
         '''Add an header to default headers'''
-        self.headers[header.title()] = value
+        self._headers[header.title()] = value
 
     def popheader(self, header):
         '''Remove an header from default headers'''
-        return self.headers.pop(header.title())
+        return self._headers.pop(header.title())
+
+    def putcookie(self, key, value=""):
+        '''Add an cookie to default cookies'''
+        self._cookies[key] = value
+
+    def popcookie(self, key):
+        '''Remove an cookie from default cookies'''
+        self._cookies.pop(key)
 
     @property
     def headers(self):
