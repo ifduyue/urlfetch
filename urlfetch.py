@@ -715,7 +715,12 @@ def sc2cs(sc):
 
 
 def random_useragent(filename=None):
-    '''Returns a User-Agent string randomly from file'''
+    '''Returns a User-Agent string randomly from file.
+    
+    :param filename: path to the file from which a random useragent
+                     is generated
+    :type filename: string, optional
+    '''
     import os
     import random
     from time import time
