@@ -167,6 +167,10 @@ Reference
 .. moduleauthor:: Elyes Du <lyxint@gmail.com>
 
 .. autoclass:: Response
+    :members:
+
+.. autoclass:: Session
+    :members:
 
 .. autofunction:: fetch
 
@@ -193,6 +197,6 @@ helpers
 
 .. autofunction:: sc2cs
 
-.. autofunction:: randua
+.. autofunction:: random_useragent
 
 .. autofunction:: mb_code
