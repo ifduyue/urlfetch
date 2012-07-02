@@ -353,10 +353,12 @@ class Response(object):
 
     @property
     def cookiestring(self):
+        '''Cookie string'''
         cookies = self.cookies
         return '; '.join(['%s=%s' for k, v in cookies.items()])
 
     def close(self):
+        '''Close the connection'''
         if hasattr(self, 'connection'):
             self.connection.close()
         self._r.close()
@@ -725,7 +727,7 @@ def sc2cs(sc):
 
 def random_useragent(filename=None):
     '''Returns a User-Agent string randomly from file.
-    
+
     :param filename: path to the file from which a random useragent
                      is generated
     :type filename: string, optional
