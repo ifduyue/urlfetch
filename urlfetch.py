@@ -474,7 +474,8 @@ class Session(object):
     def request(self, *args, **kwargs):
         '''Issue a request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -488,7 +489,8 @@ class Session(object):
     def get(self, *args, **kwargs):
         '''Issue a get request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -502,7 +504,8 @@ class Session(object):
     def post(self, *args, **kwargs):
         '''Issue a post request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -516,7 +519,8 @@ class Session(object):
     def put(self, *args, **kwargs):
         '''Issue a put request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -530,7 +534,8 @@ class Session(object):
     def delete(self, *args, **kwargs):
         '''Issue a delete request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -544,7 +549,8 @@ class Session(object):
     def head(self, *args, **kwargs):
         '''Issue a head request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -558,7 +564,8 @@ class Session(object):
     def options(self, *args, **kwargs):
         '''Issue a options request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -572,7 +579,8 @@ class Session(object):
     def trace(self, *args, **kwargs):
         '''Issue a trace request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
@@ -586,7 +594,8 @@ class Session(object):
     def patch(self, *args, **kwargs):
         '''Issue a patch request'''
         headers = self.headers.copy()
-        headers['Cookie'] = self.cookiestring
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
 
