@@ -104,13 +104,13 @@ Examples
     import re
 
     def pub2fanfou(username, password, status):
-        #获取表单token
+        # get form token
         response = urlfetch.fetch(
             "http://m.fanfou.com/"
         )
         token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
         
-        #登录
+        # login
         response = urlfetch.fetch(
             "http://m.fanfou.com/",
             data = {
@@ -125,11 +125,11 @@ Examples
             }
         )
         
-        #cookies
+        # cookies
         cookies = urlfetch.sc2cs(response.getheader('Set-Cookie'))
         print cookies
         
-        #获取表单token
+        # form token
         response = urlfetch.fetch(
             "http://m.fanfou.com/home",
             headers = {
@@ -139,7 +139,7 @@ Examples
         )
         token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
         
-        #发布状态
+        # publish status
         response = urlfetch.fetch(
             "http://m.fanfou.com/",
             data = {
