@@ -406,6 +406,7 @@ class Session(object):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
 
     def request(self, *args, **kwargs):
+        '''Issue a request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -419,6 +420,7 @@ class Session(object):
         return r
 
     def get(self, *args, **kwargs):
+        '''Issue a get request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -432,6 +434,7 @@ class Session(object):
         return r
 
     def post(self, *args, **kwargs):
+        '''Issue a post request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -445,6 +448,7 @@ class Session(object):
         return r
 
     def put(self, *args, **kwargs):
+        '''Issue a put request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -458,6 +462,7 @@ class Session(object):
         return r
 
     def delete(self, *args, **kwargs):
+        '''Issue a delete request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -471,6 +476,7 @@ class Session(object):
         return r
 
     def head(self, *args, **kwargs):
+        '''Issue a head request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -484,6 +490,7 @@ class Session(object):
         return r
 
     def options(self, *args, **kwargs):
+        '''Issue a options request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -497,6 +504,7 @@ class Session(object):
         return r
 
     def trace(self, *args, **kwargs):
+        '''Issue a trace request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
@@ -510,6 +518,7 @@ class Session(object):
         return r
 
     def patch(self, *args, **kwargs):
+        '''Issue a patch request'''
         headers = self.headers.copy()
         headers['Cookie'] = self.cookiestring
         headers.update(kwargs.get('headers', {}))
