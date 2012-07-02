@@ -433,12 +433,13 @@ class Session(object):
         return dumps(session)
 
     def load(self, fileobj, cls='marshal'):
-        '''unpack a session from fileobj
+        '''unpack a session from fileobj and load it into current session
 
         :param fileobj: a file(-like) object which have ``read`` method
         :type fileobj: file
         :param cls: use which class to unpack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
+        :rtype: unpacked session 
 
         >>> s = urlfetch.Session()
         >>> s = open('session.jar', 'rb')
@@ -449,22 +450,26 @@ class Session(object):
         session = load(fileobj)
         self._headers.update(session['headers'])
         self._cookies.update(session['cookies'])
+        return session
 
     def loads(self, string, cls='marshal'):
-        '''unpack a seesion from string
+        '''unpack a seesion from string and load it into current session
         
         :param string: the string to be unpacked
         :type string: bytes
         :param cls: use which class to pack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
-        :rtype: unpacked bytes
+        :rtype: unpacked session
 
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.loads(s.dumps())
         {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
         '''
         loads = import_object('%s.loads' % cls)
-        return loads(string)
+        session = loads(string)
+        self._headers.update(session['headers'])
+        self._cookies.update(session['cookies'])
+        return session
 
     def request(self, *args, **kwargs):
         '''Issue a request'''
