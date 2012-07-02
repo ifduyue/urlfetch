@@ -549,9 +549,9 @@ def request(url, method="GET", data=None, headers={},
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
-    :param randua: if ``True``, use a random user-agent in headers,
-                   instead of ``'urlfetch/' + __version__``
-    :type randua: bool, default is ``False``
+    :param randua: if ``True`` or ``path string``, use a random user-agent in
+                    headers, instead of ``'urlfetch/' + __version__``
+    :type randua: bool or string, default is ``False``
     :param auth: (username, password) for basic authentication
     :type auth: tuple, optional
     :param length_limit: if ``None``, no limits on content length, if the limit
@@ -588,11 +588,20 @@ def request(url, method="GET", data=None, headers={},
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
 
+    # is randua bool or path
+    if randua and isinstance(randua, basestring) and \
+        os.path.isfile(path):
+        randua = True
+        randua_file = randua
+    else:
+        randua = bool(randua)
+        randua_file = None
+
     # default request headers
     reqheaders = {
         'Accept': '*/*',
-        'User-Agent': random_useragent() if randua else 'urlfetch/' +
-                      __version__,
+        'User-Agent': random_useragent(randua_file) if randua else \
+                        'urlfetch/' + __version__,
         'Host': host,
     }
 
