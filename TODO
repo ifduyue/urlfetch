@@ -2,4 +2,6 @@
 - handling exceptions for h.request/h.response
 - HTTP proxy support
 - working in Pool
+- content-encoding support: deflate, gzip
+
 

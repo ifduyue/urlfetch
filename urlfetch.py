@@ -166,7 +166,6 @@ def _encode_multipart(data, files):
 
     return content_type, body.getvalue()
 
-
 ## classes ##
 class Response(object):
     '''A Response object.
@@ -249,35 +248,23 @@ class Response(object):
             raise UrlfetchException("Content length is more than %d bytes"
                                     % self.length_limit)
 
-        self._body = self._download_content()
-        self.close()
 
-    def _download_content(self, chunk_size=10 * 1024):
-        ''' download content if chunked
-
-        chunk_size: size of chunk, default: 10 * 1024
+    def read_body(self, chunk_size=10 * 1024):
+        ''' read content (for streaming and large files)
+        
+        chunk_size: size of chunk, default: 10 * 1024        
         '''
-        content = b("")
         while True:
             chunk = self._r.read(chunk_size)
-
             if not chunk:
                 break
-
-            content += chunk
-
-            if self.length_limit and len(content) > self.length_limit:
-                raise UrlfetchException("Content length is more than %d bytes"
-                                        % self.length_limit)
-
-        return content
+            yield chunk
 
     @classmethod
     def from_httplib(cls, r, **kwargs):
         '''Generate a :class:`~urlfetch.Response` object from an httplib
         response object.
         '''
-
         return cls(r, **kwargs)
 
     @property
@@ -285,7 +272,12 @@ class Response(object):
         '''Response body.'''
 
         if self._body is None:
-            self._body = self._download_content()
+            content = b("")
+            for chunk in self.read_body():
+                content += chunk
+                if self.length_limit and len(content) > self.length_limit:
+                    raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+            self._body = content
         return self._body
 
     # compatible with requests
@@ -294,7 +286,6 @@ class Response(object):
     @property
     def text(self):
         '''Response body in unicode.'''
-
         if self._text is None:
             self._text = mb_code(self.body)
         return self._text
@@ -736,54 +727,6 @@ options = partial(request, method="OPTIONS")
 trace = partial(request, method="TRACE", files={}, data=None)
 patch = partial(request, method="PATCH")
 
-# Mapping status codes to official W3C names
-HTTP_STATUS_CODES = {
-    100: 'Continue',
-    101: 'Switching Protocols',
-
-    200: 'OK',
-    201: 'Created',
-    202: 'Accepted',
-    203: 'Non-Authoritative Information',
-    204: 'No Content',
-    205: 'Reset Content',
-    206: 'Partial Content',
-
-    300: 'Multiple Choices',
-    301: 'Moved Permanently',
-    302: 'Found',
-    303: 'See Other',
-    304: 'Not Modified',
-    305: 'Use Proxy',
-    306: '(Unused)',
-    307: 'Temporary Redirect',
-
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    402: 'Payment Required',
-    403: 'Forbidden',
-    404: 'Not Found',
-    405: 'Method Not Allowed',
-    406: 'Not Acceptable',
-    407: 'Proxy Authentication Required',
-    408: 'Request Timeout',
-    409: 'Conflict',
-    410: 'Gone',
-    411: 'Length Required',
-    412: 'Precondition Failed',
-    413: 'Request Entity Too Large',
-    414: 'Request-URI Too Long',
-    415: 'Unsupported Media Type',
-    416: 'Requested Range Not Satisfiable',
-    417: 'Expectation Failed',
-
-    500: 'Internal Server Error',
-    501: 'Not Implemented',
-    502: 'Bad Gateway',
-    503: 'Service Unavailable',
-    504: 'Gateway Timeout',
-    505: 'HTTP Version Not Supported',
-}
 
 
 ## helpers ##
