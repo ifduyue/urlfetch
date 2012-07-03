@@ -382,7 +382,7 @@ class Session(object):
 
     @property
     def headers(self):
-        return dict((k.lower(), v) for k, v in self._headers)
+        return dict((k.lower(), v) for k, v in self._headers.items())
 
     @property
     def cookies(self):
