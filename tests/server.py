@@ -64,6 +64,11 @@ def sleep(seconds):
     return normal_formsdict()
 
 
+import sys
+try:
+    port = int(sys.argv[1])
+except:
+    port = 8800
 
 bottle.debug(True)
-bottle.run(app=app, host='127.0.0.1', port=8800, reloader=True)
+bottle.run(app=app, host='127.0.0.1', port=port, reloader=True)
