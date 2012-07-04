@@ -79,7 +79,6 @@ Add HTTP headers
 
 POST data
 ~~~~~~~~~~~
-.. rubric:: post data
 
 >>> from urlfetch import post
 >>> r = post("http://python.org", data={'foo': 'bar'})
