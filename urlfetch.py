@@ -773,7 +773,7 @@ def random_useragent(filename=None):
 
     if filename is None:
         filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                'extra', 'USER_AGENTS.list')
+                                'urlfetch.useragents.list')
     if os.path.isfile(filename):
         f = open(filename)
         filesize = os.stat(filename)[6]

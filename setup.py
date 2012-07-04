@@ -13,6 +13,7 @@ setup(
     license = "BSD",
     keywords = "httpclient urlfetch",
     py_modules = ['urlfetch'],
+    data_files = [('', ['urlfetch.useragents.list'])],
     classifiers = [
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
