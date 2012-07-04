@@ -1,202 +1,64 @@
 .. highlight:: python
-
-.. _httplib: http://docs.python.org/library/httplib.html?highlight=httplib#module-httplib
-.. _Python: http://python.org/
-
+.. currentmodule:: urlfetch
 
 ======================
 urlfetch documentation
 ======================
 
+urlfetch is a simple, lightweigth and easy to use HTTP client for `Python <http://python.org/>`_.
+It is distributed as a single file module and has no depencencies other than the
+`Python Standard Library <http://docs.python.org/library/>`_.
 
-Introduction
-=============
-urlfetch is an easy to use HTTP client.
 
-Installation
-=============
+Getting Started
+================
+
+Install
+------------
+
 ::
     
-    $ pip install urlfetch -U
+    $ pip install urlfetch --upgrade
     
 OR::
 
-    $ easy_install urlfetch -U
+    $ easy_install urlfetch --upgrade
 
-OR grab the source from `github lyxint/urlfetch <https://github.com/lyxint/urlfetch>`_::
+OR grab the latest source from
+`github lyxint/urlfetch <https://github.com/lyxint/urlfetch>`_::
     
     $ git clone git://github.com/lyxint/urlfetch.git
     $ cd urlfetch
     $ python setup.py install
+    
 
-Examples
+Usage
+------
+
+>>> import urlfetch
+>>> r = urlfetch.get("http://docs.python.org/")
+>>> r.status, r.reason
+(200, 'OK')
+>>> r.getheader('content-type')
+'text/html; charset=UTF-8'
+>>> r.getheader('Content-Type')
+'text/html; charset=UTF-8'
+>>> r.content
+...
+
+    
+User's Guide
+=============
+
+.. toctree::
+    
+    examples
+    reference
+
+License
 =========
-.. rubric:: get http://python.org/
 
-::
+Code and documentation are available according to the BSD 2-clause License:
 
-    from urlfetch import fetch
-
-    response = fetch("http://python.org")
-    print response.body
-
-
-.. rubric:: add specific HTTP headers
-
-::
-
-    from urlfetch import fetch
-
-    response = fetch(
-        "http://python.org",
-        headers = {
-            'User-Agent': 'urlfetch',
-        }
-    )
-    print 'content length', response.body
-    print 'request headers', response.reqheaders
-    print 'response headers', response.getheaders()
-
-.. rubric:: post data
-
-::
-
-    from urlfetch import fetch
-    response = fetch(
-        "http://python.org",
-        data = {
-            'foo': 'bar',
-        }
-    )
-    print response.status
-    
-    
-.. rubric:: Upload file
-
-::
-
-    from urlfetch import post
-
-    response = post(
-        'http://127.0.0.1:8888/upload', 
-        headers = {
-            'Referer': 'http://127.0.0.1/',
-        },
-        files = {
-            'fieldname1': open('/path/to/file', 'rb'),
-            'fieldname3': ('filename', open('/path/to/file2', 'rb')),
-            'fieldname4': ('filename', 'file content'),
-        },
-        data = {
-            'foo': 'bar'
-        },
-    )
-
-    print response.status, response.body
-    
-.. rubric:: more complex: login to http://fanfou.com/ and publish a status
-
-::
-
-    #coding: utf8
-
-    import urlfetch
-    import re
-
-    def pub2fanfou(username, password, status):
-        # get form token
-        response = urlfetch.fetch(
-            "http://m.fanfou.com/"
-        )
-        token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
-        
-        # login
-        response = urlfetch.fetch(
-            "http://m.fanfou.com/",
-            data = {
-                'loginname': username,
-                'loginpass': password,
-                'action': 'login',
-                'token': token,
-                'auto_login': 'on',
-            },
-            headers = {
-                "Referer": "http://m.fanfou.com/",
-            }
-        )
-        
-        # cookies
-        cookies = urlfetch.sc2cs(response.getheader('Set-Cookie'))
-        print cookies
-        
-        # form token
-        response = urlfetch.fetch(
-            "http://m.fanfou.com/home",
-            headers = {
-                'Cookie': cookies,
-                'Referer': "http://m.fanfou.com/home",
-            }
-        )
-        token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
-        
-        # publish status
-        response = urlfetch.fetch(
-            "http://m.fanfou.com/",
-            data = {
-                'content': status,
-                'token': token,
-                'action': 'msg.post',
-            },
-            headers = {
-                'Cookie': cookies,
-                'Referer': "http://m.fanfou.com/home",
-            }
-        )
-
-    if __name__ == '__main__':
-        import sys
-        pub2fanfou(*sys.argv[1:4])
-
-
-Reference
-==========
-
-.. module:: urlfetch
-   :platform: Unix, Windows
-   :synopsis: HTTP Client
-.. moduleauthor:: Elyes Du <lyxint@gmail.com>
-
-.. autoclass:: Response
-    :members:
-
-.. autoclass:: Session
-    :members:
-
-.. autofunction:: fetch
-
-.. autofunction:: request
-
-.. autofunction:: get
-
-.. autofunction:: post
-
-.. autofunction:: head
-
-.. autofunction:: put
-
-.. autofunction:: delete
-
-.. autofunction:: options
-
-.. autofunction:: trace
-
-.. autofunction:: patch
-
-helpers
-~~~~~~~~~~~
-
-.. autofunction:: sc2cs
-
-.. autofunction:: random_useragent
-
-.. autofunction:: mb_code
+.. include:: ../LICENSE
+    :literal:

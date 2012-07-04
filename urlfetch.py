@@ -342,7 +342,7 @@ class Response(object):
     def cookiestring(self):
         '''Cookie string'''
         cookies = self.cookies
-        return '; '.join(['%s=%s' for k, v in cookies.items()])
+        return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
 
     def close(self):
         '''Close the connection'''
@@ -355,14 +355,37 @@ class Response(object):
 
 
 class Session(object):
-    '''A session object.'''
+    '''A session object.
 
-    def __init__(self, headers={}, cookies={}):
+    :class:`urlfetch.Session` can hold common headers and cookies.
+    Every request issued by a :class:`urlfetch.Session` object will bring u
+    these headers and cookies.
+                             
+    :class:`urlfetch.Session` plays a role in handling cookies, just like a
+    cookiejar.
+
+    :param headers: init headers
+    :type headers: dict, optional
+    :param cookies: init cookies
+    :type cookies: dict, optional
+    :param auth: (username, password) for basic authentication
+    :type auth: tuple, optional
+    '''
+
+    def __init__(self, headers={}, cookies={}, auth=None):
+        '''init a :class:`~urlfetch.Session` object
+
+        '''
         self._headers = {}
         self._cookies = cookies
 
         for k, v in headers.items():
             self._headers[k.title()] = v
+
+        if auth is not None and isinstance(auth, (list, tuple)):
+                auth = '%s:%s' % tuple(auth)
+                auth = base64.b64encode(auth.encode('utf-8'))
+                self._headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
 
     def putheader(self, header, value):
         '''Add an header to default headers'''
