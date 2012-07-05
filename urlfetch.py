@@ -401,7 +401,7 @@ class Session(object):
 
     def popcookie(self, key):
         '''Remove an cookie from default cookies'''
-        self._cookies.pop(key)
+        return self._cookies.pop(key)
 
     @property
     def headers(self):
