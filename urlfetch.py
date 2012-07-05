@@ -415,6 +415,10 @@ class Session(object):
     def cookiestring(self):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
 
+    def snapshot(self):
+        session = {'headers': self._headers, 'cookies': self._cookies}
+        return session
+
     def dump(self, fileobj, cls='marshal'):
         '''pack a session and write packed bytes to fileobj
 
@@ -429,7 +433,7 @@ class Session(object):
         >>> f.close()
         '''
         dump = import_object('%s.dump' % cls)
-        return dump(self.dumps(cls), fileobj)
+        return dump(self.snapshot(), fileobj)
 
     def dumps(self, cls='marshal'):
         '''pack a seesion and return packed bytes
@@ -442,9 +446,8 @@ class Session(object):
         >>> s.dumps()
         ...
         '''
-        session = {'headers': self._headers, 'cookies': self._cookies}
         dumps = import_object('%s.dumps' % cls)
-        return dumps(session)
+        return dumps(self.snapshot())
 
     def load(self, fileobj, cls='marshal'):
         '''unpack a session from fileobj and load it into current session
