@@ -829,7 +829,7 @@ def random_useragent(filename=None):
             f.readline()
 
             line = f.readline().strip()
-            if line:
+            if line and not line.startswith('#'):
                 break
 
         f.close()
