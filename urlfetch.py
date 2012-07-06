@@ -800,7 +800,6 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
     return '; '.join(sc)
 
-
 def random_useragent(filename=None):
     '''Returns a User-Agent string randomly from file.
 
@@ -814,7 +813,11 @@ def random_useragent(filename=None):
 
     if filename is None:
         filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                'share', 'urlfetch', 'urlfetch.useragents.list')
+        if not os.path.isfile(filename):
+            filename = os.path.join(sys.prefix, 'share', 'urlfetch', 
                                 'urlfetch.useragents.list')
+
     if os.path.isfile(filename):
         f = open(filename)
         filesize = os.stat(filename)[6]

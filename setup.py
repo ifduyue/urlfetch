@@ -1,6 +1,7 @@
 from setuptools import setup
 import urlfetch
 import re
+import os
 
 setup(
     name = "urlfetch",
@@ -13,7 +14,7 @@ setup(
     license = "BSD",
     keywords = "httpclient urlfetch",
     py_modules = ['urlfetch'],
-    data_files = [('', ['urlfetch.useragents.list'])],
+    data_files = [(os.path.join('share', 'urlfetch'), ['urlfetch.useragents.list'])],
     classifiers = [
         'Development Status :: 4 - Beta',
         'Programming Language :: Python',
@@ -26,6 +27,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    include_package_data = True,
 )
 
