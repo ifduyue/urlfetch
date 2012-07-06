@@ -27,6 +27,8 @@ ebian)', 'last-modified': 'Tue, 03 Jul 2012 10:48:45 GMT', 'connection': 'close'
 12 10:48:45 GMT'), ('connection', 'close'), ('etag', '"105800d-4a4c-4c3eaa895dd4
 0"'), ('date', 'Wed, 04 Jul 2012 01:32:15 GMT'), ('content-type', 'text/html'),
 ('age', '179')]
+>>> # getheader doesn't care whether you write 'content-length' or 'Content-Length'
+>>> # It's case insensitive
 >>> r.getheader('content-length')
 '19020'
 >>> r.getheader('Content-Length')
@@ -60,7 +62,8 @@ Add HTTP headers
 200
 >>> r.reqheaders
 {'Host': u'python.org', 'Accept': '*/*', 'User-Agent': 'urlfetch'}
->>> # alternatively, you can turn randua on
+>>> # alternatively, you can turn randua on 
+>>> # ranua means generate a random user-agent
 >>> r = fetch("http://python.org/", randua=True)
 >>> r.status
 200
