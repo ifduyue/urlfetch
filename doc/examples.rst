@@ -189,3 +189,15 @@ EwYTZjMTc2ZWI0--81b8c092d264be1adb8b52eef177ab4466520f65; k=10.35.53.118.1341369
 025382790; foo=bar; yah=let's dance", 'What': 'a nice day', 'Accept': '*/*', 'Us
 er-Agent': 'urlfetch session'}
 
+
+Streaming
+~~~~~~~~~~~~
+
+>>> import urlfetch
+>>> with urlfetch.get('http://some.very.large/file') as r:
+>>>     f = open('some.very.large.file', 'wb')
+>>>     for chunk in r:
+>>>         f.write(chunk)
+
+
+
