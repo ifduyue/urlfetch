@@ -195,9 +195,8 @@ Streaming
 
 >>> import urlfetch
 >>> with urlfetch.get('http://some.very.large/file') as r:
->>>     f = open('some.very.large.file', 'wb')
->>>     for chunk in r:
->>>         f.write(chunk)
-
+>>>     with open('some.very.large.file', 'wb') as f:
+>>>         for chunk in r:
+>>>             f.write(chunk)
 
 
