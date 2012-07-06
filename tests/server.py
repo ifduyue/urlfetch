@@ -63,6 +63,11 @@ def sleep(seconds):
 
     return normal_formsdict()
 
+@app.route('/setcookie/<name>/<value>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def setcookie(name, value):
+    response.set_cookie(name, value)
+    return normal_formsdict()
+
 
 import sys
 try:
