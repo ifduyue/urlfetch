@@ -350,7 +350,7 @@ class Response(object):
         '''Cookies in dict'''
 
         c = Cookie.SimpleCookie(self.getheader('set-cookie'))
-        sc = [(i.key, i.value) for i in c.itervalues()]
+        sc = c.items()
         return dict(sc)
 
     @property
@@ -813,7 +813,7 @@ def sc2cs(sc):
     :rtype: cookie string, which is name=value pairs joined by ``\;``.
     '''
     c = Cookie.SimpleCookie(sc)
-    sc = ['%s=%s' % (i.key, i.value) for i in c.itervalues()]
+    sc = ['%s=%s' % (i.key, i.value) for i in c.items()]
     return '; '.join(sc)
 
 def random_useragent(filename=None):
