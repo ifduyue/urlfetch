@@ -392,7 +392,7 @@ class Session(object):
 
         '''
         self._headers = {}
-        self._cookies = cookies
+        self._cookies = cookies.copy()
 
         for k, v in headers.items():
             self._headers[k.title()] = v
