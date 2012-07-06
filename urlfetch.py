@@ -249,16 +249,31 @@ class Response(object):
                                     % self.length_limit)
 
 
-    def read_body(self, chunk_size=10 * 1024):
+    def read(self, chunk_size=8192):
         ''' read content (for streaming and large files)
         
-        chunk_size: size of chunk, default: 10 * 1024        
+        chunk_size: size of chunk, default: 8192       
         '''
-        while True:
-            chunk = self._r.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
+        chunk = self._r.read(chunk_size)
+        return chunk
+    
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        chunk = self.read()
+        if not chunk:
+            raise StopIteration
+        return chunk
+
+    next = __next__
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
     @classmethod
     def from_httplib(cls, r, **kwargs):
@@ -273,7 +288,7 @@ class Response(object):
 
         if self._body is None:
             content = b("")
-            for chunk in self.read_body():
+            for chunk in self:
                 content += chunk
                 if self.length_limit and len(content) > self.length_limit:
                     raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
