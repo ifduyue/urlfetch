@@ -436,16 +436,16 @@ class Session(object):
 
     def dump(self, fileobj, cls='marshal'):
         '''pack a session and write packed bytes to fileobj
+        
+        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
+        >>> f = open('session.jar', 'wb')
+        >>> s.dump(f)
+        >>> f.close()
 
         :param fileobj: a file(-like) object which have ``write`` method
         :type fileobj: file
         :param cls: use which class to pack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
-
-        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
-        >>> f = open('session.jar', 'wb')
-        >>> s.dump(f)
-        >>> f.close()
         '''
         dump = import_object('%s.dump' % cls)
         return dump(self.snapshot(), fileobj)
@@ -453,13 +453,13 @@ class Session(object):
     def dumps(self, cls='marshal'):
         '''pack a seesion and return packed bytes
         
-        :param cls: use which class to pack the session
-        :type cls: string, ``marshal``, ``pickle``, etc...
-        :rtype: packed bytes
-
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.dumps()
         ...
+        
+        :param cls: use which class to pack the session
+        :type cls: string, ``marshal``, ``pickle``, etc...
+        :rtype: packed bytes
         '''
         dumps = import_object('%s.dumps' % cls)
         return dumps(self.snapshot())
@@ -467,16 +467,16 @@ class Session(object):
     def load(self, fileobj, cls='marshal'):
         '''unpack a session from fileobj and load it into current session
 
+        >>> s = urlfetch.Session()
+        >>> s = open('session.jar', 'rb')
+        >>> s.load(f)
+        >>> f.close()
+        
         :param fileobj: a file(-like) object which have ``read`` method
         :type fileobj: file
         :param cls: use which class to unpack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
         :rtype: unpacked session 
-
-        >>> s = urlfetch.Session()
-        >>> s = open('session.jar', 'rb')
-        >>> s.load(f)
-        >>> f.close()
         '''
         load = import_object('%s.load' % cls)
         session = load(fileobj)
@@ -487,15 +487,15 @@ class Session(object):
     def loads(self, string, cls='marshal'):
         '''unpack a seesion from string and load it into current session
         
+        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
+        >>> s.loads(s.dumps())
+        {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
+        
         :param string: the string to be unpacked
         :type string: bytes
         :param cls: use which class to pack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
         :rtype: unpacked session
-
-        >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
-        >>> s.loads(s.dumps())
-        {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
         '''
         loads = import_object('%s.loads' % cls)
         session = loads(string)
