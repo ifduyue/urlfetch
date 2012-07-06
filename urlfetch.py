@@ -518,6 +518,22 @@ class Session(object):
 
         return r
 
+    def fetch(self, *args, **kwargs):
+        '''Fetch an URL'''
+        headers = self.headers.copy()
+        if self.cookiestring:
+            headers['Cookie'] = self.cookiestring
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+
+        r = fetch(*args, **kwargs)
+
+        cookies = r.cookies
+        self._cookies.update(cookies)
+
+        return r
+
+ 
     def get(self, *args, **kwargs):
         '''Issue a get request'''
         headers = self.headers.copy()
