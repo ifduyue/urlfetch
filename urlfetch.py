@@ -296,6 +296,7 @@ class Response(object):
         return self._body
 
     # compatible with requests
+    #: An alias for :attr:`body`.
     content = body
 
     @property
