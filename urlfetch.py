@@ -55,9 +55,9 @@ import codecs
 writer = codecs.lookup('utf-8')[3]
 
 try:
-    import json
-except ImportError:
     import simplejson as json
+except ImportError:
+    import json
 
 
 __all__ = [
