@@ -3,13 +3,13 @@ urlfetch
 
 Description
 -----------
-An easy to use HTTP client.
+An easy to use HTTP client for Python.
 
 Installation
 -------------
 ::
     
-    $ pip install urlfetch -U
+    $ pip install urlfetch --upgrade
 
 
 Hello World
@@ -19,7 +19,7 @@ Hello World
     from urlfetch import get
     
     response = get('http://python.org/')
-    print response.body
+    print response.content
 
 Upload file
 -----------
