@@ -722,7 +722,7 @@ def request(url, method="GET", data=None, headers={},
         port = int(port)
     else:
         host, port = netloc, None
-    host = host.encode('idna').decode('utf-8')
+    host = mb_code(host, 'idna')
 
     if scheme == 'https':
         h = HTTPSConnection(host, port=port, timeout=timeout)
