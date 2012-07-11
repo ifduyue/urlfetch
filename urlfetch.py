@@ -707,7 +707,7 @@ def request(url, method="GET", data=None, headers={},
     scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     method = method.upper()
     if method not in _allowed_methods:
-        raise UrlfetchException("Method shoud be one of " +
+        raise UrlfetchException("Method should be one of " +
                                 ", ".join(_allowed_methods))
 
     requrl = path
