@@ -780,6 +780,9 @@ def parse_url(url):
     # TODO add extraction username and password from url, for example: http://username:password@host:port/
 
     result = dict()
+    if not url:
+        return result
+
     _scheme, _netloc, _path, _params, _query, _fragment = urlparse.urlparse(url)
     
     result['scheme'] = _scheme
