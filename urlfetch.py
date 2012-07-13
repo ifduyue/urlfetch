@@ -704,30 +704,17 @@ def request(url, method="GET", data=None, headers={},
     :rtype: A :class:`~urlfetch.Response` object
     '''
 
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
     method = method.upper()
     if method not in _allowed_methods:
         raise UrlfetchException("Method should be one of " +
                                 ", ".join(_allowed_methods))
 
-    requrl = path
-    if query:
-        requrl += '?' + query
-    # do not add fragment
-    #if fragment: requrl += '#' + fragment
+    parsed_url = parse_url(url)
 
-    # handle 'Host'
-    if ':' in netloc:
-        host, port = netloc.rsplit(':', 1)
-        port = int(port)
-    else:
-        host, port = netloc, None
-    host = mb_code(host, 'idna')
-
-    if scheme == 'https':
-        h = HTTPSConnection(host, port=port, timeout=timeout)
-    elif scheme == 'http':
-        h = HTTPConnection(host, port=port, timeout=timeout)
+    if parsed_url.get('scheme', None) == 'https':
+        h = HTTPSConnection(parsed_url.get('host'), port=parsed_url.get('port'), timeout=timeout)
+    elif parsed_url.get('scheme', None) == 'http':
+        h = HTTPConnection(parsed_url.get('host'), port=parsed_url.get('port'), timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
 
@@ -745,7 +732,7 @@ def request(url, method="GET", data=None, headers={},
         'Accept': '*/*',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Host': host,
+        'Host': parsed_url.get('host'),
     }
 
     if auth is not None:
@@ -769,7 +756,7 @@ def request(url, method="GET", data=None, headers={},
     for k, v in headers.items():
         reqheaders[k.title()] = v
 
-    h.request(method, requrl, data, reqheaders)
+    h.request(method, parsed_url.get('query'), data, reqheaders)
     response = h.getresponse()
     return Response.from_httplib(response, reqheaders=reqheaders,
                                  connection=h, length_limit=length_limit)
@@ -788,6 +775,30 @@ patch = partial(request, method="PATCH")
 
 
 ## helpers ##
+def parse_url(url):
+    ''' returns dictionary of parsed url: username, password, scheme, host, port, query '''
+    # TODO add extraction username and password from url, for example: http://username:password@host:port/
+
+    result = dict()
+    if not url:
+        return result
+
+    _scheme, _netloc, _path, _params, _query, _fragment = urlparse.urlparse(url)
+    
+    result['scheme'] = _scheme
+    result['query'] = _path
+    if _query: result['query'] += '?' + _query
+    
+    # handle 'Host'
+    if ':' in _netloc:
+        result['host'], result['port'] = _netloc.rsplit(':', 1)
+        result['port'] = int(result['port'])
+    else:
+        result['host'], result['port'] = _netloc, None
+    result['host'] = mb_code(result['host'], 'idna')
+    
+    return result
+
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
 
