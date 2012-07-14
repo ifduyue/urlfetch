@@ -291,7 +291,8 @@ class Response(object):
             for chunk in self:
                 content += chunk
                 if self.length_limit and len(content) > self.length_limit:
-                    raise UrlfetchException("Content length is more than %d bytes" % length_limit)  
+                    raise UrlfetchException("Content length is more than %d "
+                                            "bytes" % length_limit)  
             self._body = content
         return self._body
 
@@ -711,10 +712,12 @@ def request(url, method="GET", data=None, headers={},
 
     parsed_url = parse_url(url)
 
-    if parsed_url.get('scheme', None) == 'https':
-        h = HTTPSConnection(parsed_url.get('host'), port=parsed_url.get('port'), timeout=timeout)
-    elif parsed_url.get('scheme', None) == 'http':
-        h = HTTPConnection(parsed_url.get('host'), port=parsed_url.get('port'), timeout=timeout)
+    if parsed_url['scheme'] == 'https':
+        h = HTTPSConnection(parsed_url['host'], port=parsed_url['port'],
+                            timeout=timeout)
+    elif parsed_url['scheme'] == 'http':
+        h = HTTPConnection(parsed_url['host'], port=parsed_url['port'],
+                           timeout=timeout)
     else:
         raise UrlfetchException('Unsupported protocol %s' % scheme)
 
@@ -732,9 +735,12 @@ def request(url, method="GET", data=None, headers={},
         'Accept': '*/*',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Host': parsed_url.get('host'),
+        'Host': parsed_url['host'],
     }
 
+    if parsed_url['username'] is not None and parsed_url['password'] is not \
+            None and auth is None:
+        auth = (parsed_url['username'], parsed_url['password'])
     if auth is not None:
         if isinstance(auth, (list, tuple)):
             auth = '%s:%s' % tuple(auth)
@@ -756,7 +762,7 @@ def request(url, method="GET", data=None, headers={},
     for k, v in headers.items():
         reqheaders[k.title()] = v
 
-    h.request(method, parsed_url.get('query'), data, reqheaders)
+    h.request(method, parsed_url['uri'], data, reqheaders)
     response = h.getresponse()
     return Response.from_httplib(response, reqheaders=reqheaders,
                                  connection=h, length_limit=length_limit)
@@ -776,27 +782,27 @@ patch = partial(request, method="PATCH")
 
 ## helpers ##
 def parse_url(url):
-    ''' returns dictionary of parsed url: username, password, scheme, host, port, query '''
-    # TODO add extraction username and password from url, for example: http://username:password@host:port/
-
+    '''returns dictionary of parsed url:
+    scheme, netloc, path, params, query, fragment, uri, username, password,
+    host and port
+    '''
     result = dict()
-    if not url:
-        return result
+    parsed = urlparse.urlparse(url)
+    
+    result['scheme'] = parsed.scheme
+    result['netloc'] = parsed.netloc
+    result['path'] = parsed.path
+    result['params'] = parsed.params
+    result['query'] = parsed.query
+    result['fragment'] = parsed.fragment
+    result['uri'] = parsed.path
+    if parsed.query:
+        result['uri'] += '?' + parsed.query
+    result['username'] = parsed.username
+    result['password'] = parsed.password
+    result['host'] = result['hostname'] = parsed.hostname
+    result['port'] = parsed.port
 
-    _scheme, _netloc, _path, _params, _query, _fragment = urlparse.urlparse(url)
-    
-    result['scheme'] = _scheme
-    result['query'] = _path
-    if _query: result['query'] += '?' + _query
-    
-    # handle 'Host'
-    if ':' in _netloc:
-        result['host'], result['port'] = _netloc.rsplit(':', 1)
-        result['port'] = int(result['port'])
-    else:
-        result['host'], result['port'] = _netloc, None
-    result['host'] = mb_code(result['host'], 'idna')
-    
     return result
 
 def mb_code(s, coding=None):
