@@ -787,12 +787,11 @@ def parse_url(url):
     host and port
     '''
     result = dict()
-    parsed = urlparse.urlparse(url)
+    parsed = urlparse.urlsplit(url)
     
     result['scheme'] = parsed.scheme
     result['netloc'] = parsed.netloc
     result['path'] = parsed.path
-    result['params'] = parsed.params
     result['query'] = parsed.query
     result['fragment'] = parsed.fragment
     result['uri'] = parsed.path
