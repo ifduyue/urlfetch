@@ -677,7 +677,8 @@ def fetch(*args, **kwargs):
 
 def request(url, method="GET", data=None, headers={},
             timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
-            randua=False, auth=None, length_limit=None, **kwargs):
+            randua=False, auth=None, length_limit=None,
+            proxies=None, **kwargs):
 
     ''' request an URL
 
@@ -703,6 +704,9 @@ def request(url, method="GET", data=None, headers={},
                          reached raised exception 'Content length is more
                          than ...'
     :type length_limit: integer or None, default is ``none``
+    :param proxies: HTTP proxy, like {'http': '127.0.0.1:8888',
+                                     'https': '127.0.0.1:563'}
+    :type proxies: dict, optional
     :rtype: A :class:`~urlfetch.Response` object
     '''
     
@@ -827,18 +831,16 @@ def parse_url(url):
 
     return result
 
-#
-#   Proxy definitions (from system environment)
-#
-def _get_env(param_name):
-    ''' get variable from system environment'''
-    _env = dict((k.lower(),v) for k,v in os.environ.items())
-    return _env.get(param_name.lower(), None)
-
-_PROXIES = {
-    'http': dict([(k,v) for k,v in parse_url(_get_env('http_proxy')).items() if k in ('host', 'port')]),
-    'https': dict([(k,v) for k,v in parse_url(_get_env('https_proxy')).items() if k in ('host', 'port')]),
-}
+def get_proxies_from_environ():
+    '''get proxies from os.environ'''
+    proxies = {}
+    http_proxy = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
+    https_proxy = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+    if http_proxy:
+        proxies['http'] = http_proxy
+    if https_proxy:
+        proxies['https'] = https_proxy
+    return proxies
 
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
