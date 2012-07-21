@@ -70,6 +70,7 @@ __all__ = [
 _allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS",
                     "PUT", "POST", "TRACE", "PATCH")
 
+_PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost',)
 
 class UrlfetchException(Exception):
     pass
@@ -704,6 +705,19 @@ def request(url, method="GET", data=None, headers={},
     :type length_limit: integer or None, default is ``none``
     :rtype: A :class:`~urlfetch.Response` object
     '''
+    
+    def make_connection(conn_type='http', host=None, port=80, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        ''' return HTTP or HTTPS connection '''
+        conn = None
+        if conn_type == 'http':
+            conn = HTTPConnection(host, port, timeout=timeout)
+        elif conn_type == 'https':
+            conn = HTTPSConnection(host, port, timeout=timeout)
+        else:
+            raise UrlfetchException('Unknown Connection Type: %s' % conn_type)    
+        return conn
+        
+    via_proxy = False
 
     method = method.upper()
     if method not in _allowed_methods:
@@ -711,15 +725,21 @@ def request(url, method="GET", data=None, headers={},
                                 ", ".join(_allowed_methods))
 
     parsed_url = parse_url(url)
-
-    if parsed_url['scheme'] == 'https':
-        h = HTTPSConnection(parsed_url['host'], port=parsed_url['port'],
-                            timeout=timeout)
-    elif parsed_url['scheme'] == 'http':
-        h = HTTPConnection(parsed_url['host'], port=parsed_url['port'],
-                           timeout=timeout)
+    
+    # Proxy support
+    scheme = parsed_url['scheme']
+    if _PROXIES[scheme].get('host', None) and _PROXIES[scheme].get('port', None) and \
+        parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
+        
+        via_proxy = True
+        proxy_host = _PROXIES[scheme]['host']
+        proxy_port = _PROXIES[scheme]['port']
+        
+        h = make_connection(conn_type=scheme, host=proxy_host, port=proxy_port, timeout=timeout)
     else:
-        raise UrlfetchException('Unsupported protocol %s' % scheme)
+        h = make_connection(  conn_type=scheme, 
+                            host=parsed_url['host'], port=parsed_url['port'], 
+                            timeout=timeout )
 
     # is randua bool or path
     if randua and isinstance(randua, basestring) and \
@@ -762,7 +782,10 @@ def request(url, method="GET", data=None, headers={},
     for k, v in headers.items():
         reqheaders[k.title()] = v
 
-    h.request(method, parsed_url['uri'], data, reqheaders)
+    if via_proxy:
+        h.request(method, url, data, reqheaders)
+    else:
+        h.request(method, parsed_url['uri'], data, reqheaders)
     response = h.getresponse()
     return Response.from_httplib(response, reqheaders=reqheaders,
                                  connection=h, length_limit=length_limit)
@@ -803,6 +826,19 @@ def parse_url(url):
     result['port'] = parsed.port
 
     return result
+
+#
+#   Proxy definitions (from system environment)
+#
+def _get_env(param_name):
+    ''' get variable from system environment'''
+    _env = dict((k.lower(),v) for k,v in os.environ.items())
+    return _env.get(param_name.lower(), None)
+
+_PROXIES = {
+    'http': dict([(k,v) for k,v in parse_url(_get_env('http_proxy')).items() if k in ('host', 'port')]),
+    'https': dict([(k,v) for k,v in parse_url(_get_env('https_proxy')).items() if k in ('host', 'port')]),
+}
 
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
