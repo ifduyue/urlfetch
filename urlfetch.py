@@ -67,7 +67,7 @@ __all__ = [
     'sc2cs', 'random_useragent', 'mb_code',
 ]
 
-_allowed_methods = ("GET", "DELETE", "HEAD", "OPTIONS",
+_ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS",
                     "PUT", "POST", "TRACE", "PATCH")
 
 _PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost',)
@@ -720,9 +720,9 @@ def request(url, method="GET", data=None, headers={},
     via_proxy = False
 
     method = method.upper()
-    if method not in _allowed_methods:
+    if method not in _ALLOWED_METHODS:
         raise UrlfetchException("Method should be one of " +
-                                ", ".join(_allowed_methods))
+                                ", ".join(_ALLOWED_METHODS))
 
     parsed_url = parse_url(url)
     
