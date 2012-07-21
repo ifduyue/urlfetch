@@ -680,7 +680,7 @@ def fetch(*args, **kwargs):
 def request(url, method="GET", data=None, headers={},
             timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
             randua=False, auth=None, length_limit=None,
-            proxies=None, trust_env=False, **kwargs):
+            proxies=None, trust_env=True, **kwargs):
 
     ''' request an URL
 
