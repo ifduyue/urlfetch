@@ -25,6 +25,7 @@ else:
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
+    from http.client import HTTP_PORT, HTTPS_PORT
     from urllib.parse import urlencode
     import urllib.parse as urlparse
     import http.cookies as Cookie
@@ -37,6 +38,7 @@ if py3k:
         return s
 else:
     from httplib import HTTPConnection, HTTPSConnection
+    from httplib import HTTP_PORT, HTTPS_PORT
     from urllib import urlencode
     import urlparse
     import Cookie
@@ -678,7 +680,7 @@ def fetch(*args, **kwargs):
 def request(url, method="GET", data=None, headers={},
             timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
             randua=False, auth=None, length_limit=None,
-            proxies=None, **kwargs):
+            proxies=None, trust_env=False, **kwargs):
 
     ''' request an URL
 
@@ -707,12 +709,14 @@ def request(url, method="GET", data=None, headers={},
     :param proxies: HTTP proxy, like {'http': '127.0.0.1:8888',
                                      'https': '127.0.0.1:563'}
     :type proxies: dict, optional
+    :param trust_env: If ``True``, urlfetch will get infomations from env, such
+                        as HTTP_PROXY, HTTPS_PROXY
+    :type trust_env: bool, ``False`` by default
     :rtype: A :class:`~urlfetch.Response` object
     '''
     
-    def make_connection(conn_type='http', host=None, port=80, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+    def make_connection(conn_type, host, port, timeout):
         ''' return HTTP or HTTPS connection '''
-        conn = None
         if conn_type == 'http':
             conn = HTTPConnection(host, port, timeout=timeout)
         elif conn_type == 'https':
@@ -732,18 +736,18 @@ def request(url, method="GET", data=None, headers={},
     
     # Proxy support
     scheme = parsed_url['scheme']
-    if _PROXIES[scheme].get('host', None) and _PROXIES[scheme].get('port', None) and \
-        parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
-        
+    if proxies is None and trust_env:
+        proxies = get_proxies_from_environ()
+    
+    if proxies and proxies.get(scheme) and \
+       parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
         via_proxy = True
-        proxy_host = _PROXIES[scheme]['host']
-        proxy_port = _PROXIES[scheme]['port']
-        
-        h = make_connection(conn_type=scheme, host=proxy_host, port=proxy_port, timeout=timeout)
+        proxy_host, proxy_port = proxies[scheme].rsplit(':', 1)
+        h = make_connection(scheme, proxy_host, proxy_port, timeout)
     else:
-        h = make_connection(  conn_type=scheme, 
+        h = make_connection(scheme, 
                             host=parsed_url['host'], port=parsed_url['port'], 
-                            timeout=timeout )
+                            timeout=timeout)
 
     # is randua bool or path
     if randua and isinstance(randua, basestring) and \
