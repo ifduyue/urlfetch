@@ -711,7 +711,7 @@ def request(url, method="GET", data=None, headers={},
     :type proxies: dict, optional
     :param trust_env: If ``True``, urlfetch will get infomations from env, such
                         as HTTP_PROXY, HTTPS_PROXY
-    :type trust_env: bool, ``False`` by default
+    :type trust_env: bool, ``True`` by default
     :rtype: A :class:`~urlfetch.Response` object
     '''
     
