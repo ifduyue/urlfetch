@@ -742,8 +742,8 @@ def request(url, method="GET", data=None, headers={},
     if proxies and proxies.get(scheme) and \
        parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
         via_proxy = True
-        proxy_host, proxy_port = proxies[scheme].rsplit(':', 1)
-        h = make_connection(scheme, proxy_host, proxy_port, timeout)
+        parsed_proxy = parse_url(proxies[scheme])
+        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'], timeout)
     else:
         h = make_connection(scheme, 
                             host=parsed_url['host'], port=parsed_url['port'], 
