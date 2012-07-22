@@ -6,7 +6,7 @@ import unittest
 class ProxyTest(unittest.TestCase):
 
     def test_get_via_proxy(self):
-        resp = urlfetch.get('http://www.example.com', proxies={'http':testlib.test_server_host[:-1]})
+        resp = urlfetch.get('http://www.example.com', proxies={'http':testlib.test_server_host})
         self.assertEqual(resp.status,200)
 
 
