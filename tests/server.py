@@ -69,6 +69,11 @@ def setcookie(name, value):
     return normal_formsdict()
 
 
+@app.route('http://www.example.com', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def index():
+    return normal_formsdict()
+
+
 import sys
 try:
     port = int(sys.argv[1])
