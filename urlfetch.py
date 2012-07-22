@@ -838,8 +838,8 @@ def parse_url(url):
 def get_proxies_from_environ():
     '''get proxies from os.environ'''
     proxies = {}
-    http_proxy = os.environ.get('http_proxy') or os.environ.get('HTTP_PROXY')
-    https_proxy = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+    http_proxy = os.getenv('http_proxy') or os.getenv('HTTP_PROXY')
+    https_proxy = os.getenv('https_proxy') or os.getenv('HTTPS_PROXY')
     if http_proxy:
         proxies['http'] = http_proxy
     if https_proxy:
