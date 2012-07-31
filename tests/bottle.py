@@ -122,6 +122,11 @@ if py31:
     class NCTextIOWrapper(TextIOWrapper):
         def close(self): pass # Keep wrapped buffer open.
 
+# The truth-value of cgi.FieldStorage is misleading.
+class FieldStorage(cgi.FieldStorage):
+    def __nonzero__(self):
+        return bool(self.list or self.file)
+
 # A bug in functools causes it to break if the wrapper is an instance method
 def update_wrapper(wrapper, wrapped, *a, **ka):
     try: functools.update_wrapper(wrapper, wrapped, *a, **ka)
@@ -1092,7 +1097,7 @@ class BaseRequest(object):
                                          newline='\n')
         elif py3k:
             args['encoding'] = 'ISO-8859-1'
-        data = cgi.FieldStorage(**args)
+        data = FieldStorage(**args)
         for item in (data.list or [])[:self.MAX_PARAMS]:
             post[item.name] = item if item.filename else item.value
         return post
@@ -1118,7 +1123,7 @@ class BaseRequest(object):
             but the fragment is always empty because it is not visible to the
             server. '''
         env = self.environ
-        http = env.get('wsgi.url_scheme', 'http')
+        http = env.get('HTTP_X_FORWARDED_PROTO') or env.get('wsgi.url_scheme', 'http')
         host = env.get('HTTP_X_FORWARDED_HOST') or env.get('HTTP_HOST')
         if not host:
             # HTTP 1.1 requires a Host-header. This is for HTTP/1.0 clients.
@@ -1940,7 +1945,7 @@ class ResourceManager(object):
     ''' This class manages a list of search paths and helps to find and open
         aplication-bound resources (files).
 
-        :param base: default value for same-named :meth:`add_path` parameter.
+        :param base: default value for :meth:`add_path` calls.
         :param opener: callable used to open resources.
         :param cachemode: controls which lookups are cached. One of 'all',
                          'found' or 'none'.
@@ -1953,20 +1958,20 @@ class ResourceManager(object):
 
         #: A list of search paths. See :meth:`add_path` for details.
         self.path = []
-        #: A cache for resolved paths. `res.cache.clear()`` clears the cache.
+        #: A cache for resolved paths. ``res.cache.clear()`` clears the cache.
         self.cache = {}
 
     def add_path(self, path, base=None, index=None, create=False):
-        ''' Add a new path to the list of search paths. Return False if it does
-            not exist.
+        ''' Add a new path to the list of search paths. Return False if the
+            path does not exist.
 
-            :param path: The new search path. Relative paths are turned into an
-                absolute and normalized form. If the path looks like a file (not
-                ending in `/`), the filename is stripped off.
+            :param path: The new search path. Relative paths are turned into
+                an absolute and normalized form. If the path looks like a file
+                (not ending in `/`), the filename is stripped off.
             :param base: Path used to absolutize relative search paths.
-                Defaults to `:attr:base` which defaults to ``./``.
-            :param index: Position within the list of search paths. Defaults to
-                last index (appends to the list).
+                Defaults to :attr:`base` which defaults to ``os.getcwd()``.
+            :param index: Position within the list of search paths. Defaults
+                to last index (appends to the list).
             :param create: Create non-existent search paths. Off by default.
 
             The `base` parameter makes it easy to reference files installed
@@ -1980,12 +1985,13 @@ class ResourceManager(object):
         if path in self.path:
             self.path.remove(path)
         if create and not os.path.isdir(path):
-            os.mkdir(path)
+            os.makedirs(path)
         if index is None:
             self.path.append(path)
         else:
             self.path.insert(index, path)
         self.cache.clear()
+        return os.path.exists(path)
 
     def __iter__(self):
         ''' Iterate over all existing files in all registered paths. '''
@@ -3083,21 +3089,22 @@ def template(*args, **kwargs):
     or directly (as keyword arguments).
     '''
     tpl = args[0] if args else None
-    template_adapter = kwargs.pop('template_adapter', SimpleTemplate)
+    adapter = kwargs.pop('template_adapter', SimpleTemplate)
+    lookup = kwargs.pop('template_lookup', TEMPLATE_PATH)
+    tplid = (id(lookup), tpl)
     if tpl not in TEMPLATES or DEBUG:
         settings = kwargs.pop('template_settings', {})
-        lookup = kwargs.pop('template_lookup', TEMPLATE_PATH)
-        if isinstance(tpl, template_adapter):
-            TEMPLATES[tpl] = tpl
-            if settings: TEMPLATES[tpl].prepare(**settings)
+        if isinstance(tpl, adapter):
+            TEMPLATES[tplid] = tpl
+            if settings: TEMPLATES[tplid].prepare(**settings)
         elif "\n" in tpl or "{" in tpl or "%" in tpl or '$' in tpl:
-            TEMPLATES[tpl] = template_adapter(source=tpl, lookup=lookup, **settings)
+            TEMPLATES[tplid] = adapter(source=tpl, lookup=lookup, **settings)
         else:
-            TEMPLATES[tpl] = template_adapter(name=tpl, lookup=lookup, **settings)
-    if not TEMPLATES[tpl]:
+            TEMPLATES[tplid] = adapter(name=tpl, lookup=lookup, **settings)
+    if not TEMPLATES[tplid]:
         abort(500, 'Template (%s) not found' % tpl)
     for dictarg in args[1:]: kwargs.update(dictarg)
-    return TEMPLATES[tpl].render(kwargs)
+    return TEMPLATES[tplid].render(kwargs)
 
 mako_template = functools.partial(template, template_adapter=MakoTemplate)
 cheetah_template = functools.partial(template, template_adapter=CheetahTemplate)
