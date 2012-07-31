@@ -739,10 +739,12 @@ def request(url, method="GET", data=None, headers={},
     if proxies is None and trust_env:
         proxies = get_proxies_from_environ()
     
-    if proxies and proxies.get(scheme) and \
-       parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
+    proxy = proxies.get(scheme)
+    if proxy and parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
         via_proxy = True
-        parsed_proxy = parse_url(proxies[scheme])
+        if '://' not in proxy:
+            proxy = '%s://%s' % (scheme, proxy)
+        parsed_proxy = parse_url(proxy)
         h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'], timeout)
     else:
         h = make_connection(scheme, 
