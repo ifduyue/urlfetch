@@ -200,3 +200,15 @@ Streaming
 >>>             f.write(chunk)
 
 
+Proxies
+~~~~~~~~~~~~
+
+>>> from urlfetch import get
+>>> r = get('http://docs.python.org/', proxies={'http':'127.0.0.1:8888'})
+>>> r.status, r.reason
+(200, 'OK')
+>>> r.headers
+{'content-length': '8719', 'via': '1.1 tinyproxy (tinyproxy/1.8.2)', 'accept-ran
+ges': 'bytes', 'vary': 'Accept-Encoding', 'server': 'Apache/2.2.16 (Debian)', 'l
+ast-modified': 'Mon, 30 Jul 2012 19:22:48 GMT', 'etag': '"13cc5e4-220f-4c610fcaf
+d200"', 'date': 'Tue, 31 Jul 2012 04:18:26 GMT', 'content-type': 'text/html'}
