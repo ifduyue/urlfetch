@@ -235,6 +235,8 @@ class Response(object):
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
+        self.__CONTENT_DECODERS = { 'gzip': decode_gzip,'deflate': decode_deflate, }
+
 
         for k in kwargs:
             setattr(self, k, kwargs[k])
@@ -296,7 +298,17 @@ class Response(object):
                 if self.length_limit and len(content) > self.length_limit:
                     raise UrlfetchException("Content length is more than %d "
                                             "bytes" % length_limit)  
-            self._body = content
+            # decode content if encoded
+            encoding = self.headers.get('content-encoding', None)
+            decoder = self.__CONTENT_DECODERS.get(encoding)
+            if encoding and not decoder:
+                raise UrlfetchException('Unknown encoding: %s' % encoding)                
+            
+            if decoder:
+                self._body = decoder(content)
+            else:
+                self._body = content
+            
         return self._body
 
     # compatible with requests
@@ -765,6 +777,7 @@ def request(url, method="GET", data=None, headers={},
         'Accept': '*/*',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
+        'Accept-Encoding': ', '.join(('identity', 'deflate', 'compress', 'gzip')),
         'Host': parsed_url['host'],
     }
 
@@ -814,6 +827,19 @@ patch = partial(request, method="PATCH")
 
 
 ## helpers ##
+def decode_gzip(data):
+    ''' decode gzipped content '''
+    gzipper = gzip.GzipFile(fileobj=BytesIO(data))
+    return gzipper.read()
+
+
+def decode_deflate(data):
+    ''' decode deflate content '''
+    try:
+        return zlib.decompress(data)
+    except zlib.error:
+        return zlib.decompress(data, -zlib.MAX_WBITS)
+
 def parse_url(url):
     '''returns dictionary of parsed url:
     scheme, netloc, path, params, query, fragment, uri, username, password,
