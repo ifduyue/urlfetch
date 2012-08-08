@@ -902,7 +902,7 @@ def sc2cs(sc):
 
     :param sc: Set-Cookie
     :type sc: string
-    :rtype: cookie string, which is name=value pairs joined by ``\;``.
+    :rtype: cookie string, which is name=value pairs joined by ``;``.
     '''
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.values()]
