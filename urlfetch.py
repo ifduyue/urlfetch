@@ -49,7 +49,6 @@ else:
     def u(s):
         return unicode(s, "unicode_escape")
 
-import socket
 import base64
 from functools import partial, wraps
 from io import BytesIO
@@ -690,7 +689,7 @@ def fetch(*args, **kwargs):
 
 
 def request(url, method="GET", data=None, headers={},
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
+            timeout=None, files={},
             randua=False, auth=None, length_limit=None,
             proxies=None, trust_env=True, **kwargs):
 
@@ -704,8 +703,7 @@ def request(url, method="GET", data=None, headers={},
     :type method: string, optional
     :param headers: HTTP request headers
     :type headers: dict, optional
-    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT
-                    by default
+    :param timeout: timeout in seconds
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
