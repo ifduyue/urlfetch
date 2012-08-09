@@ -49,9 +49,8 @@ else:
     def u(s):
         return unicode(s, "unicode_escape")
 
-import socket
 import base64
-from functools import partial
+from functools import partial, wraps
 from io import BytesIO
 import codecs
 writer = codecs.lookup('utf-8')[3]
@@ -690,7 +689,7 @@ def fetch(*args, **kwargs):
 
 
 def request(url, method="GET", data=None, headers={},
-            timeout=socket._GLOBAL_DEFAULT_TIMEOUT, files={},
+            timeout=None, files={},
             randua=False, auth=None, length_limit=None,
             proxies=None, trust_env=True, **kwargs):
 
@@ -704,8 +703,7 @@ def request(url, method="GET", data=None, headers={},
     :type method: string, optional
     :param headers: HTTP request headers
     :type headers: dict, optional
-    :param timeout: timeout in seconds, socket._GLOBAL_DEFAULT_TIMEOUT
-                    by default
+    :param timeout: timeout in seconds
     :type timeout: integer or float, optional
     :param files: files to be sended
     :type files: dict, optional
@@ -814,15 +812,20 @@ def request(url, method="GET", data=None, headers={},
                                  connection=h, length_limit=length_limit)
 
 # some shortcuts
-get = partial(request, method="GET")
-post = partial(request, method="POST")
-put = partial(request, method="PUT")
-delete = partial(request, method="DELETE")
-head = partial(request, method="HEAD")
-options = partial(request, method="OPTIONS")
+def _partial_method(method, **kwargs):
+    func = wraps(request)(partial(request, method=method, **kwargs))
+    setattr(func, '__doc__', 'Issue a %s request' % method)
+    return func
+    
+get = _partial_method("GET")
+post = _partial_method("POST")
+put = _partial_method("PUT")
+delete = _partial_method("DELETE")
+head = _partial_method("HEAD")
+options = _partial_method("OPTIONS")
 # No entity body can be sent with a TRACE request.
-trace = partial(request, method="TRACE", files={}, data=None)
-patch = partial(request, method="PATCH")
+trace = _partial_method("TRACE", files={}, data=None)
+patch = _partial_method("PATCH")
 
 
 
@@ -897,7 +900,7 @@ def sc2cs(sc):
 
     :param sc: Set-Cookie
     :type sc: string
-    :rtype: cookie string, which is name=value pairs joined by ``\;``.
+    :rtype: cookie string, which is name=value pairs joined by ``;``.
     '''
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.values()]
