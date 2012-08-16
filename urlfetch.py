@@ -688,40 +688,30 @@ def fetch(*args, **kwargs):
     return get(*args, **kwargs)
 
 
-def request(url, method="GET", data=None, headers={},
-            timeout=None, files={},
-            randua=False, auth=None, length_limit=None,
-            proxies=None, trust_env=True, **kwargs):
+def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
+            files={}, randua=False, auth=None, length_limit=None, proxies=None,
+            trust_env=True, **kwargs):
 
     ''' request an URL
 
     :param url: URL to be fetched.
-    :type url: string
-    :param method: HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
+    :param method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
                    ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``.
                    ``GET`` by default.
-    :type method: string, optional
-    :param headers: HTTP request headers
-    :type headers: dict, optional
-    :param timeout: timeout in seconds
-    :type timeout: integer or float, optional
-    :param files: files to be sended
-    :type files: dict, optional
-    :param randua: if ``True`` or ``path string``, use a random user-agent in
-                    headers, instead of ``'urlfetch/' + __version__``
-    :type randua: bool or string, default is ``False``
-    :param auth: (username, password) for basic authentication
-    :type auth: tuple, optional
-    :param length_limit: if ``None``, no limits on content length, if the limit
-                         reached raised exception 'Content length is more
-                         than ...'
-    :type length_limit: integer or None, default is ``none``
-    :param proxies: HTTP proxy, like {'http': '127.0.0.1:8888',
-                                     'https': '127.0.0.1:563'}
-    :type proxies: dict, optional
-    :param trust_env: If ``True``, urlfetch will get infomations from env, such
-                        as HTTP_PROXY, HTTPS_PROXY
-    :type trust_env: bool, ``True`` by default
+    :param params: (optional) dict or string to attach to url as querystring.
+    :param headers: (optional) HTTP request headers in dict
+    :param timeout: (optional) timeout in seconds
+    :param files: (optional) files to be sended
+    :param randua: (optional) if ``True`` or ``path string``, use a random
+                    user-agent in headers, instead of ``'urlfetch/' + __version__``
+    :param auth: (optional) (username, password) for basic authentication
+    :param length_limit: (optional) if ``None``, no limits on content length,
+                        if the limit reached raised exception 'Content length
+                        is more than ...'
+    :param proxies: (optional) HTTP proxy, like {'http': '127.0.0.1:8888',
+                                                 'https': '127.0.0.1:563'}
+    :param trust_env: (optional) If ``True``, urlfetch will get infomations
+                        from env, such as HTTP_PROXY, HTTPS_PROXY
     :rtype: A :class:`~urlfetch.Response` object
     '''
     
@@ -741,7 +731,14 @@ def request(url, method="GET", data=None, headers={},
     if method not in _ALLOWED_METHODS:
         raise UrlfetchException("Method should be one of " +
                                 ", ".join(_ALLOWED_METHODS))
-
+    if params:
+        if isinstance(params, dict):
+            url = url_concat(url, params)
+        elif isinstance(params, basestring):
+            if url[-1] not in ('?', '&'):
+                url += '&' if ('?' in url) else '?'
+            url += params
+            
     parsed_url = parse_url(url)
     
     # Proxy support
@@ -964,3 +961,22 @@ def import_object(name):
     parts = name.split('.')
     obj = __import__('.'.join(parts[:-1]), None, None, [parts[-1]], 0)
     return getattr(obj, parts[-1])
+
+def url_concat(url, args, keep_existing=True):
+    """Concatenate url and argument dictionary
+
+    >>> url_concat("http://example.com/foo?a=b", dict(c="d"))
+    'http://example.com/foo?a=b&c=d'
+    """
+    if not args:
+        return url
+    
+    if keep_existing:
+        if url[-1] not in ('?', '&'):
+            url += '&' if ('?' in url) else '?'
+        return url + urlencode(args, 1)
+    else:
+        url, seq, query = url.partition('?')
+        query = urlparse.parse_qs(query, True)
+        query.update(args)
+        return url + '?' + urlencode(query, 1)
