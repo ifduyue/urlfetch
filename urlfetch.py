@@ -296,7 +296,7 @@ class Response(object):
                 content += chunk
                 if self.length_limit and len(content) > self.length_limit:
                     raise UrlfetchException("Content length is more than %d "
-                                            "bytes" % length_limit)  
+                                            "bytes" % self.length_limit)  
             # decode content if encoded
             encoding = self.headers.get('content-encoding', None)
             decoder = self.__CONTENT_DECODERS.get(encoding)
@@ -763,12 +763,12 @@ def request(url, method="GET", data=None, headers={},
 
     # is randua bool or path
     if randua and isinstance(randua, basestring) and \
-        os.path.isfile(path):
-        randua = True
+        os.path.isfile(randua):
         randua_file = randua
+        randua = True
     else:
-        randua = bool(randua)
         randua_file = None
+        randua = bool(randua)
 
     # default request headers
     reqheaders = {
@@ -832,12 +832,14 @@ patch = _partial_method("PATCH")
 ## helpers ##
 def decode_gzip(data):
     ''' decode gzipped content '''
+    import gzip
     gzipper = gzip.GzipFile(fileobj=BytesIO(data))
     return gzipper.read()
 
 
 def decode_deflate(data):
     ''' decode deflate content '''
+    import zlib
     try:
         return zlib.decompress(data)
     except zlib.error:
