@@ -747,7 +747,7 @@ def request(url, method="GET", data=None, headers={},
     # Proxy support
     scheme = parsed_url['scheme']
     if proxies is None and trust_env:
-        proxies = get_proxies_from_environ()
+        proxies = PROXIES 
     
     proxy = proxies.get(scheme)
     if proxy and parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
@@ -876,6 +876,8 @@ def get_proxies_from_environ():
     if https_proxy:
         proxies['https'] = https_proxy
     return proxies
+
+PROXIES = get_proxies_from_environ()
 
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
