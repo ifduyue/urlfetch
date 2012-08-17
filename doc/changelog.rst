@@ -8,6 +8,23 @@ Time flies!!
 +++++++++++++++++++
 
 * add ``params`` parameter, ``params`` is dict or string to attach to request url as querysting.
+* gzip and deflate support.
+
+0.4.2 (2012-07-31)
++++++++++++++++++++
+
+* HTTP(S) proxies support.
+
+0.4.1 (2012-07-04)
++++++++++++++++++++
+
+* streaming support.
+
+0.4.0 (2012-07-01)
++++++++++++++++++++
+
+* NEW :class:`urlfetch.Session` to manipulate cookies automatically, share common request headers and cookies.
+* NEW :attr:`urlfetch.Response.cookies` and :attr:`urlfetch.Response.cookiestring` to get response cookie dict and cookie string.
 
 0.3.6 (2012-06-08)
 +++++++++++++++++++
