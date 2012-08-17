@@ -30,7 +30,7 @@ Changelog
 
 * simplify code
 * Trace method without data and files, according to RFC2612
-* urlencode(data, 1) so that urlencode({'param': [1,2,3]}) => 'param=1&param=2&param=3'
+* ``urlencode(data, 1)`` so that ``urlencode({'param': [1,2,3]})`` => ``'param=1&param=2&param=3'``
 
 0.3.5 (2012-04-24)
 +++++++++++++++++++
