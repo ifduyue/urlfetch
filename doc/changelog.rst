@@ -4,6 +4,11 @@ Changes
 Time flies!!
 +++++++++++++++++++
 
+0.4.3 (2012-08-17)
++++++++++++++++++++
+
+* add ``params`` parameter, ``params`` is dict or string to attach to request url as querysting.
+
 0.3.6 (2012-06-08)
 +++++++++++++++++++
 

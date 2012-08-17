@@ -54,6 +54,7 @@ User's Guide
     
     examples
     reference
+    changelog
 
 License
 =========
