@@ -655,7 +655,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
 
     # default request headers
     reqheaders = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept': '*/*',
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
