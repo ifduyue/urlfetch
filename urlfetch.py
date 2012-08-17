@@ -1,5 +1,5 @@
-#coding: utf8
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 urlfetch
 ~~~~~~~~~~
@@ -13,9 +13,15 @@ An easy to use HTTP client based on httplib.
 __version__ = '0.4.3'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
+__license__ = 'BSD 2-clause'
 
-import os
-import sys
+import os, sys, base64, codecs, uuid
+from functools import partial, wraps
+from io import BytesIO
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 if sys.version_info >= (3, 0):
     py3k = True
@@ -25,150 +31,32 @@ else:
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
-    from http.client import HTTP_PORT, HTTPS_PORT
     from urllib.parse import urlencode
     import urllib.parse as urlparse
     import http.cookies as Cookie
     basestring = (str, bytes)
-
-    def b(s):
-        return s.encode('latin-1')
-
-    def u(s):
-        return s
+    b = lambda s: s.encode('latin-1')
+    u = lambda s: s
 else:
     from httplib import HTTPConnection, HTTPSConnection
-    from httplib import HTTP_PORT, HTTPS_PORT
     from urllib import urlencode
     import urlparse
     import Cookie
-
-    def b(s):
-        return s
-
-    def u(s):
-        return unicode(s, "unicode_escape")
-
-import base64
-from functools import partial, wraps
-from io import BytesIO
-import codecs
-writer = codecs.lookup('utf-8')[3]
-
-try:
-    import simplejson as json
-except ImportError:
-    import json
+    b = lambda s: s
+    u = lambda s: unicode(s, 'unicode_escape')
 
 
-__all__ = [
-    'fetch', 'request',
-    'get', 'head', 'put', 'post', 'delete', 'options',
-    'UrlfetchException',
-    'sc2cs', 'random_useragent', 'mb_code',
-]
+__all__ = ('request', 'fetch'
+           'get', 'head', 'put', 'post', 'delete', 'options', 'trace', 'patch'
+           'UrlfetchException')
 
-_ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS",
-                    "PUT", "POST", "TRACE", "PATCH")
-
-_PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost',)
-
-class UrlfetchException(Exception):
-    pass
-
-_boundary_prefix = None
+class UrlfetchException(Exception): pass
 
 
-def choose_boundary():
-    '''Generate a multipart boundry.
+###############################################################################
+# Core Methods and Classes #####################################################
+###############################################################################
 
-    :rtype: string
-    '''
-
-    global _boundary_prefix
-    if _boundary_prefix is None:
-        _boundary_prefix = "urlfetch"
-        import os
-        try:
-            uid = repr(os.getuid())
-            _boundary_prefix += "." + uid
-        except AttributeError:
-            pass
-        try:
-            pid = repr(os.getpid())
-            _boundary_prefix += "." + pid
-        except AttributeError:
-            pass
-    import uuid
-    return "(*^__^*)%s.%s" % (_boundary_prefix, uuid.uuid4().hex)
-
-
-def _encode_multipart(data, files):
-    '''Encode multipart.
-
-    :param data: data to be encoded
-    :type data: dict
-    :param files: files to be encoded
-    :type files: dict
-    :rtype: encoded binary string
-    '''
-
-    body = BytesIO()
-    boundary = choose_boundary()
-    part_boundary = b('--%s\r\n' % boundary)
-
-    if isinstance(data, dict):
-        for name, value in data.items():
-            body.write(part_boundary)
-            writer(body).write('Content-Disposition: form-data; '
-                               'name="%s"\r\n' % name)
-            body.write(b'Content-Type: text/plain\r\n\r\n')
-            if py3k and isinstance(value, str):
-                writer(body).write(value)
-            else:
-                body.write(value)
-            body.write(b'\r\n')
-
-    for fieldname, f in files.items():
-        if isinstance(f, tuple):
-            filename, f = f
-        elif hasattr(f, 'name'):
-            filename = os.path.basename(f.name)
-        else:
-            filename = None
-            raise UrlfetchException("file must has filename")
-
-        if hasattr(f, 'read'):
-            value = f.read()
-        elif isinstance(f, basestring):
-            value = f
-        else:
-            value = str(f)
-
-        body.write(part_boundary)
-        if filename:
-            writer(body).write('Content-Disposition: form-data; name="%s"; '
-                               'filename="%s"\r\n' % (fieldname, filename))
-            body.write(b'Content-Type: application/octet-stream\r\n\r\n')
-        else:
-            writer(body).write('Content-Disposition: form-data; name="%s"'
-                               '\r\n' % name)
-            body.write(b'Content-Type: text/plain\r\n\r\n')
-
-        if py3k and isinstance(value, str):
-            writer(body).write(value)
-        else:
-            body.write(value)
-        body.write(b'\r\n')
-
-    body.write(b('--' + boundary + '--\r\n'))
-
-    content_type = 'multipart/form-data; boundary=%s' % boundary
-    #body.write(b(content_type))
-
-    return content_type, body.getvalue()
-
-## classes ##
 class Response(object):
     '''A Response object.
 
@@ -670,8 +558,6 @@ class Session(object):
 
         return r
 
-
-## methods ##
 def fetch(*args, **kwargs):
     ''' fetch an URL.
 
@@ -728,9 +614,9 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     via_proxy = False
 
     method = method.upper()
-    if method not in _ALLOWED_METHODS:
+    if method not in ALLOWED_METHODS:
         raise UrlfetchException("Method should be one of " +
-                                ", ".join(_ALLOWED_METHODS))
+                                ", ".join(ALLOWED_METHODS))
     if params:
         if isinstance(params, dict):
             url = url_concat(url, params)
@@ -747,7 +633,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         proxies = PROXIES 
     
     proxy = proxies.get(scheme)
-    if proxy and parsed_url['host'] not in _PROXY_IGNORE_HOSTS:
+    if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
         via_proxy = True
         if '://' not in proxy:
             proxy = '%s://%s' % (scheme, proxy)
@@ -772,7 +658,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         'Accept': '*/*',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Accept-Encoding': ', '.join(('identity', 'deflate', 'compress', 'gzip')),
+        #'Accept-Encoding': ', '.join(('identity', 'deflate', 'compress', 'gzip')),
         'Host': parsed_url['host'],
     }
 
@@ -786,7 +672,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
 
     if files:
-        content_type, data = _encode_multipart(data, files)
+        content_type, data = encode_multipart(data, files)
         reqheaders['Content-Type'] = content_type
     elif isinstance(data, dict):
         data = urlencode(data, 1)
@@ -807,32 +693,33 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     response = h.getresponse()
     return Response.from_httplib(response, reqheaders=reqheaders,
                                  connection=h, length_limit=length_limit)
+    
 
-# some shortcuts
+
+
+###############################################################################
+# Shortcuts and Helpers ########################################################
+###############################################################################
+
 def _partial_method(method, **kwargs):
     func = wraps(request)(partial(request, method=method, **kwargs))
     setattr(func, '__doc__', 'Issue a %s request' % method)
     return func
-    
+
 get = _partial_method("GET")
 post = _partial_method("POST")
 put = _partial_method("PUT")
 delete = _partial_method("DELETE")
 head = _partial_method("HEAD")
 options = _partial_method("OPTIONS")
-# No entity body can be sent with a TRACE request.
-trace = _partial_method("TRACE", files={}, data=None)
+trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
 
-
-
-## helpers ##
 def decode_gzip(data):
     ''' decode gzipped content '''
     import gzip
     gzipper = gzip.GzipFile(fileobj=BytesIO(data))
     return gzipper.read()
-
 
 def decode_deflate(data):
     ''' decode deflate content '''
@@ -876,8 +763,6 @@ def get_proxies_from_environ():
         proxies['https'] = https_proxy
     return proxies
 
-PROXIES = get_proxies_from_environ()
-
 def mb_code(s, coding=None):
     '''encoding/decoding helper'''
 
@@ -887,10 +772,8 @@ def mb_code(s, coding=None):
         try:
             s = s.decode(c, errors='replace')
             return s if coding is None else s.encode(coding, errors='replace')
-        except:
-            pass
+        except: pass
     return s
-
 
 def sc2cs(sc):
     '''Convert Set-Cookie header to cookie string.
@@ -899,8 +782,7 @@ def sc2cs(sc):
 
         sc = response.getheader('Set-Cookie')
 
-    :param sc: Set-Cookie
-    :type sc: string
+    :param sc: (string) Set-Cookie
     :rtype: cookie string, which is name=value pairs joined by ``;``.
     '''
     c = Cookie.SimpleCookie(sc)
@@ -980,3 +862,102 @@ def url_concat(url, args, keep_existing=True):
         query = urlparse.parse_qs(query, True)
         query.update(args)
         return url + '?' + urlencode(query, 1)
+    
+def choose_boundary():
+    '''Generate a multipart boundry.
+
+    :rtype: string
+    '''
+
+    global BOUNDARY_PREFIX
+    if BOUNDARY_PREFIX is None:
+        BOUNDARY_PREFIX = "urlfetch"
+        import os
+        try:
+            uid = repr(os.getuid())
+            BOUNDARY_PREFIX += "." + uid
+        except AttributeError:
+            pass
+        try:
+            pid = repr(os.getpid())
+            BOUNDARY_PREFIX += "." + pid
+        except AttributeError:
+            pass
+    
+    return "%s.%s" % (BOUNDARY_PREFIX, uuid.uuid4().hex)
+
+def encode_multipart(data, files):
+    '''Encode multipart.
+
+    :param data: (dict) data to be encoded
+    :param files: (dict) files to be encoded
+    :rtype: encoded binary string
+    '''
+
+    body = BytesIO()
+    boundary = choose_boundary()
+    part_boundary = b('--%s\r\n' % boundary)
+
+    if isinstance(data, dict):
+        for name, value in data.items():
+            body.write(part_boundary)
+            writer(body).write('Content-Disposition: form-data; '
+                               'name="%s"\r\n' % name)
+            body.write(b'Content-Type: text/plain\r\n\r\n')
+            if py3k and isinstance(value, str):
+                writer(body).write(value)
+            else:
+                body.write(value)
+            body.write(b'\r\n')
+
+    for fieldname, f in files.items():
+        if isinstance(f, tuple):
+            filename, f = f
+        elif hasattr(f, 'name'):
+            filename = os.path.basename(f.name)
+        else:
+            filename = None
+            raise UrlfetchException("file must has filename")
+
+        if hasattr(f, 'read'):
+            value = f.read()
+        elif isinstance(f, basestring):
+            value = f
+        else:
+            value = str(f)
+
+        body.write(part_boundary)
+        if filename:
+            writer(body).write('Content-Disposition: form-data; name="%s"; '
+                               'filename="%s"\r\n' % (fieldname, filename))
+            body.write(b'Content-Type: application/octet-stream\r\n\r\n')
+        else:
+            writer(body).write('Content-Disposition: form-data; name="%s"'
+                               '\r\n' % name)
+            body.write(b'Content-Type: text/plain\r\n\r\n')
+
+        if py3k and isinstance(value, str):
+            writer(body).write(value)
+        else:
+            body.write(value)
+        body.write(b'\r\n')
+
+    body.write(b('--' + boundary + '--\r\n'))
+
+    content_type = 'multipart/form-data; boundary=%s' % boundary
+    #body.write(b(content_type))
+
+    return content_type, body.getvalue()
+    
+    
+###############################################################################
+# Constants and Globals ########################################################
+###############################################################################
+
+ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE",
+                   "PATCH")
+PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
+PROXIES = get_proxies_from_environ()
+writer = codecs.lookup('utf-8')[3]
+BOUNDARY_PREFIX = None
+
