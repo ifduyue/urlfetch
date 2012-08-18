@@ -811,9 +811,10 @@ def random_useragent(filename=None):
         f = open(filename)
         filesize = os.stat(filename)[6]
         r = random.Random(time())
+        pos = 0
 
         while True:
-            pos = f.tell() + r.randint(0, filesize)
+            pos += r.randint(0, filesize)
             pos %= filesize
             f.seek(pos)
 
@@ -821,7 +822,7 @@ def random_useragent(filename=None):
             f.readline()
 
             line = f.readline().strip()
-            if line and not line.startswith('#'):
+            if line and line[0] != '#':
                 break
 
         f.close()
