@@ -576,7 +576,7 @@ def fetch(*args, **kwargs):
 
 def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             files={}, randua=False, auth=None, length_limit=None, proxies=None,
-            trust_env=True, **kwargs):
+            trust_env=True, max_redirects=0, **kwargs):
 
     ''' request an URL
 
@@ -598,6 +598,9 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                                                  'https': '127.0.0.1:563'}
     :param trust_env: (optional) If ``True``, urlfetch will get infomations
                         from env, such as HTTP_PROXY, HTTPS_PROXY
+    :param max_redirects: (integer, optional) Max redirects allowed within a
+                            request. Default is 0, which means redirects are not
+                            allowed.
     :rtype: A :class:`~urlfetch.Response` object
     '''
     
@@ -638,11 +641,11 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         if '://' not in proxy:
             proxy = '%s://%s' % (scheme, proxy)
         parsed_proxy = parse_url(proxy)
-        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'], timeout)
+        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
+                            timeout)
     else:
-        h = make_connection(scheme, 
-                            host=parsed_url['host'], port=parsed_url['port'], 
-                            timeout=timeout)
+        h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
+                            timeout)
 
     # is randua bool or path
     if randua and isinstance(randua, basestring) and \
@@ -690,10 +693,54 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         h.request(method, url, data, reqheaders)
     else:
         h.request(method, parsed_url['uri'], data, reqheaders)
-    response = h.getresponse()
-    return Response.from_httplib(response, reqheaders=reqheaders,
-                                 connection=h, length_limit=length_limit)
+    _response = h.getresponse()
+    history = []
+    response = Response.from_httplib(_response, reqheaders=reqheaders,
+                                     connection=h, length_limit=length_limit,
+                                     history=history, url=url)
     
+    while (response.status in (301, 302, 303, 307) and
+           'location' in response.headers and max_redirects):
+        response.body, response.close(), history.append(response)
+        
+        if len(history) > max_redirects:
+            raise UrlfetchException('max_redirects exceeded')
+        
+        method = 'GET'
+        location = response.headers['location']
+        if location[:2] == '//':
+            url = parsed_url['scheme'] + ':' + location
+        else:
+            url = urlparse.urljoin(url, location)
+        parsed_url = parse_url(url)
+        
+        # Proxy support
+        scheme = parsed_url['scheme']
+        if proxies is None and trust_env:
+            proxies = PROXIES 
+        
+        proxy = proxies.get(scheme)
+        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+            if '://' not in proxy:
+                proxy = '%s://%s' % (scheme, proxy)
+            parsed_proxy = parse_url(proxy)
+            h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
+                                timeout)
+        else:
+            h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
+                                timeout)
+        if via_proxy:
+            h.request(method, url, None, reqheaders)
+        else:
+            h.request(method, parsed_url['uri'], None, reqheaders)
+            
+        _response = h.getresponse()
+        response = Response.from_httplib(_response, reqheaders=reqheaders,
+                                     connection=h, length_limit=length_limit,
+                                     history=history, url=url)
+        
+    return response
+        
 
 
 
@@ -796,7 +843,6 @@ def random_useragent(filename=None):
                      is generated
     :type filename: string, optional
     '''
-    import os
     import random
     from time import time
 
@@ -873,7 +919,6 @@ def choose_boundary():
     global BOUNDARY_PREFIX
     if BOUNDARY_PREFIX is None:
         BOUNDARY_PREFIX = "urlfetch"
-        import os
         try:
             uid = repr(os.getuid())
             BOUNDARY_PREFIX += "." + uid
@@ -946,7 +991,6 @@ def encode_multipart(data, files):
     body.write(b('--' + boundary + '--\r\n'))
 
     content_type = 'multipart/form-data; boundary=%s' % boundary
-    #body.write(b(content_type))
 
     return content_type, body.getvalue()
     
