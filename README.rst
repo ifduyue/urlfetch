@@ -43,7 +43,7 @@ Upload file
         },
     )
 
-    print response.status, response.body
+    print response.status, response.content
 
 
 Contributors
