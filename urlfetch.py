@@ -169,7 +169,7 @@ class Response(object):
 
     @classmethod
     def from_httplib(cls, r, **kwargs):
-        '''Generate a :class:`~urlfetch.Response` object from an httplib
+        '''Generate a :class:`~urlfetch.Response` object from a httplib
         response object.
         '''
         return cls(r, **kwargs)
@@ -199,7 +199,7 @@ class Response(object):
         return self._body
 
     # compatible with requests
-    #: An alias for :attr:`body`.
+    #: An alias of :attr:`body`.
     content = body
 
     @property
