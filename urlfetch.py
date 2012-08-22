@@ -46,7 +46,7 @@ else:
     u = lambda s: unicode(s, 'unicode_escape')
 
 
-__all__ = ('request', 'fetch'
+__all__ = ('request', 'fetch', 'Session',
            'get', 'head', 'put', 'post', 'delete', 'options', 'trace', 'patch'
            'UrlfetchException')
 
