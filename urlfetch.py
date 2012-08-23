@@ -634,6 +634,8 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             url = urlparse.urljoin(url, location)
         parsed_url = parse_url(url)
         
+        reqheaders['Host'] = parsed_url['host']
+        
         # Proxy support
         scheme = parsed_url['scheme']
         if proxies is None and trust_env:
@@ -647,7 +649,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
                                 timeout)
         else:
-            h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
+            h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
                                 timeout)
         if via_proxy:
             h.request(method, url, None, reqheaders)
@@ -816,6 +818,11 @@ def url_concat(url, args, keep_existing=True):
 
     >>> url_concat("http://example.com/foo?a=b", dict(c="d"))
     'http://example.com/foo?a=b&c=d'
+    
+    :param url: (string) url being concat to.
+    :param args: (dict) args being concat.
+    :param keep_existing: (bool, optional) Whether to keep the args which are
+                            alreay in url, default is ``True``.
     """
     if not args:
         return url
