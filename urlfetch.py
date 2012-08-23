@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for details.
 '''
 
-__version__ = '0.4.3'
+__version__ = '0.5.0'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 __license__ = 'BSD 2-clause'
