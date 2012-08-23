@@ -440,123 +440,43 @@ class Session(object):
  
     def get(self, *args, **kwargs):
         '''Issue a get request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = get(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'GET'
+        return self.request(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         '''Issue a post request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = post(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'POST'
+        return self.request(*args, **kwargs)
 
     def put(self, *args, **kwargs):
         '''Issue a put request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = put(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'PUT'
+        return self.request(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         '''Issue a delete request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = delete(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'DELETE'
+        return self.request(*args, **kwargs)
 
     def head(self, *args, **kwargs):
         '''Issue a head request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = head(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'HEAD'
+        return self.request(*args, **kwargs)
 
     def options(self, *args, **kwargs):
         '''Issue a options request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = options(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'OPTIONS'
+        return self.request(*args, **kwargs)
 
     def trace(self, *args, **kwargs):
         '''Issue a trace request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = trace(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'TRACE'
+        return self.request(*args, **kwargs)
 
     def patch(self, *args, **kwargs):
         '''Issue a patch request'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-
-        r = patch(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        kwargs['method'] = 'PATCH'
+        return self.request(*args, **kwargs)
 
 def fetch(*args, **kwargs):
     ''' fetch an URL.
