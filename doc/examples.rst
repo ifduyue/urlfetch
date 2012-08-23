@@ -212,3 +212,35 @@ Proxies
 ges': 'bytes', 'vary': 'Accept-Encoding', 'server': 'Apache/2.2.16 (Debian)', 'l
 ast-modified': 'Mon, 30 Jul 2012 19:22:48 GMT', 'etag': '"13cc5e4-220f-4c610fcaf
 d200"', 'date': 'Tue, 31 Jul 2012 04:18:26 GMT', 'content-type': 'text/html'}
+
+Redirects
+~~~~~~~~~~~~~~
+
+>>> from urlfetch import get
+>>> r = get('http://tinyurl.com/urlfetch', max_redirects=10)
+>>> r.history
+[<urlfetch.Response object at 0x274b8d0>]
+>>> r.history[-1].headers
+{'content-length': '0', 'set-cookie': 'tinyUUID=036051f7dc296a033f0608cf; expire
+s=Fri, 23-Aug-2013 10:25:30 GMT; path=/; domain=.tinyurl.com', 'x-tiny': 'cache
+0.0016100406646729', 'server': 'TinyURL/1.6', 'connection': 'close', 'location':
+ 'https://github.com/lyxint/urlfetch', 'date': 'Thu, 23 Aug 2012 10:25:30 GMT',
+'content-type': 'text/html'}
+>>> r.headers
+{'status': '200 OK', 'content-encoding': 'gzip', 'transfer-encoding': 'chunked',
+ 'set-cookie': '_gh_sess=BAh7BzoPc2Vzc2lvbl9pZCIlN2VjNWM3NjMzOTJhY2YyMGYyNTJlYzU
+4NmZjMmRlY2U6EF9jc3JmX3Rva2VuIjFlclVzYnpxYlhUTlNLV0ZqeXg4S1NRQUx3VllmM3VEa2ZaZml
+iRHBrSGRzPQ%3D%3D--cbe63e27e8e6bf07edf0447772cf512d2fbdf2e2; path=/; expires=Sat
+, 01-Jan-2022 00:00:00 GMT; secure; HttpOnly', 'strict-transport-security': 'max
+-age=2592000', 'connection': 'keep-alive', 'server': 'nginx/1.0.13', 'x-runtime'
+: '104', 'etag': '"4137339e0195583b4f034c33202df9e8"', 'cache-control': 'private
+, max-age=0, must-revalidate', 'date': 'Thu, 23 Aug 2012 10:25:31 GMT', 'x-frame
+-options': 'deny', 'content-type': 'text/html; charset=utf-8'}
+>>>
+>>> # If max_redirects exceeded, an exeception will be raised
+>>> r = get('http://google.com/', max_redirects=1)
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+  File "urlfetch.py", line 627, in request
+    raise UrlfetchException('max_redirects exceeded')
+UrlfetchException: max_redirects exceeded
