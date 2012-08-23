@@ -424,18 +424,12 @@ class Session(object):
 
     def fetch(self, *args, **kwargs):
         '''Fetch an URL'''
-        headers = self.headers.copy()
-        if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
+        data = kwargs.get('data', None)
+        files = kwargs.get('files', {})
 
-        r = fetch(*args, **kwargs)
-
-        cookies = r.cookies
-        self._cookies.update(cookies)
-
-        return r
+        if data is not None and isinstance(data, (basestring, dict)) or files:
+            return self.post(*args, **kwargs)
+        return self.get(*args, **kwargs)
 
  
     def get(self, *args, **kwargs):
