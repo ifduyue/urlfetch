@@ -1,4 +1,4 @@
-# User-Agen strings come from http://www.vwp-online.de/ua.php?ua_type=browser without mobile device user-agents
+# User-Agent strings come from http://www.vwp-online.de/ua.php?ua_type=browser without mobile device user-agents
 Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.5) Gecko/20031007 Firebird/0.7
 Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
 Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.0.1)
