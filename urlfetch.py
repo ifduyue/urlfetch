@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for details.
 '''
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 __license__ = 'BSD 2-clause'
@@ -783,7 +783,14 @@ def random_useragent(filename=None):
             # in case we are in middle of a line
             f.readline()
 
-            line = f.readline().strip()
+            line = f.readline()
+            if not line:
+                if f.tell() == filesize:
+                    # end of file
+                    f.seek(0)
+                    line = f.readline()
+
+            line = line.strip()
             if line and line[0] != '#':
                 break
 
