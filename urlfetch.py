@@ -15,7 +15,7 @@ __author__ = 'Elyes Du <lyxint@gmail.com>'
 __url__ = 'https://github.com/lyxint/urlfetch'
 __license__ = 'BSD 2-clause'
 
-import os, sys, base64, codecs, uuid
+import os, sys, base64, codecs, uuid, stat
 from functools import partial, wraps
 from io import BytesIO
 try:
@@ -678,6 +678,10 @@ options = _partial_method("OPTIONS")
 trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
 
+def _flatten(lst):
+    return reduce(lambda l, i: l + flatten(i) if isinstance(i, (list,tuple,set))
+                                              else l + [i], lst, [])
+
 def decode_gzip(data):
     ''' decode gzipped content '''
     import gzip
@@ -752,8 +756,14 @@ def sc2cs(sc):
     sc = ['%s=%s' % (i.key, i.value) for i in c.values()]
     return '; '.join(sc)
 
-def random_useragent(filename=None):
+def random_useragent(filename=None, *filenames):
     '''Returns a User-Agent string randomly from file.
+    
+    >>> ua = random_useragent('file1')
+    >>> ua = random_useragent('file1', 'file2')
+    >>> ua = random_useragent(['file1', 'file2'])
+    >>> ua = random_useragent(['file1', 'file2'], 'file3')
+
 
     :param filename: path to the file from which a random useragent
                      is generated
@@ -761,42 +771,54 @@ def random_useragent(filename=None):
     '''
     import random
     from time import time
+    
+    filenames = list(filenames)
 
     if filename is None:
-        filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                'share', 'urlfetch', 'urlfetch.useragents.list')
-        if not os.path.isfile(filename):
-            filename = os.path.join(sys.prefix, 'share', 'urlfetch', 
-                                'urlfetch.useragents.list')
-
-    if os.path.isfile(filename):
-        f = open(filename)
-        filesize = os.stat(filename)[6]
+        filenames.extend([
+            os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                         'urlfetch.useragents.list'),
+            os.path.join(sys.prefix, 'share', 'urlfetch',
+                         'urlfetch.useragents.list'),
+        ])
+    else:
+        filenames.append(filename)
+        
+    filenames = set(_flatten(filenames))
+        
+    for filename in filenames:
+        st = os.stat(filename)
+        if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
+            break
+    else:
+        return 'urlfetch/%s' % __version__
+        
+    with open(filename, 'rb') as f:
+        filesize = st[6]
         r = random.Random(time())
         pos = 0
-
-        while True:
+    
+        # try getting a valid line for only 64 times
+        for i in range(64):
+            
             pos += r.randint(0, filesize)
             pos %= filesize
             f.seek(pos)
-
+    
             # in case we are in middle of a line
             f.readline()
-
+    
             line = f.readline()
             if not line:
                 if f.tell() == filesize:
                     # end of file
                     f.seek(0)
                     line = f.readline()
-
+    
             line = line.strip()
             if line and line[0] != '#':
-                break
-
-        f.close()
-        return line
-
+                return line
+            
     return 'urlfetch/%s' % __version__
 
 def import_object(name):
