@@ -679,6 +679,8 @@ trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
 
 def _flatten(lst):
+    '''flatten nested list/tuple/set.
+    modified from https://gist.github.com/1308410'''
     return reduce(lambda l, i: l + _flatten(i)
                   if isinstance(i, (list,tuple,set))
                   else l + [i], lst, [])
