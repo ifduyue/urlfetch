@@ -679,8 +679,9 @@ trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
 
 def _flatten(lst):
-    return reduce(lambda l, i: l + flatten(i) if isinstance(i, (list,tuple,set))
-                                              else l + [i], lst, [])
+    return reduce(lambda l, i: l + _flatten(i)
+                  if isinstance(i, (list,tuple,set))
+                  else l + [i], lst, [])
 
 def decode_gzip(data):
     ''' decode gzipped content '''
@@ -798,7 +799,7 @@ def random_useragent(filename=None, *filenames):
         r = random.Random(time())
         pos = 0
     
-        # try getting a valid line for only 64 times
+        # try getting a valid line for no more than 64 times
         for i in range(64):
             
             pos += r.randint(0, filesize)
