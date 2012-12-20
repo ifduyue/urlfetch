@@ -794,7 +794,7 @@ def random_useragent(filename=None, *filenames):
         return 'urlfetch/%s' % __version__
         
     with open(filename, 'rb') as f:
-        filesize = st[6]
+        filesize = st.st_size
         r = random.Random(time())
         pos = 0
     
