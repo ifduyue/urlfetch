@@ -261,6 +261,25 @@ class Response(object):
         '''Cookie string'''
         cookies = self.cookies
         return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
+    
+    @cached_property
+    def raw_header(self):
+        '''Raw response header.'''
+        
+        if self.version == 11:
+            version = 'HTTP/1.1'
+        elif self.version == 10:
+            version = 'HTTP/1.0'
+        elif self.version == 9:
+            version = 'HTTP/0.9'
+        status = self.status
+        reason = self.reason
+        
+        return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + [b'%s: %s' % (k, v) for k, v in self.getheaders()])
+    
+    @cached_property
+    def raw_response(self):
+        return self.raw_header + b'\r\n\r\n' + self.body
 
     def close(self):
         '''Close the connection'''
