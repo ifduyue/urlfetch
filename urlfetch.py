@@ -56,7 +56,6 @@ class cached_property(object):
     ''' A property that is only computed once per instance and then replaces
         itself with an ordinary attribute. Deleting the attribute resets the
         property. '''
-
     def __init__(self, func):
         self.func = func
 
@@ -114,7 +113,6 @@ class Response(object):
     }
 
     '''
-
     def __init__(self, r, **kwargs):
         self._r = r  # httplib.HTTPResponse
         self.msg = r.msg
@@ -186,7 +184,6 @@ class Response(object):
     @cached_property
     def body(self):
         '''Response body.'''
-        
         content = b("")
         for chunk in self:
             content += chunk
@@ -212,13 +209,11 @@ class Response(object):
     @cached_property
     def text(self):
         '''Response body in unicode.'''
-        
         return mb_code(self.content)
 
     @cached_property
     def json(self):
         '''Load response body as json'''
-        
         return json.loads(self.text)
 
     @cached_property
@@ -245,13 +240,11 @@ class Response(object):
         }
 
         '''
-
         return dict((k.lower(), v) for k, v in self.getheaders())
 
     @cached_property
     def cookies(self):
         '''Cookies in dict'''
-
         c = Cookie.SimpleCookie(self.getheader('set-cookie'))
         sc = [(i.key, i.value) for i in c.values()]
         return dict(sc)
@@ -265,7 +258,6 @@ class Response(object):
     @cached_property
     def raw_header(self):
         '''Raw response header.'''
-        
         if self.version == 11:
             version = 'HTTP/1.1'
         elif self.version == 10:
@@ -495,7 +487,6 @@ def fetch(*args, **kwargs):
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     '''
-
     data = kwargs.get('data', None)
     files = kwargs.get('files', {})
 
@@ -533,7 +524,6 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                             allowed.
     :rtype: A :class:`~urlfetch.Response` object
     '''
-    
     def make_connection(conn_type, host, port, timeout):
         ''' return HTTP or HTTPS connection '''
         if conn_type == 'http':
@@ -672,8 +662,6 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                                      history=history, url=url)
         
     return response
-        
-
 
 
 ###############################################################################
