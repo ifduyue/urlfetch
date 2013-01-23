@@ -6,8 +6,8 @@ urlfetch
 
 An easy to use HTTP client based on httplib.
 
-:copyright: (c) 2011-2012  Elyes Du.
-:license: BSD 2-clause License, see LICENSE for details.
+:copyright: (c) 2011-2013 by Elyes Du.
+:license: BSD 2-clause License, see LICENSE for more details.
 '''
 
 __version__ = '0.5.2'
