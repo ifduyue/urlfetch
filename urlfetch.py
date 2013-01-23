@@ -52,6 +52,19 @@ __all__ = ('request', 'fetch', 'Session',
 
 class UrlfetchException(Exception): pass
 
+class cached_property(object):
+    ''' A property that is only computed once per instance and then replaces
+        itself with an ordinary attribute. Deleting the attribute resets the
+        property. '''
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, obj, cls):
+        if obj is None: return self
+        value = obj.__dict__[self.func.__name__] = self.func(obj)
+        return value
+
 
 ###############################################################################
 # Core Methods and Classes #####################################################
@@ -115,10 +128,6 @@ class Response(object):
         #: HTTP protocol version used by server.
         #: 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
-        self._body = None
-        self._headers = None
-        self._text = None
-        self._json = None
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
@@ -174,53 +183,45 @@ class Response(object):
         '''
         return cls(r, **kwargs)
 
-    @property
+    @cached_property
     def body(self):
         '''Response body.'''
-
-        if self._body is None:
-            content = b("")
-            for chunk in self:
-                content += chunk
-                if self.length_limit and len(content) > self.length_limit:
-                    raise UrlfetchException("Content length is more than %d "
-                                            "bytes" % self.length_limit)  
-            # decode content if encoded
-            encoding = self.headers.get('content-encoding', None)
-            decoder = self.__CONTENT_DECODERS.get(encoding)
-            if encoding and not decoder:
-                raise UrlfetchException('Unknown encoding: %s' % encoding)                
+        
+        content = b("")
+        for chunk in self:
+            content += chunk
+            if self.length_limit and len(content) > self.length_limit:
+                raise UrlfetchException("Content length is more than %d "
+                                        "bytes" % self.length_limit)
+        # decode content if encoded
+        encoding = self.headers.get('content-encoding', None)
+        decoder = self.__CONTENT_DECODERS.get(encoding)
+        if encoding and not decoder:
+            raise UrlfetchException('Unknown encoding: %s' % encoding)
+        
+        if decoder:
+            content = decoder(content)
             
-            if decoder:
-                self._body = decoder(content)
-            else:
-                self._body = content
+        return content
             
-        return self._body
 
     # compatible with requests
     #: An alias of :attr:`body`.
     content = body
 
-    @property
+    @cached_property
     def text(self):
         '''Response body in unicode.'''
-        if self._text is None:
-            self._text = mb_code(self.body)
-        return self._text
+        
+        return mb_code(self.content)
 
-    @property
-    def json(self, encoding=None):
+    @cached_property
+    def json(self):
         '''Load response body as json'''
+        
+        return json.loads(self.text)
 
-        if self._json is None:
-            try:
-                self._json = json.loads(self.text, encoding=encoding)
-            except:
-                pass
-        return self._json
-
-    @property
+    @cached_property
     def headers(self):
         '''Response headers.
 
@@ -245,11 +246,9 @@ class Response(object):
 
         '''
 
-        if self._headers is None:
-            self._headers = dict((k.lower(), v) for k, v in self.getheaders())
-        return self._headers
+        return dict((k.lower(), v) for k, v in self.getheaders())
 
-    @property
+    @cached_property
     def cookies(self):
         '''Cookies in dict'''
 
@@ -257,7 +256,7 @@ class Response(object):
         sc = [(i.key, i.value) for i in c.values()]
         return dict(sc)
 
-    @property
+    @cached_property
     def cookiestring(self):
         '''Cookie string'''
         cookies = self.cookies
@@ -265,8 +264,6 @@ class Response(object):
 
     def close(self):
         '''Close the connection'''
-        if hasattr(self, 'connection'):
-            self.connection.close()
         self._r.close()
 
     def __del__(self):
