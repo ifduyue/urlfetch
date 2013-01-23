@@ -872,7 +872,6 @@ def choose_boundary():
 
     :rtype: string
     '''
-
     global BOUNDARY_PREFIX
     if BOUNDARY_PREFIX is None:
         BOUNDARY_PREFIX = "urlfetch"
@@ -896,7 +895,6 @@ def encode_multipart(data, files):
     :param files: (dict) files to be encoded
     :rtype: encoded binary string
     '''
-
     body = BytesIO()
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
