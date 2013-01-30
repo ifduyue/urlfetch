@@ -24,10 +24,10 @@ OR::
 
     $ easy_install urlfetch --upgrade
 
-OR grab the latest source from
-`github lyxint/urlfetch <https://github.com/lyxint/urlfetch>`_::
+OR grab the latest source from github
+`ifduyue/urlfetch <https://github.com/ifduyue/urlfetch>`_::
     
-    $ git clone git://github.com/lyxint/urlfetch.git
+    $ git clone git://github.com/ifduyue/urlfetch.git
     $ cd urlfetch
     $ python setup.py install
     

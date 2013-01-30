@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'urlfetch'
-copyright = u'2011-2012, Elyes Du <lyxint@gmail.com>'
+copyright = u'2011-2013, Yue Du <ifduyue@gmail.com>'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -188,7 +188,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'urlfetch.tex', u'urlfetch Documentation',
-   u'Elyes Du <lyxint@gmail.com>', 'manual'),
+   u'Yue Du <ifduyue@gmail.com>', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -218,7 +218,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'urlfetch', u'urlfetch Documentation',
-     [u'Elyes Du <lyxint@gmail.com>'], 1)
+     [u'Yue Du <ifduyue@gmail.com>'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -232,7 +232,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'urlfetch', u'urlfetch Documentation',
-   u'lyxint@gmail.com', 'urlfetch', 'An esay to use HTTP client',
+   u'ifduyue@gmail.com', 'urlfetch', 'An esay to use HTTP client',
    'Miscellaneous'),
 ]
 

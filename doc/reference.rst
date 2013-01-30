@@ -4,7 +4,7 @@ Reference
 .. module:: urlfetch
    :platform: Unix, Windows
    :synopsis: HTTP Client
-.. moduleauthor:: Elyes Du <lyxint@gmail.com>
+.. moduleauthor:: Yue Du <ifduyue@gmail.com>
 
 .. autoclass:: Response
     :members:

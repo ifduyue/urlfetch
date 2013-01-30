@@ -136,8 +136,8 @@ Basic auth and call github API
 tars%2Fgravatar-140.png',
             u'gravatar_id': u'68b703a082b87cce010b1af5836711b3',
             u'id': 568900,
-            u'login': u'lyxint',
-            u'url': u'https://api.github.com/users/lyxint'}},
+            u'login': u'ifduyue',
+            u'url': u'https://api.github.com/users/ifduyue'}},
  ...]
  
  
@@ -224,7 +224,7 @@ Redirects
 {'content-length': '0', 'set-cookie': 'tinyUUID=036051f7dc296a033f0608cf; expire
 s=Fri, 23-Aug-2013 10:25:30 GMT; path=/; domain=.tinyurl.com', 'x-tiny': 'cache
 0.0016100406646729', 'server': 'TinyURL/1.6', 'connection': 'close', 'location':
- 'https://github.com/lyxint/urlfetch', 'date': 'Thu, 23 Aug 2012 10:25:30 GMT',
+ 'https://github.com/ifduyue/urlfetch', 'date': 'Thu, 23 Aug 2012 10:25:30 GMT',
 'content-type': 'text/html'}
 >>> r.headers
 {'status': '200 OK', 'content-encoding': 'gzip', 'transfer-encoding': 'chunked',
