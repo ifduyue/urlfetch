@@ -18,6 +18,7 @@ __license__ = 'BSD 2-Clause License'
 import os, sys, base64, codecs, uuid, stat
 from functools import partial, wraps
 from io import BytesIO
+import time
 try:
     import simplejson as json
 except ImportError:
@@ -119,6 +120,9 @@ class Response(object):
 
         #: Status code returned by server.
         self.status = r.status
+        # compatible with requests
+        #: An alias of :attr:`body`.
+        self.status_code = r.status
 
         #: Reason phrase returned by server.
         self.reason = r.reason
@@ -609,15 +613,19 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     for k, v in headers.items():
         reqheaders[k.title()] = v
 
+    start_time = time.time()
     if via_proxy:
         h.request(method, url, data, reqheaders)
     else:
         h.request(method, parsed_url['uri'], data, reqheaders)
     _response = h.getresponse()
+    end_time = time.time()
+    total_time = end_time - start_time
     history = []
     response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
-                                     history=history, url=url)
+                                     history=history, url=url,
+                                     totoal_time=total_time)
     
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
