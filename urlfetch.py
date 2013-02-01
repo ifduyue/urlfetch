@@ -659,12 +659,13 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         else:
             h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
                                 timeout)
+        start_time = time.time()
         if via_proxy:
             h.request(method, url, None, reqheaders)
         else:
             h.request(method, parsed_url['uri'], None, reqheaders)
-            
         _response = h.getresponse()
+        end_time = time.time()
         response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url)
