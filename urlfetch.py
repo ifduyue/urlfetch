@@ -745,17 +745,16 @@ def get_proxies_from_environ():
         proxies['https'] = https_proxy
     return proxies
 
-def mb_code(s, coding=None):
+def mb_code(s, coding=None, errors='replace'):
     '''encoding/decoding helper'''
-
     if isinstance(s, unicode):
-        return s if coding is None else s.encode(coding)
+        return s if coding is None else s.encode(coding, errors=errors)
     for c in ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5'):
         try:
-            s = s.decode(c, errors='replace')
-            return s if coding is None else s.encode(coding, errors='replace')
+            s = s.decode(c)
+            return s if coding is None else s.encode(coding, errors=errors)
         except: pass
-    return s
+    return unicode(s, errors=errors)
 
 def sc2cs(sc):
     '''Convert Set-Cookie header to cookie string.
