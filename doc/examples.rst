@@ -5,40 +5,73 @@ urlfetch at a glance
 ~~~~~~~~~~~~~~~~~~~~~
 
 >>> import urlfetch
->>> r = urlfetch.get("http://python.org/")
+>>> r = urlfetch.get('https://twitter.com/')
 >>> r.status, r.reason
 (200, 'OK')
 >>> r.total_time
-0.933042049407959
+0.924283027648926
 >>> r.reqheaders
-{'Host': u'python.org', 'Accept': '*/*', 'User-Agent': 'urlfetch/0.4.0'}
+{'Host': 'twitter.com', 'Accept-Encoding': 'gzip, deflate, compress, identity, *
+', 'Accept': '*/*', 'User-Agent': 'urlfetch/0.5.3'}
 >>> len(r.content), type(r.content)
-(19020, <type 'str'>)
+(72560, <type 'str'>)
 >>> len(r.text), type(r.text)
-(19016, <type 'unicode'>)
+(71770, <type 'unicode'>)
 >>> r.headers
-{'content-length': '19020', 'x-cache': 'HIT from localhost', 'x-cache-lookup': '
-HIT from localhost:8080', 'vary': 'Accept-Encoding', 'server': 'Apache/2.2.16 (D
-ebian)', 'last-modified': 'Tue, 03 Jul 2012 10:48:45 GMT', 'connection': 'close'
-, 'etag': '"105800d-4a4c-4c3eaa895dd40"', 'date': 'Wed, 04 Jul 2012 01:32:15 GMT
-', 'age': '179', 'content-type': 'text/html', 'accept-ranges': 'bytes'}
+{'status': '200 OK', 'content-length': '15017', 'strict-transport-security': 'ma
+x-age=631138519', 'x-transaction': '4a281c79631ee04e', 'content-encoding': 'gzip
+', 'set-cookie': 'k=10.36.121.114.1359712350849032; path=/; expires=Fri, 08-Feb-
+13 09:52:30 GMT; domain=.twitter.com, guest_id=v1%3A135971235085257249; domain=.
+twitter.com; path=/; expires=Sun, 01-Feb-2015 21:52:30 GMT, _twitter_sess=BAh7Cj
+oPY3JlYXRlZF9hdGwrCIXyK5U8AToMY3NyZl9pZCIlNGIwYjA2NWQ2%250AZGE0MGUzN2Y5Y2Y3NzViY
+Tc5MjdkM2Q6FWluX25ld191c2VyX2Zsb3cwIgpm%250AbGFzaElDOidBY3Rpb25Db250cm9sbGVyOjpG
+bGFzaDo6Rmxhc2hIYXNoewAG%250AOgpAdXNlZHsAOgdpZCIlM2Y4MDllNjVlNzA2M2Q0YTI4NjVmY2U
+yMWYzZmRh%250AMWY%253D--2869053b52dc7269a8a09ee3608737e0291e4ec1; domain=.twitte
+r.com; path=/; HttpOnly', 'expires': 'Tue, 31 Mar 1981 05:00:00 GMT', 'x-mid': '
+eb2ca7a2ae1109f1b2aea10729cdcfd1d4821af5', 'server': 'tfe', 'last-modified': 'Fr
+i, 01 Feb 2013 09:52:30 GMT', 'x-runtime': '0.13026', 'etag': '"15f3eb25198930fe
+b6817975576b651b"', 'pragma': 'no-cache', 'cache-control': 'no-cache, no-store,
+must-revalidate, pre-check=0, post-check=0', 'date': 'Fri, 01 Feb 2013 09:52:30
+GMT', 'x-frame-options': 'SAMEORIGIN', 'content-type': 'text/html; charset=utf-8
+', 'x-xss-protection': '1; mode=block', 'vary': 'Accept-Encoding'}
 >>> r.getheaders()
-[('content-length', '19020'), ('x-cache', 'HIT from localhost'), ('accept-ranges
-', 'bytes'), ('vary', 'Accept-Encoding'), ('server', 'Apache/2.2.16 (Debian)'),
-('x-cache-lookup', 'HIT from localhost:8080'), ('last-modified', 'Tue, 03 Jul 20
-12 10:48:45 GMT'), ('connection', 'close'), ('etag', '"105800d-4a4c-4c3eaa895dd4
-0"'), ('date', 'Wed, 04 Jul 2012 01:32:15 GMT'), ('content-type', 'text/html'),
-('age', '179')]
->>> # getheader doesn't care whether you write 'content-length' or 'Content-Length'
+[('status', '200 OK'), ('content-length', '15017'), ('expires', 'Tue, 31 Mar 198
+1 05:00:00 GMT'), ('x-transaction', '4a281c79631ee04e'), ('content-encoding', 'g
+zip'), ('set-cookie', 'k=10.36.121.114.1359712350849032; path=/; expires=Fri, 08
+-Feb-13 09:52:30 GMT; domain=.twitter.com, guest_id=v1%3A135971235085257249; dom
+ain=.twitter.com; path=/; expires=Sun, 01-Feb-2015 21:52:30 GMT, _twitter_sess=B
+Ah7CjoPY3JlYXRlZF9hdGwrCIXyK5U8AToMY3NyZl9pZCIlNGIwYjA2NWQ2%250AZGE0MGUzN2Y5Y2Y3
+NzViYTc5MjdkM2Q6FWluX25ld191c2VyX2Zsb3cwIgpm%250AbGFzaElDOidBY3Rpb25Db250cm9sbGV
+yOjpGbGFzaDo6Rmxhc2hIYXNoewAG%250AOgpAdXNlZHsAOgdpZCIlM2Y4MDllNjVlNzA2M2Q0YTI4Nj
+VmY2UyMWYzZmRh%250AMWY%253D--2869053b52dc7269a8a09ee3608737e0291e4ec1; domain=.t
+witter.com; path=/; HttpOnly'), ('strict-transport-security', 'max-age=631138519
+'), ('x-mid', 'eb2ca7a2ae1109f1b2aea10729cdcfd1d4821af5'), ('server', 'tfe'), ('
+last-modified', 'Fri, 01 Feb 2013 09:52:30 GMT'), ('x-runtime', '0.13026'), ('et
+ag', '"15f3eb25198930feb6817975576b651b"'), ('pragma', 'no-cache'), ('cache-cont
+rol', 'no-cache, no-store, must-revalidate, pre-check=0, post-check=0'), ('date'
+, 'Fri, 01 Feb 2013 09:52:30 GMT'), ('x-frame-options', 'SAMEORIGIN'), ('content
+-type', 'text/html; charset=utf-8'), ('x-xss-protection', '1; mode=block'), ('va
+ry', 'Accept-Encoding')]
+>>> # getheader doesn't care whether you write 'content-length' or 'Content-Leng
+th'
 >>> # It's case insensitive
 >>> r.getheader('content-length')
-'19020'
+'15017'
 >>> r.getheader('Content-Length')
-'19020'
+'15017'
 >>> r.cookies
-{}
+{'guest_id': 'v1%3A135971235085257249', '_twitter_sess': 'BAh7CjoPY3JlYXRlZF9hdG
+wrCIXyK5U8AToMY3NyZl9pZCIlNGIwYjA2NWQ2%250AZGE0MGUzN2Y5Y2Y3NzViYTc5MjdkM2Q6FWluX
+25ld191c2VyX2Zsb3cwIgpm%250AbGFzaElDOidBY3Rpb25Db250cm9sbGVyOjpGbGFzaDo6Rmxhc2hI
+YXNoewAG%250AOgpAdXNlZHsAOgdpZCIlM2Y4MDllNjVlNzA2M2Q0YTI4NjVmY2UyMWYzZmRh%250AMW
+Y%253D--2869053b52dc7269a8a09ee3608737e0291e4ec1', 'k': '10.36.121.114.135971235
+0849032'}
 >>> r.cookiestring
-''
+'guest_id=v1%3A135971235085257249; _twitter_sess=BAh7CjoPY3JlYXRlZF9hdGwrCIXyK5U
+8AToMY3NyZl9pZCIlNGIwYjA2NWQ2%250AZGE0MGUzN2Y5Y2Y3NzViYTc5MjdkM2Q6FWluX25ld191c2
+VyX2Zsb3cwIgpm%250AbGFzaElDOidBY3Rpb25Db250cm9sbGVyOjpGbGFzaDo6Rmxhc2hIYXNoewAG%
+250AOgpAdXNlZHsAOgdpZCIlM2Y4MDllNjVlNzA2M2Q0YTI4NjVmY2UyMWYzZmRh%250AMWY%253D--2
+869053b52dc7269a8a09ee3608737e0291e4ec1; k=10.36.121.114.1359712350849032'
 
 urlfetch.fetch
 ~~~~~~~~~~~~~~~~~

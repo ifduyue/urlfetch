@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+0.5.3.1 (2013-02-01)
++++++++++++++++++++
+
+Fix:
+
+*  :attr:`urlfetch.Response.content` becomes empty after the first access.
+
 0.5.3 (2013-02-01)
 +++++++++++++++++++
 
