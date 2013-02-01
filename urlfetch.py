@@ -121,7 +121,7 @@ class Response(object):
         #: Status code returned by server.
         self.status = r.status
         # compatible with requests
-        #: An alias of :attr:`body`.
+        #: An alias of :attr:`status`.
         self.status_code = r.status
 
         #: Reason phrase returned by server.
