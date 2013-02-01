@@ -625,7 +625,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url,
-                                     totoal_time=total_time)
+                                     total_time=total_time)
     
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
