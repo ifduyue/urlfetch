@@ -8,6 +8,8 @@ urlfetch at a glance
 >>> r = urlfetch.get("http://python.org/")
 >>> r.status, r.reason
 (200, 'OK')
+>>> r.total_time
+0.933042049407959
 >>> r.reqheaders
 {'Host': u'python.org', 'Accept': '*/*', 'User-Agent': 'urlfetch/0.4.0'}
 >>> len(r.content), type(r.content)
