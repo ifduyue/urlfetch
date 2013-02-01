@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 '''
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -75,7 +75,8 @@ class Response(object):
 
     >>> import urlfetch
     >>> response = urlfetch.get("http://docs.python.org/")
-    >>>
+    >>> r.total_time
+    0.033042049407959
     >>> response.status, response.reason, response.version
     (200, 'OK', 10)
     >>> type(response.body), len(response.body)
@@ -130,6 +131,9 @@ class Response(object):
         #: HTTP protocol version used by server.
         #: 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
+        
+        #: total time
+        self.total_time = kwargs.pop('total_time', None)
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders

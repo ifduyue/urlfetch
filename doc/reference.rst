@@ -8,9 +8,13 @@ Reference
 
 .. autoclass:: Response
     :members:
+    :undoc-members:
+    :private-members:
 
 .. autoclass:: Session
     :members:
+    :undoc-members:
+    :private-members:
 
 
 .. autofunction:: request
