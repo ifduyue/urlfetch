@@ -17,7 +17,7 @@ Feature:
 
 * NEW :attr:`urlfetch.Response.status_code`, alias of :attr:`urlfetch.Response.status` .
 * NEW :attr:`urlfetch.Response.total_time`, :attr:`urlfetch.Response.raw_header` and :attr:`urlfetch.Response.raw_response`.
-* Several propertities of :class:`urlfetch.Response` are cached to avoid unnecessary calls, including :attr:`urlfetch.Response.text`, :attr:`urlfetch.Response.json`, :attr:`urlfetch.Response.headers`, :attr:`urlfetch.Response.cookies`, :attr:`urlfetch.Response.cookiestring`, :attr:`urlfetch.Response.raw_header` and :attr:`urlfetch.Response.raw_response`.
+* Several properties of :class:`urlfetch.Response` are cached to avoid unnecessary calls, including :attr:`urlfetch.Response.text`, :attr:`urlfetch.Response.json`, :attr:`urlfetch.Response.headers`, :attr:`urlfetch.Response.cookies`, :attr:`urlfetch.Response.cookiestring`, :attr:`urlfetch.Response.raw_header` and :attr:`urlfetch.Response.raw_response`.
 
 Fix:
 
