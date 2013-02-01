@@ -212,7 +212,9 @@ class Response(object):
 
     # compatible with requests
     #: An alias of :attr:`body`.
-    content = body
+    @cached_property
+    def content(self):
+        return self.body
 
     @cached_property
     def text(self):
