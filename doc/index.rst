@@ -5,7 +5,7 @@
 urlfetch documentation
 ======================
 
-urlfetch is a simple, lightweigth and easy to use HTTP client for `Python <http://python.org/>`_.
+urlfetch is a simple, lightweight and easy to use HTTP client for `Python <http://python.org/>`_.
 It is distributed as a single file module and has no depencencies other than the
 `Python Standard Library <http://docs.python.org/library/>`_.
 
