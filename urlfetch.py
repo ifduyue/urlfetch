@@ -319,7 +319,7 @@ class Session(object):
         for k, v in headers.items():
             self._headers[k.title()] = v
 
-        if auth is not None and isinstance(auth, (list, tuple)):
+        if auth and isinstance(auth, (list, tuple)):
                 auth = '%s:%s' % tuple(auth)
                 auth = base64.b64encode(auth.encode('utf-8'))
                 self._headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
@@ -445,7 +445,7 @@ class Session(object):
         data = kwargs.get('data', None)
         files = kwargs.get('files', {})
 
-        if data is not None and isinstance(data, (basestring, dict)) or files:
+        if data and isinstance(data, (basestring, dict)) or files:
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
 
@@ -500,7 +500,7 @@ def fetch(*args, **kwargs):
     data = kwargs.get('data', None)
     files = kwargs.get('files', {})
 
-    if data is not None and isinstance(data, (basestring, dict)) or files:
+    if data and isinstance(data, (basestring, dict)) or files:
         return post(*args, **kwargs)
     return get(*args, **kwargs)
 
@@ -559,23 +559,6 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             url += params
             
     parsed_url = parse_url(url)
-    
-    # Proxy support
-    scheme = parsed_url['scheme']
-    if proxies is None and trust_env:
-        proxies = PROXIES 
-    
-    proxy = proxies.get(scheme)
-    if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
-        via_proxy = True
-        if '://' not in proxy:
-            proxy = '%s://%s' % (scheme, proxy)
-        parsed_proxy = parse_url(proxy)
-        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
-                            timeout)
-    else:
-        h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
-                            timeout)
 
     # is randua bool or path
     if randua and isinstance(randua, basestring) and \
@@ -595,10 +578,31 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         'Host': parsed_url['host'],
     }
 
-    if parsed_url['username'] is not None and parsed_url['password'] is not \
-            None and auth is None:
+    # Proxy support
+    scheme = parsed_url['scheme']
+    if proxies is None and trust_env:
+        proxies = PROXIES 
+
+    proxy = proxies.get(scheme)
+    if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+        via_proxy = True
+        if '://' not in proxy:
+            proxy = '%s://%s' % (scheme, proxy)
+        parsed_proxy = parse_url(proxy)
+        # Proxy-Authorization
+        if parsed_proxy['username'] and parsed_proxy['password']:
+            proxyauth = '%s:%s' % (parsed_proxy['username'], parsed_proxy['password'])
+            proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
+            reqheaders['Proxy-Authorization'] = 'Basic ' + proxyauth.decode('utf-8')
+        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
+                            timeout)
+    else:
+        h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
+                            timeout)
+
+    if not auth and parsed_url['username'] and parsed_url['password']:
         auth = (parsed_url['username'], parsed_url['password'])
-    if auth is not None:
+    if auth:
         if isinstance(auth, (list, tuple)):
             auth = '%s:%s' % tuple(auth)
         auth = base64.b64encode(auth.encode('utf-8'))
@@ -647,24 +651,31 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         else:
             url = urlparse.urljoin(url, location)
         parsed_url = parse_url(url)
-        
+
         reqheaders['Host'] = parsed_url['host']
-        
-        # Proxy support
-        scheme = parsed_url['scheme']
-        if proxies is None and trust_env:
-            proxies = PROXIES 
-        
-        proxy = proxies.get(scheme)
-        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+        reqheaders['Referer'] = response.url
+
+        # Proxy
+        proxy = proxies.get(parsed_url['scheme'])
+        if via_proxy and parsed_url['scheme'] == scheme:
+            h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
+                                timeout)
+        elif via_proxy and proxy:
             if '://' not in proxy:
-                proxy = '%s://%s' % (scheme, proxy)
+                proxy = '%s://%s' % (parsed_url['scheme'], proxy)
             parsed_proxy = parse_url(proxy)
+            # Proxy-Authorization
+            if parsed_proxy['username'] and parsed_proxy['password']:
+                proxyauth = '%s:%s' % (parsed_proxy['username'], parsed_proxy['username'])
+                proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
+                reqheaders['Proxy-Authorization'] = 'Basic ' + proxyauth.decode('utf-8')
             h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
                                 timeout)
         else:
+            reqheaders.pop('Proxy-Authorization', None)
             h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
                                 timeout)
+
         start_time = time.time()
         if via_proxy:
             h.request(method, url, None, reqheaders)
@@ -675,7 +686,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url)
-        
+    
     return response
 
 
