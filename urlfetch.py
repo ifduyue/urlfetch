@@ -208,7 +208,7 @@ class Response(object):
             content = decoder(content)
             
         return content
-            
+
 
     # compatible with requests
     #: An alias of :attr:`body`.
@@ -264,7 +264,7 @@ class Response(object):
         '''Cookie string'''
         cookies = self.cookies
         return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
-    
+
     @cached_property
     def raw_header(self):
         '''Raw response header.'''
@@ -278,7 +278,7 @@ class Response(object):
         reason = self.reason
         
         return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + [b'%s: %s' % (k, v) for k, v in self.getheaders()])
-    
+
     @cached_property
     def raw_response(self):
         return self.raw_header + b'\r\n\r\n' + self.body
@@ -374,11 +374,11 @@ class Session(object):
 
     def dumps(self, cls='marshal'):
         '''pack a seesion and return packed bytes
-        
+
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.dumps()
         ...
-        
+
         :param cls: use which class to pack the session
         :type cls: string, ``marshal``, ``pickle``, etc...
         :rtype: packed bytes
@@ -393,7 +393,7 @@ class Session(object):
         >>> s = open('session.jar', 'rb')
         >>> s.load(f)
         >>> f.close()
-        
+
         :param fileobj: a file(-like) object which have ``read`` method
         :type fileobj: file
         :param cls: use which class to unpack the session
@@ -557,7 +557,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             if url[-1] not in ('?', '&'):
                 url += '&' if ('?' in url) else '?'
             url += params
-            
+
     parsed_url = parse_url(url)
 
     # is randua bool or path
@@ -636,7 +636,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url,
                                      total_time=total_time)
-    
+
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
         response.body, response.close(), history.append(response)
@@ -686,7 +686,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url)
-    
+
     return response
 
 
@@ -707,6 +707,17 @@ head = _partial_method("HEAD")
 options = _partial_method("OPTIONS")
 trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
+
+class ObjectDict(dict):
+    """Makes a dictionary behave like an object."""
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        self[name] = value
 
 def _flatten(lst):
     '''flatten nested list/tuple/set.
@@ -734,10 +745,14 @@ def parse_url(url):
     scheme, netloc, path, params, query, fragment, uri, username, password,
     host and port
     '''
-    result = dict()
+    if '://' in url:
+        scheme, url = url.split('://', 1)
+    else:
+        scheme = 'http'
+    url = 'http://' + url
     parsed = urlparse.urlsplit(url)
-    
-    result['scheme'] = parsed.scheme
+    result = ObjectDict()
+    result['scheme'] = scheme
     result['netloc'] = parsed.netloc
     result['path'] = parsed.path
     result['query'] = parsed.query
@@ -790,7 +805,7 @@ def sc2cs(sc):
 
 def random_useragent(filename=None, *filenames):
     '''Returns a User-Agent string randomly from file.
-    
+
     >>> ua = random_useragent('file1')
     >>> ua = random_useragent('file1', 'file2')
     >>> ua = random_useragent(['file1', 'file2'])
@@ -815,16 +830,15 @@ def random_useragent(filename=None, *filenames):
         ])
     else:
         filenames.append(filename)
-        
+
     filenames = set(_flatten(filenames))
-        
     for filename in filenames:
         st = os.stat(filename)
         if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
             break
     else:
         return 'urlfetch/%s' % __version__
-        
+
     with open(filename, 'rb') as f:
         filesize = st.st_size
         r = random.Random(time())
@@ -839,7 +853,7 @@ def random_useragent(filename=None, *filenames):
     
             # in case we are in middle of a line
             f.readline()
-    
+
             line = f.readline()
             if not line:
                 if f.tell() == filesize:
@@ -979,8 +993,7 @@ def encode_multipart(data, files):
     content_type = 'multipart/form-data; boundary=%s' % boundary
 
     return content_type, body.getvalue()
-    
-    
+
 ###############################################################################
 # Constants and Globals ########################################################
 ###############################################################################
