@@ -131,7 +131,7 @@ class Response(object):
         #: HTTP protocol version used by server.
         #: 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
-        
+
         #: total time
         self.total_time = kwargs.pop('total_time', None)
 
@@ -158,12 +158,12 @@ class Response(object):
 
     def read(self, chunk_size=8192):
         ''' read content (for streaming and large files)
-        
+
         chunk_size: size of chunk, default: 8192       
         '''
         chunk = self._r.read(chunk_size)
         return chunk
-    
+
     def __iter__(self):
         return self
 
@@ -177,7 +177,7 @@ class Response(object):
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
         return False
@@ -203,10 +203,10 @@ class Response(object):
         decoder = self.__CONTENT_DECODERS.get(encoding)
         if encoding and not decoder:
             raise UrlfetchException('Unknown encoding: %s' % encoding)
-        
+
         if decoder:
             content = decoder(content)
-            
+
         return content
 
 
@@ -276,7 +276,7 @@ class Response(object):
             version = 'HTTP/0.9'
         status = self.status
         reason = self.reason
-        
+
         return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + [b'%s: %s' % (k, v) for k, v in self.getheaders()])
 
     @cached_property
@@ -297,7 +297,7 @@ class Session(object):
     :class:`urlfetch.Session` can hold common headers and cookies.
     Every request issued by a :class:`urlfetch.Session` object will bring u
     these headers and cookies.
-                             
+
     :class:`urlfetch.Session` plays a role in handling cookies, just like a
     cookiejar.
 
@@ -358,7 +358,7 @@ class Session(object):
 
     def dump(self, fileobj, cls='marshal'):
         '''pack a session and write packed bytes to fileobj
-        
+
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> f = open('session.jar', 'wb')
         >>> s.dump(f)
@@ -408,11 +408,11 @@ class Session(object):
 
     def loads(self, string, cls='marshal'):
         '''unpack a seesion from string and load it into current session
-        
+
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.loads(s.dumps())
         {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
-        
+
         :param string: the string to be unpacked
         :type string: bytes
         :param cls: use which class to pack the session
@@ -449,7 +449,7 @@ class Session(object):
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
 
- 
+
     def get(self, *args, **kwargs):
         '''Issue a get request'''
         kwargs['method'] = 'GET'
@@ -543,7 +543,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         else:
             raise UrlfetchException('Unknown Connection Type: %s' % conn_type)    
         return conn
-        
+
     via_proxy = False
 
     method = method.upper()
@@ -640,10 +640,10 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
         response.body, response.close(), history.append(response)
-        
+
         if len(history) > max_redirects:
             raise UrlfetchException('max_redirects exceeded')
-        
+
         method = 'GET'
         location = response.headers['location']
         if location[:2] == '//':
@@ -818,7 +818,7 @@ def random_useragent(filename=None, *filenames):
     '''
     import random
     from time import time
-    
+
     filenames = list(filenames)
 
     if filename is None:
@@ -843,14 +843,14 @@ def random_useragent(filename=None, *filenames):
         filesize = st.st_size
         r = random.Random(time())
         pos = 0
-    
+
         # try getting a valid line for no more than 64 times
         for i in range(64):
-            
+
             pos += r.randint(0, filesize)
             pos %= filesize
             f.seek(pos)
-    
+
             # in case we are in middle of a line
             f.readline()
 
@@ -860,18 +860,18 @@ def random_useragent(filename=None, *filenames):
                     # end of file
                     f.seek(0)
                     line = f.readline()
-    
+
             line = line.strip()
             if line and line[0] != '#':
                 return line
-            
+
     return 'urlfetch/%s' % __version__
 
 def import_object(name):
     """Imports an object by name.
 
     import_object('x.y.z') is equivalent to 'from x.y import z'.
-    
+
     >>> import tornado.escape
     >>> import_object('os.path') is os.path
     True
@@ -887,7 +887,7 @@ def url_concat(url, args, keep_existing=True):
 
     >>> url_concat("http://example.com/foo?a=b", dict(c="d"))
     'http://example.com/foo?a=b&c=d'
-    
+
     :param url: (string) url being concat to.
     :param args: (dict) args being concat.
     :param keep_existing: (bool, optional) Whether to keep the args which are
@@ -895,7 +895,7 @@ def url_concat(url, args, keep_existing=True):
     """
     if not args:
         return url
-    
+
     if keep_existing:
         if url[-1] not in ('?', '&'):
             url += '&' if ('?' in url) else '?'
@@ -905,7 +905,7 @@ def url_concat(url, args, keep_existing=True):
         query = urlparse.parse_qs(query, True)
         query.update(args)
         return url + '?' + urlencode(query, 1)
-    
+
 def choose_boundary():
     '''Generate a multipart boundry.
 
@@ -924,7 +924,7 @@ def choose_boundary():
             BOUNDARY_PREFIX += "." + pid
         except AttributeError:
             pass
-    
+
     return "%s.%s" % (BOUNDARY_PREFIX, uuid.uuid4().hex)
 
 def encode_multipart(data, files):
