@@ -3,8 +3,22 @@ Changelog
 
 **Time flies!!**
 
+0.5.4 (2013-02-28)
+++++++++++++++++++++
+
+Feature:
+
+* HTTP Proxy-Authorization.
+
+Fix:
+
+* Fix docstring typos.
+* :func:`urlfetch.encode_multipart` should behave the same as `urllib.urlencode(query, doseq=1)`.
+* :func:`urlfetch.parse_url` should parse urls like they are HTTP urls.
+
+
 0.5.3.1 (2013-02-01)
-+++++++++++++++++++
+++++++++++++++++++++++
 
 Fix:
 
