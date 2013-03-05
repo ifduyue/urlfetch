@@ -942,7 +942,7 @@ def encode_multipart(data, files):
 
     if isinstance(data, dict):
         for name, values in data.items():
-            if not isinstance(values, list, tuple, set):
+            if not isinstance(values, (list, tuple, set)):
                 # behave like urllib.urlencode(dict, 1)
                 values = (values, )
             for value in values:
