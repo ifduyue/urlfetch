@@ -833,9 +833,11 @@ def random_useragent(filename=None, *filenames):
 
     filenames = set(_flatten(filenames))
     for filename in filenames:
-        st = os.stat(filename)
-        if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
-            break
+        try:
+            st = os.stat(filename)
+            if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
+                break
+        except: pass
     else:
         return 'urlfetch/%s' % __version__
 
