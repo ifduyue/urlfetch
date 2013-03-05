@@ -3,6 +3,15 @@ Changelog
 
 **Time flies!!**
 
+0.5.4.1 (2013-03-05)
+++++++++++++++++++++
+
+Fix:
+
+* :func:`urlfetch.random_useragent` raises exception ``[Errno 2] No such file or directory``.
+* :func:`urlfetch.encode_multipart` doesn't use `isinstance: (object, class-or-type-or-tuple)` correctly.
+
+
 0.5.4 (2013-02-28)
 ++++++++++++++++++++
 
