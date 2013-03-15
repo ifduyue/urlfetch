@@ -266,6 +266,26 @@ class Response(object):
         return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
 
     @cached_property
+    def links(self):
+        '''Links parsed from HTTP Link header'''
+        ret = []
+        for i in self.getheader('link', '').split(','):
+            try:
+                url, params = i.split(';', 1)
+            except ValueError:
+                url, params = i, ''
+            link = {}
+            link['url'] = url.strip('''<> '"''')
+            for param in params.split(';'):
+                try:
+                    k, v = param.split('=')
+                except ValueError:
+                    break
+                link[k.strip(''' '"''')] = v.strip(''' '"''')
+            ret.append(link)
+        return ret
+
+    @cached_property
     def raw_header(self):
         '''Raw response header.'''
         if self.version == 11:
