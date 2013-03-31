@@ -137,7 +137,8 @@ class Response(object):
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
-        self.__CONTENT_DECODERS = { 'gzip': decode_gzip,'deflate': decode_deflate, }
+        self.__CONTENT_DECODERS = {'gzip': decode_gzip,
+                                   'deflate': decode_deflate}
 
 
         for k in kwargs:
@@ -297,7 +298,8 @@ class Response(object):
         status = self.status
         reason = self.reason
 
-        return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + [b'%s: %s' % (k, v) for k, v in self.getheaders()])
+        return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + \
+               [b'%s: %s' % (k, v) for k, v in self.getheaders()])
 
     @cached_property
     def raw_response(self):
@@ -540,7 +542,8 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :param timeout: (optional) timeout in seconds
     :param files: (optional) files to be sended
     :param randua: (optional) if ``True`` or ``path string``, use a random
-                    user-agent in headers, instead of ``'urlfetch/' + __version__``
+                    user-agent in headers, instead of 
+                    ``'urlfetch/' + __version__``
     :param auth: (optional) (username, password) for basic authentication
     :param length_limit: (optional) if ``None``, no limits on content length,
                         if the limit reached raised exception 'Content length
@@ -561,7 +564,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         elif conn_type == 'https':
             conn = HTTPSConnection(host, port, timeout=timeout)
         else:
-            raise UrlfetchException('Unknown Connection Type: %s' % conn_type)    
+            raise UrlfetchException('Unknown Connection Type: %s' % conn_type)
         return conn
 
     via_proxy = False
@@ -611,9 +614,11 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         parsed_proxy = parse_url(proxy)
         # Proxy-Authorization
         if parsed_proxy['username'] and parsed_proxy['password']:
-            proxyauth = '%s:%s' % (parsed_proxy['username'], parsed_proxy['password'])
+            proxyauth = '%s:%s' % (parsed_proxy['username'], 
+                                   parsed_proxy['password'])
             proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-            reqheaders['Proxy-Authorization'] = 'Basic ' + proxyauth.decode('utf-8')
+            reqheaders['Proxy-Authorization'] = 'Basic ' + \
+                                                proxyauth.decode('utf-8')
         h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
                             timeout)
     else:
@@ -678,18 +683,20 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         # Proxy
         scheme = parsed_url['scheme']
         proxy = proxies.get(scheme)
-        if proxy and parsed_url['host'] not in PROXY_INGONRE_HOSTS:
+        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
             via_proxy = True
             if '://' not in proxy:
                 proxy = '%s://%s' % (parsed_url['scheme'], proxy)
             parsed_proxy = parse_url(proxy)
             # Proxy-Authorization
             if parsed_proxy['username'] and parsed_proxy['password']:
-                proxyauth = '%s:%s' % (parsed_proxy['username'], parsed_proxy['username'])
+                proxyauth = '%s:%s' % (parsed_proxy['username'],
+                                       parsed_proxy['username'])
                 proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-                reqheaders['Proxy-Authorization'] = 'Basic ' + proxyauth.decode('utf-8')
-            h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
-                                timeout)
+                reqheaders['Proxy-Authorization'] = 'Basic ' + \
+                                                     proxyauth.decode('utf-8')
+            h = make_connection(scheme, parsed_proxy['host'], 
+                                parsed_proxy['port'], timeout)
         else:
             via_proxy = False
             reqheaders.pop('Proxy-Authorization', None)
