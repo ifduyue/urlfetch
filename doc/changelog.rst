@@ -3,6 +3,18 @@ Changelog
 
 **Time flies!!**
 
+0.5.4.2 (2013-03-31)
+++++++++++++++++++++
+
+Feature: 
+
+* :attr:`urlfetch.Response.link`, links parsed from HTTP Link header.
+
+Fix:
+
+* Scheme doesn't correspond to the new location when following redirects.
+
+
 0.5.4.1 (2013-03-05)
 ++++++++++++++++++++
 
