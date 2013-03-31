@@ -664,7 +664,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         if len(history) > max_redirects:
             raise UrlfetchException('max_redirects exceeded')
 
-        method = 'GET'
+        method = method if response.status == 307 else 'GET'
         location = response.headers['location']
         if location[:2] == '//':
             url = parsed_url['scheme'] + ':' + location
@@ -676,11 +676,10 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         reqheaders['Referer'] = response.url
 
         # Proxy
-        proxy = proxies.get(parsed_url['scheme'])
-        if via_proxy and parsed_url['scheme'] == scheme:
-            h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
-                                timeout)
-        elif via_proxy and proxy:
+        scheme = parsed_url['scheme']
+        proxy = proxies.get(scheme)
+        if proxy and parsed_url['host'] not in PROXY_INGONRE_HOSTS:
+            via_proxy = True
             if '://' not in proxy:
                 proxy = '%s://%s' % (parsed_url['scheme'], proxy)
             parsed_proxy = parse_url(proxy)
@@ -692,6 +691,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
                                 timeout)
         else:
+            via_proxy = False
             reqheaders.pop('Proxy-Authorization', None)
             h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
                                 timeout)
