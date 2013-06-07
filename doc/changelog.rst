@@ -3,6 +3,14 @@ Changelog
 
 **Time flies!!**
 
+0.5.5 (2013-06-07)
+++++++++++++++++++++
+
+Fix:
+
+* fix docstring.
+* parse_url raise exception for http://foo.com:/
+
 0.5.4.2 (2013-03-31)
 ++++++++++++++++++++
 
