@@ -75,7 +75,7 @@ class Response(object):
 
     >>> import urlfetch
     >>> response = urlfetch.get("http://docs.python.org/")
-    >>> r.total_time
+    >>> response.total_time
     0.033042049407959
     >>> response.status, response.reason, response.version
     (200, 'OK', 10)
@@ -381,6 +381,7 @@ class Session(object):
     def dump(self, fileobj, cls='marshal'):
         '''pack a session and write packed bytes to fileobj
 
+        >>> import urlfetch
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> f = open('session.jar', 'wb')
         >>> s.dump(f)
@@ -397,6 +398,7 @@ class Session(object):
     def dumps(self, cls='marshal'):
         '''pack a seesion and return packed bytes
 
+        >>> import urlfetch
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.dumps()
         ...
@@ -411,8 +413,9 @@ class Session(object):
     def load(self, fileobj, cls='marshal'):
         '''unpack a session from fileobj and load it into current session
 
+        >>> import urlfetch
         >>> s = urlfetch.Session()
-        >>> s = open('session.jar', 'rb')
+        >>> f = open('session.jar', 'rb')
         >>> s.load(f)
         >>> f.close()
 
@@ -431,6 +434,7 @@ class Session(object):
     def loads(self, string, cls='marshal'):
         '''unpack a seesion from string and load it into current session
 
+        >>> import urlfetch
         >>> s = urlfetch.Session({'User-Agent': 'urlfetch'}, {'foo': 'bar'})
         >>> s.loads(s.dumps())
         {'headers': {'User-Agent': 'urlfetch'}, 'cookies': {'foo': 'bar'}}
@@ -901,7 +905,6 @@ def import_object(name):
 
     import_object('x.y.z') is equivalent to 'from x.y import z'.
 
-    >>> import tornado.escape
     >>> import_object('os.path') is os.path
     True
     >>> import_object('os.path.dirname') is os.path.dirname
