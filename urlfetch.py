@@ -794,7 +794,10 @@ def parse_url(url):
     result['username'] = parsed.username
     result['password'] = parsed.password
     result['host'] = result['hostname'] = parsed.hostname
-    result['port'] = parsed.port
+    try:
+        result['port'] = parsed.port
+    except ValueError:
+        result['port'] = None
 
     return result
 
