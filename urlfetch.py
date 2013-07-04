@@ -533,8 +533,7 @@ def fetch(*args, **kwargs):
 
 def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             files={}, randua=False, auth=None, length_limit=None, proxies=None,
-            trust_env=True, max_redirects=0, **kwargs):
-
+            trust_env=True, max_redirects=0, lazy=False, **kwargs):
     ''' request an URL
 
     :param url: URL to be fetched.
@@ -657,68 +656,91 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         h.request(method, url, data, reqheaders)
     else:
         h.request(method, parsed_url['uri'], data, reqheaders)
-    _response = h.getresponse()
-    end_time = time.time()
-    total_time = end_time - start_time
-    history = []
-    response = Response.from_httplib(_response, reqheaders=reqheaders,
+
+    def get_redirected_response(h, url):
+        _response = h.getresponse()
+        end_time = time.time()
+        total_time = end_time - start_time
+        history = []
+        response = Response.from_httplib(_response, reqheaders=reqheaders,
                                      connection=h, length_limit=length_limit,
                                      history=history, url=url,
                                      total_time=total_time)
 
-    while (response.status in (301, 302, 303, 307) and
-           'location' in response.headers and max_redirects):
-        response.body, response.close(), history.append(response)
+        while (response.status in (301, 302, 303, 307) and
+               'location' in response.headers and max_redirects):
+            response.body, response.close(), history.append(response)
 
-        if len(history) > max_redirects:
-            raise UrlfetchException('max_redirects exceeded')
+            if len(history) > max_redirects:
+                raise UrlfetchException('max_redirects exceeded')
 
-        method = method if response.status == 307 else 'GET'
-        location = response.headers['location']
-        if location[:2] == '//':
-            url = parsed_url['scheme'] + ':' + location
-        else:
-            url = urlparse.urljoin(url, location)
-        parsed_url = parse_url(url)
+            method = method if response.status == 307 else 'GET'
+            location = response.headers['location']
+            if location[:2] == '//':
+                url = parsed_url['scheme'] + ':' + location
+            else:
+                url = urlparse.urljoin(url, location)
+            parsed_url = parse_url(url)
 
-        reqheaders['Host'] = parsed_url['host']
-        reqheaders['Referer'] = response.url
+            reqheaders['Host'] = parsed_url['host']
+            reqheaders['Referer'] = response.url
 
-        # Proxy
-        scheme = parsed_url['scheme']
-        proxy = proxies.get(scheme)
-        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
-            via_proxy = True
-            if '://' not in proxy:
-                proxy = '%s://%s' % (parsed_url['scheme'], proxy)
-            parsed_proxy = parse_url(proxy)
-            # Proxy-Authorization
-            if parsed_proxy['username'] and parsed_proxy['password']:
-                proxyauth = '%s:%s' % (parsed_proxy['username'],
-                                       parsed_proxy['username'])
-                proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-                reqheaders['Proxy-Authorization'] = 'Basic ' + \
-                                                     proxyauth.decode('utf-8')
-            h = make_connection(scheme, parsed_proxy['host'], 
-                                parsed_proxy['port'], timeout)
-        else:
-            via_proxy = False
-            reqheaders.pop('Proxy-Authorization', None)
-            h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
-                                timeout)
+            # Proxy
+            scheme = parsed_url['scheme']
+            proxy = proxies.get(scheme)
+            if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+                via_proxy = True
+                if '://' not in proxy:
+                    proxy = '%s://%s' % (parsed_url['scheme'], proxy)
+                parsed_proxy = parse_url(proxy)
+                # Proxy-Authorization
+                if parsed_proxy['username'] and parsed_proxy['password']:
+                    proxyauth = '%s:%s' % (parsed_proxy['username'],
+                                           parsed_proxy['username'])
+                    proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
+                    reqheaders['Proxy-Authorization'] = 'Basic ' + \
+                                                         proxyauth.decode('utf-8')
+                h = make_connection(scheme, parsed_proxy['host'], 
+                                    parsed_proxy['port'], timeout)
+            else:
+                via_proxy = False
+                reqheaders.pop('Proxy-Authorization', None)
+                h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
+                                    timeout)
 
-        start_time = time.time()
-        if via_proxy:
-            h.request(method, url, None, reqheaders)
-        else:
-            h.request(method, parsed_url['uri'], None, reqheaders)
-        _response = h.getresponse()
-        end_time = time.time()
-        response = Response.from_httplib(_response, reqheaders=reqheaders,
-                                     connection=h, length_limit=length_limit,
-                                     history=history, url=url)
+            if via_proxy:
+                h.request(method, url, None, reqheaders)
+            else:
+                h.request(method, parsed_url['uri'], None, reqheaders)
+            _response = h.getresponse()
+            response = Response.from_httplib(_response, reqheaders=reqheaders,
+                                         connection=h, length_limit=length_limit,
+                                         history=history, url=url)
 
-    return response
+        return response
+
+
+    if lazy:
+
+        class LazyResponse(object):
+            def __init__(self):
+                self._response = None
+            def __getattr__(self, name):
+                if self._response == None:
+                    self._response = get_redirected_response(h, url)
+                return getattr(self._response, name)
+
+            def gettimeout(self):
+                return h.sock.gettimeout()
+            def settimeout(self, value):
+                h.sock.settimeout(value)
+            timeout = property(gettimeout, settimeout)
+
+        return LazyResponse()
+    else:
+        return get_redirected_response(h, url)
+
+
 
 
 ###############################################################################
