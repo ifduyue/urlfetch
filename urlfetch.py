@@ -558,6 +558,8 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :param max_redirects: (integer, optional) Max redirects allowed within a
                             request. Default is 0, which means redirects are not
                             allowed.
+    :param lazy: (bool, optional) Laze response, read response content only
+                            when you need it. Default is False.
     :rtype: A :class:`~urlfetch.Response` object
     '''
     def make_connection(conn_type, host, port, timeout):
