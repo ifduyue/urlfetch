@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 '''
 
-__version__ = '0.5.5'
+__version__ = '0.5.6'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -558,8 +558,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :param max_redirects: (integer, optional) Max redirects allowed within a
                             request. Default is 0, which means redirects are not
                             allowed.
-    :param lazy: (bool, optional) Laze response, read response content only
-                            when you need it. Default is False.
+    :param lazy: (bool, optional) Lazy response, read response when you need it.
     :rtype: A :class:`~urlfetch.Response` object
     '''
     def make_connection(conn_type, host, port, timeout):

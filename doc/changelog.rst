@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+0.5.6 (2013-07-04)
+++++++++++++++++++++
+
+Feature:
+
+* Lay response. Read response when you need it.
+
 0.5.5 (2013-06-07)
 ++++++++++++++++++++
 
