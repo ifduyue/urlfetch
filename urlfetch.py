@@ -676,6 +676,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             if len(history) > max_redirects:
                 raise UrlfetchException('max_redirects exceeded')
 
+            global method, parsed_url
             method = method if response.status == 307 else 'GET'
             location = response.headers['location']
             if location[:2] == '//':
