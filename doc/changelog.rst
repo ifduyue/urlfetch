@@ -3,6 +3,12 @@ Changelog
 
 **Time flies!!**
 
+0.5.7 (2013-07-08)
+++++++++++++++++++++
+
+Fix:
+    * Host header field should include host and port
+
 0.5.6 (2013-07-04)
 ++++++++++++++++++++
 
