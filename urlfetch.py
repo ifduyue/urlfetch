@@ -602,7 +602,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Host': parsed_url['host'] + ":%d"%parsed_url['port'] if parsed_url['port'] else "",
+        'Host': parsed_url['netloc']
     }
 
     # Proxy support
