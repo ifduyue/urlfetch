@@ -115,6 +115,7 @@ class Response(object):
     }
 
     '''
+
     def __init__(self, r, **kwargs):
         self._r = r  # httplib.HTTPResponse
         self.msg = r.msg
@@ -137,8 +138,6 @@ class Response(object):
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
-        self.__CONTENT_DECODERS = {'gzip': decode_gzip,
-                                   'deflate': decode_deflate}
 
 
         for k in kwargs:
@@ -201,7 +200,7 @@ class Response(object):
                                         "bytes" % self.length_limit)
         # decode content if encoded
         encoding = self.headers.get('content-encoding', None)
-        decoder = self.__CONTENT_DECODERS.get(encoding)
+        decoder = CONTENT_DECODERS.get(encoding)
         if encoding and not decoder:
             raise UrlfetchException('Unknown encoding: %s' % encoding)
 
@@ -1063,4 +1062,5 @@ PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
+CONTENT_DECODERS = {'gzip': decode_gzip, 'deflate': decode_deflate}
 
