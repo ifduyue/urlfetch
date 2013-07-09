@@ -26,12 +26,10 @@ class LazyTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
 
     def test_timeout(self):
-        r = urlfetch.get(testlib.test_server_host + 'sleep/1', lazy=True)
-        r.timeout = 0.5
+        r = urlfetch.get(testlib.test_server_host + 'sleep/1', lazy=True, timeout=0.5)
         self.assertRaises(socket.timeout, lambda: r.text)
 
-        r = urlfetch.get(testlib.test_server_host + 'sleep/1', lazy=True)
-        r.timeout = 0.5
+        r = urlfetch.get(testlib.test_server_host + 'sleep/1', lazy=True, timeout=0.5)
         time.sleep(2)
         self.assertEqual(r.status, 200)
 
