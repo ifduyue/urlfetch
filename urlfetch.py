@@ -116,51 +116,80 @@ class Response(object):
 
     '''
 
-    def __init__(self, r, **kwargs):
-        self._r = r  # httplib.HTTPResponse
-        self.msg = r.msg
-
-        #: Status code returned by server.
-        self.status = r.status
-        # compatible with requests
-        #: An alias of :attr:`status`.
-        self.status_code = r.status
-
-        #: Reason phrase returned by server.
-        self.reason = r.reason
-
-        #: HTTP protocol version used by server.
-        #: 10 for HTTP/1.0, 11 for HTTP/1.1.
-        self.version = r.version
+    def __init__(self, connection, **kwargs):
+        self.connection = connection
+        self.lazy = kwargs.pop('lazy', False)
 
         #: total time
         self.total_time = kwargs.pop('total_time', None)
 
-        self.getheader = r.getheader
-        self.getheaders = r.getheaders
+        # httplib.HTTPResponse
+        self._r = None
 
-
-        for k in kwargs:
-            setattr(self, k, kwargs[k])
-
-        # if content (length) size is more than length_limit, skip
         try:
             self.length_limit = int(kwargs.get('length_limit'))
         except:
             self.length_limit = None
 
-        content_length = int(self.getheader('Content-Length', 0))
-        if self.length_limit and  content_length > self.length_limit:
-            self.close()
-            raise UrlfetchException("Content length is more than %d bytes"
-                                    % self.length_limit)
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
 
+        if not self.lazy:
+            self._init_response()
+
+    def _init_response(self):
+        if self._r is None:
+            self._r = self.connection.getresponse()
+
+            # if content (length) size is more than length_limit, skip
+            content_length = int(self.getheader('Content-Length', 0))
+            if self.length_limit and  content_length > self.length_limit:
+                self.close()
+                raise UrlfetchException("Content length is more than %d bytes"
+                                        % self.length_limit)
+
+    @cached_property
+    def msg(self):
+        self._init_response()
+        return self._r.msg
+
+    @cached_property
+    def status(self):
+        '''Status code returned by server.'''
+        self._init_response()
+        return self._r.status
+
+    # compatible with requests
+    #: An alias of :attr:`status`.
+    status_code = status
+
+    @cached_property
+    def reason(self):
+        '''Reason phrase returned by server.'''
+        self._init_response()
+        return self._r.reason
+
+    @cached_property
+    def version(self):
+        '''HTTP protocol version used by server.
+        10 for HTTP/1.0, 11 for HTTP/1.1.'''
+        self._init_response()
+        return self._r.version
+
+    def getheader(self, *args, **kwargs):
+        self._init_response()
+        return self._r.getheader(*args, **kwargs)
+
+    def getheaders(self, *args, **kwargs):
+        self._init_response()
+        return self._r.getheaders(*args, **kwargs)
 
     def read(self, chunk_size=8192):
         ''' read content (for streaming and large files)
 
         chunk_size: size of chunk, default: 8192       
         '''
+        self._init_response()
         chunk = self._r.read(chunk_size)
         return chunk
 
@@ -183,15 +212,16 @@ class Response(object):
         return False
 
     @classmethod
-    def from_httplib(cls, r, **kwargs):
+    def from_httplib(cls, connection, **kwargs):
         '''Generate a :class:`~urlfetch.Response` object from a httplib
         response object.
         '''
-        return cls(r, **kwargs)
+        return cls(connection, **kwargs)
 
     @cached_property
     def body(self):
         '''Response body.'''
+        self._init_response()
         content = b("")
         for chunk in self:
             content += chunk
@@ -268,6 +298,7 @@ class Response(object):
     @cached_property
     def links(self):
         '''Links parsed from HTTP Link header'''
+        self._init_response()
         ret = []
         for i in self.getheader('link', '').split(','):
             try:
@@ -306,7 +337,7 @@ class Response(object):
 
     def close(self):
         '''Close the connection'''
-        self._r.close()
+        self.connection.close()
 
     def __del__(self):
         self.close()
@@ -622,11 +653,11 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
             reqheaders['Proxy-Authorization'] = 'Basic ' + \
                                                 proxyauth.decode('utf-8')
-        h = make_connection(scheme, parsed_proxy['host'], parsed_proxy['port'],
-                            timeout)
+        conn = make_connection(scheme, parsed_proxy['host'],
+                               parsed_proxy['port'], timeout)
     else:
-        h = make_connection(scheme,  parsed_url['host'], parsed_url['port'], 
-                            timeout)
+        conn = make_connection(scheme,  parsed_url['host'], parsed_url['port'],
+                               timeout)
 
     if not auth and parsed_url['username'] and parsed_url['password']:
         auth = (parsed_url['username'], parsed_url['password'])
@@ -653,93 +684,75 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
 
     start_time = time.time()
     if via_proxy:
-        h.request(method, url, data, reqheaders)
+        conn.request(method, url, data, reqheaders)
     else:
-        h.request(method, parsed_url['uri'], data, reqheaders)
+        conn.request(method, parsed_url['uri'], data, reqheaders)
 
-    def get_redirected_response(h, url):
-        _response = h.getresponse()
-        end_time = time.time()
-        total_time = end_time - start_time
-        history = []
-        response = Response.from_httplib(_response, reqheaders=reqheaders,
-                                     connection=h, length_limit=length_limit,
-                                     history=history, url=url,
-                                     total_time=total_time)
-
-        while (response.status in (301, 302, 303, 307) and
-               'location' in response.headers and max_redirects):
-            response.body, response.close(), history.append(response)
-
-            if len(history) > max_redirects:
-                raise UrlfetchException('max_redirects exceeded')
-
-            global method, parsed_url
-            method = method if response.status == 307 else 'GET'
-            location = response.headers['location']
-            if location[:2] == '//':
-                url = parsed_url['scheme'] + ':' + location
-            else:
-                url = urlparse.urljoin(url, location)
-            parsed_url = parse_url(url)
-
-            reqheaders['Host'] = parsed_url['host']
-            reqheaders['Referer'] = response.url
-
-            # Proxy
-            scheme = parsed_url['scheme']
-            proxy = proxies.get(scheme)
-            if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
-                via_proxy = True
-                if '://' not in proxy:
-                    proxy = '%s://%s' % (parsed_url['scheme'], proxy)
-                parsed_proxy = parse_url(proxy)
-                # Proxy-Authorization
-                if parsed_proxy['username'] and parsed_proxy['password']:
-                    proxyauth = '%s:%s' % (parsed_proxy['username'],
-                                           parsed_proxy['username'])
-                    proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-                    reqheaders['Proxy-Authorization'] = 'Basic ' + \
-                                                         proxyauth.decode('utf-8')
-                h = make_connection(scheme, parsed_proxy['host'], 
-                                    parsed_proxy['port'], timeout)
-            else:
-                via_proxy = False
-                reqheaders.pop('Proxy-Authorization', None)
-                h = make_connection(scheme, parsed_url['host'], parsed_url['port'], 
-                                    timeout)
-
-            if via_proxy:
-                h.request(method, url, None, reqheaders)
-            else:
-                h.request(method, parsed_url['uri'], None, reqheaders)
-            _response = h.getresponse()
-            response = Response.from_httplib(_response, reqheaders=reqheaders,
-                                         connection=h, length_limit=length_limit,
-                                         history=history, url=url)
-
+    end_time = time.time()
+    total_time = end_time - start_time
+    history = []
+    response = Response.from_httplib(conn, reqheaders=reqheaders,
+                                         length_limit=length_limit,
+                                         history=history, url=url,
+                                         total_time=total_time,
+                                         start_time=start_time,
+                                         lazy=lazy)
+    if lazy:
         return response
 
+    while (response.status in (301, 302, 303, 307) and
+           'location' in response.headers and max_redirects):
+        response.body, response.close(), history.append(response)
 
-    if lazy:
+        if len(history) > max_redirects:
+            raise UrlfetchException('max_redirects exceeded')
 
-        class LazyResponse(object):
-            def __init__(self):
-                self._response = None
-            def __getattr__(self, name):
-                if self._response == None:
-                    self._response = get_redirected_response(h, url)
-                return getattr(self._response, name)
+        method = method if response.status == 307 else 'GET'
+        location = response.headers['location']
+        if location[:2] == '//':
+            url = parsed_url['scheme'] + ':' + location
+        else:
+            url = urlparse.urljoin(url, location)
+        parsed_url = parse_url(url)
 
-            def gettimeout(self):
-                return h.sock.gettimeout()
-            def settimeout(self, value):
-                h.sock.settimeout(value)
-            timeout = property(gettimeout, settimeout)
+        reqheaders['Host'] = parsed_url['host']
+        reqheaders['Referer'] = response.url
 
-        return LazyResponse()
-    else:
-        return get_redirected_response(h, url)
+        # Proxy
+        scheme = parsed_url['scheme']
+        proxy = proxies.get(scheme)
+        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+            via_proxy = True
+            if '://' not in proxy:
+                proxy = '%s://%s' % (parsed_url['scheme'], proxy)
+            parsed_proxy = parse_url(proxy)
+            # Proxy-Authorization
+            if parsed_proxy['username'] and parsed_proxy['password']:
+                proxyauth = '%s:%s' % (parsed_proxy['username'],
+                                       parsed_proxy['username'])
+                proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
+                reqheaders['Proxy-Authorization'] = 'Basic ' + \
+                                                     proxyauth.decode('utf-8')
+            conn = make_connection(scheme, parsed_proxy['host'],
+                                   parsed_proxy['port'], timeout)
+        else:
+            via_proxy = False
+            reqheaders.pop('Proxy-Authorization', None)
+            conn = make_connection(scheme, parsed_url['host'],
+                                   parsed_url['port'], timeout)
+
+        if via_proxy:
+            conn.request(method, url, None, reqheaders)
+        else:
+            conn.request(method, parsed_url['uri'], None, reqheaders)
+        response = Response.from_httplib(conn, reqheaders=reqheaders,
+                                         length_limit=length_limit,
+                                         history=history, url=url,
+                                         total_time=total_time,
+                                         start_time=start_time,
+                                         lazy=lazy)
+
+    return response
 
 
 
