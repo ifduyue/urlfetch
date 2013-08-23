@@ -45,8 +45,3 @@ Upload file
 
     print response.status, response.content
 
-
-Contributors
--------------
-
-* Andrey Usov <https://github.com/ownport>

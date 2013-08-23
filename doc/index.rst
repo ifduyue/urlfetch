@@ -55,6 +55,7 @@ User's Guide
     examples
     reference
     changelog
+    contributors
 
 License
 =========
