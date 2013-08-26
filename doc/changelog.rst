@@ -3,11 +3,20 @@ Changelog
 
 **Time flies!!**
 
+0.6   (2013-08-26)
+++++++++++++++++++++
+
+Change:
+
+* Remove lazy response introduced in 0.5.6
+* Remove the dump, dumps, load and loads methods of :class:`urlfetch.Response`
+
 0.5.7 (2013-07-08)
 ++++++++++++++++++++
 
 Fix:
-    * Host header field should include host and port
+
+* Host header field should include host and port
 
 0.5.6 (2013-07-04)
 ++++++++++++++++++++
