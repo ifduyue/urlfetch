@@ -206,13 +206,6 @@ R7ADoHaWQiJWM2%250AMDAyMTY2YjFhY2YzNjk3NzU3ZmEwYTZjMTc2ZWI0--81b8c092d264be1adb8
 b52eef177ab4466520f65; k=10.35.53.118.1341369025382790'
 >>> s.putheader("what", "a nice day")
 >>> s.putcookie("yah", "let's dance")
->>> s.dumps(cls="json")
-'{"headers": {"What": "a nice day", "User-Agent": "urlfetch session"}, "cookies"
-: {"guest_id": "v1%3A134136902538582791", "_twitter_sess": "BAh7CDoPY3JlYXRlZF9h
-dGwrCGoD0084ASIKZmxhc2hJQzonQWN0aW9uQ29u%250AdHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHs
-ABjoKQHVzZWR7ADoHaWQiJWM2%250AMDAyMTY2YjFhY2YzNjk3NzU3ZmEwYTZjMTc2ZWI0--81b8c092
-d264be1adb8b52eef177ab4466520f65", "k": "10.35.53.118.1341369025382790", "foo":
-"bar", "yah": "let\'s dance"}}'
 >>> r = s.get("https://twitter.com/")
 >>> r.status
 200
