@@ -116,80 +116,50 @@ class Response(object):
 
     '''
 
-    def __init__(self, connection, **kwargs):
-        self.connection = connection
-        self.lazy = kwargs.pop('lazy', False)
+    def __init__(self, r, **kwargs):
 
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
+
+        self._r = r  # httplib.HTTPResponse
+        self.msg = r.msg
+
+        #: Status code returned by server.
+        self.status = r.status
+        # compatible with requests
+        #: An alias of :attr:`status`.
+        self.status_code = r.status
+
+        #: Reason phrase returned by server.
+        self.reason = r.reason
+
+        #: HTTP protocol version used by server.
+        #: 10 for HTTP/1.0, 11 for HTTP/1.1.
+        self.version = r.version
+        
         #: total time
         self.total_time = kwargs.pop('total_time', None)
 
-        # httplib.HTTPResponse
-        self._r = None
+        self.getheader = r.getheader
+        self.getheaders = r.getheaders
 
         try:
             self.length_limit = int(kwargs.get('length_limit'))
         except:
             self.length_limit = None
 
-        for k in kwargs:
-            setattr(self, k, kwargs[k])
-
-        if not self.lazy:
-            self._init_response()
-
-    def _init_response(self):
-        if self._r is None:
-            self._r = self.connection.getresponse()
-
-            # if content (length) size is more than length_limit, skip
-            content_length = int(self.getheader('Content-Length', 0))
-            if self.length_limit and  content_length > self.length_limit:
-                self.close()
-                raise UrlfetchException("Content length is more than %d bytes"
-                                        % self.length_limit)
-
-    @cached_property
-    def msg(self):
-        self._init_response()
-        return self._r.msg
-
-    @cached_property
-    def status(self):
-        '''Status code returned by server.'''
-        self._init_response()
-        return self._r.status
-
-    # compatible with requests
-    #: An alias of :attr:`status`.
-    status_code = status
-
-    @cached_property
-    def reason(self):
-        '''Reason phrase returned by server.'''
-        self._init_response()
-        return self._r.reason
-
-    @cached_property
-    def version(self):
-        '''HTTP protocol version used by server.
-        10 for HTTP/1.0, 11 for HTTP/1.1.'''
-        self._init_response()
-        return self._r.version
-
-    def getheader(self, *args, **kwargs):
-        self._init_response()
-        return self._r.getheader(*args, **kwargs)
-
-    def getheaders(self, *args, **kwargs):
-        self._init_response()
-        return self._r.getheaders(*args, **kwargs)
+        # if content (length) size is more than length_limit, skip
+        content_length = int(self.getheader('Content-Length', 0))
+        if self.length_limit and  content_length > self.length_limit:
+            self.close()
+            raise UrlfetchException("Content length is more than %d bytes"
+                                    % self.length_limit)
 
     def read(self, chunk_size=8192):
         ''' read content (for streaming and large files)
 
         chunk_size: size of chunk, default: 8192       
         '''
-        self._init_response()
         chunk = self._r.read(chunk_size)
         return chunk
 
@@ -221,7 +191,6 @@ class Response(object):
     @cached_property
     def body(self):
         '''Response body.'''
-        self._init_response()
         content = b("")
         for chunk in self:
             content += chunk
@@ -298,7 +267,6 @@ class Response(object):
     @cached_property
     def links(self):
         '''Links parsed from HTTP Link header'''
-        self._init_response()
         ret = []
         for i in self.getheader('link', '').split(','):
             try:
@@ -337,7 +305,7 @@ class Response(object):
 
     def close(self):
         '''Close the connection'''
-        self.connection.close()
+        self._r.close()
 
     def __del__(self):
         self.close()
@@ -563,7 +531,7 @@ def fetch(*args, **kwargs):
 
 def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             files={}, randua=False, auth=None, length_limit=None, proxies=None,
-            trust_env=True, max_redirects=0, lazy=False, **kwargs):
+            trust_env=True, max_redirects=0, **kwargs):
     ''' request an URL
 
     :param url: URL to be fetched.
@@ -588,7 +556,6 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :param max_redirects: (integer, optional) Max redirects allowed within a
                             request. Default is 0, which means redirects are not
                             allowed.
-    :param lazy: (bool, optional) Lazy response, read response when you need it.
     :rtype: A :class:`~urlfetch.Response` object
     '''
     def make_connection(conn_type, host, port, timeout):
@@ -687,18 +654,16 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         conn.request(method, url, data, reqheaders)
     else:
         conn.request(method, parsed_url['uri'], data, reqheaders)
+    resp = conn.getresponse()
 
     end_time = time.time()
     total_time = end_time - start_time
     history = []
-    response = Response.from_httplib(conn, reqheaders=reqheaders,
+    response = Response.from_httplib(resp, reqheaders=reqheaders,
                                          length_limit=length_limit,
                                          history=history, url=url,
                                          total_time=total_time,
-                                         start_time=start_time,
-                                         lazy=lazy)
-    if lazy:
-        return response
+                                         start_time=start_time)
 
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
@@ -745,12 +710,12 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             conn.request(method, url, None, reqheaders)
         else:
             conn.request(method, parsed_url['uri'], None, reqheaders)
-        response = Response.from_httplib(conn, reqheaders=reqheaders,
+        resp = conn.getresponse()
+        response = Response.from_httplib(resp, reqheaders=reqheaders,
                                          length_limit=length_limit,
                                          history=history, url=url,
                                          total_time=total_time,
-                                         start_time=start_time,
-                                         lazy=lazy)
+                                         start_time=start_time)
 
     return response
 
