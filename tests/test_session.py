@@ -38,41 +38,6 @@ class GetTest(unittest.TestCase):
         s.popcookie(cookie[0])
         self.assertEqual(s.snapshot(), {'headers': headers, 'cookies': cookies})
         
-        new_s = urlfetch.Session()
-        new_s.loads(s.dumps())
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        new_s = urlfetch.Session()
-        new_s.loads(s.dumps(cls='json'), cls='json')
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        new_s = urlfetch.Session()
-        new_s.loads(s.dumps(cls='pickle'), cls='pickle')
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        new_s = urlfetch.Session()
-        with open('test.dump', 'wb') as f:
-            s.dump(f)
-        with open('test.dump', 'rb') as f:
-            new_s.load(f)
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        new_s = urlfetch.Session()
-        with open('test.dump', 'wb') as f:
-            s.dump(f, cls='json')
-        with open('test.dump', 'rb') as f:
-            new_s.load(f, cls='json')
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        new_s = urlfetch.Session()
-        with open('test.dump', 'wb') as f:
-            s.dump(f, cls='pickle')
-        with open('test.dump', 'rb') as f:
-            new_s.load(f, cls='pickle')
-        self.assertEqual(s.snapshot(), new_s.snapshot())
-        
-        os.unlink('test.dump')
-
         s = urlfetch.Session()
         cookie = (randstr(), randstr())
         r = s.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
