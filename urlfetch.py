@@ -831,20 +831,6 @@ def random_useragent(filename=None, *filenames):
 
     return 'urlfetch/%s' % __version__
 
-def import_object(name):
-    """Imports an object by name.
-
-    import_object('x.y.z') is equivalent to 'from x.y import z'.
-
-    >>> import_object('os.path') is os.path
-    True
-    >>> import_object('os.path.dirname') is os.path.dirname
-    True
-    """
-    parts = name.split('.')
-    obj = __import__('.'.join(parts[:-1]), None, None, [parts[-1]], 0)
-    return getattr(obj, parts[-1])
-
 def url_concat(url, args, keep_existing=True):
     """Concatenate url and argument dictionary
 
