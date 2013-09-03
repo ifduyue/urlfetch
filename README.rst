@@ -1,9 +1,8 @@
 urlfetch
 ========
 
-Description
------------
-An easy to use HTTP client for Python.
+urlfetch is a simple, lightweigth and easy to use HTTP client for Python. 
+It is distributed as a single file module and has no depencencies other than the Python Standard Library.
 
 Installation
 -------------
