@@ -7,6 +7,10 @@ import json
 import random
 
 
+import os
+here = os.path.dirname(os.path.abspath(__file__))
+path = lambda *p: os.path.join(here, *p)
+
 class PostTest(unittest.TestCase):
 
     def test_fetch(self):
@@ -48,7 +52,7 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['query_string'], query_string)
 
     def test_file_upload(self):
-        content = open('test.file', 'rb').read()
+        content = open(path('test.file'), 'rb').read()
         files = {}
         files['test.file1'] = (b'test.file1', b'test.file', content)
         #files[b'test.file2'] = (b'test.file2', b'', content)
@@ -58,9 +62,9 @@ class PostTest(unittest.TestCase):
         r = urlfetch.post(
                 testlib.test_server_host,
                 files = {
-                    'test.file1' : open('test.file'),
+                    'test.file1' : open(path('test.file')),
                     #'test.file2' : content,
-                    'test.file3' : ('wangxiaobo', open('test.file')),
+                    'test.file3' : ('wangxiaobo', open(path('test.file'))),
                     'test.file4' : ('wangtwo', content)
                 },
             )
@@ -76,7 +80,7 @@ class PostTest(unittest.TestCase):
 
 
     def test_one_file_upload(self):
-        content = open('test.file', 'rb').read()
+        content = open(path('test.file'), 'rb').read()
         files = {'test.file': (b'test.file', b'test.file', content)}
 
         r = urlfetch.post(
@@ -95,7 +99,7 @@ class PostTest(unittest.TestCase):
                 self.assertEqual(o['files'][i][j].encode('utf8'), files[i][j])
 
     def test_one_file_upload_gbk(self):
-        content = open('test.file.gbk', 'rb').read()
+        content = open(path('test.file.gbk'), 'rb').read()
         files = {'test.file': (b'test.file', b'test.file', content)}
 
         r = urlfetch.post(

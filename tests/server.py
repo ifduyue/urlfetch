@@ -80,5 +80,11 @@ try:
 except:
     port = 8800
 
-bottle.debug(True)
-bottle.run(app=app, host='127.0.0.1', port=port, reloader=True)
+quiet = False
+for arg in sys.argv[1:]:
+    if arg == 'quiet':
+        quiet = True
+        break
+
+bottle.debug(not quiet)
+bottle.run(app=app, host='127.0.0.1', port=port, reloader=True, quiet=quiet, debug=not quiet,)
