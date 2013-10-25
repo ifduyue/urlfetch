@@ -2,7 +2,7 @@ urlfetch
 ========
 
 .. |travis-ci-image| image:: https://travis-ci.org/ifduyue/urlfetch.png
-.. _travis-ci-image image:: https://travis-ci.org/ifduyue/urlfetch
+.. _travis-ci-image: https://travis-ci.org/ifduyue/urlfetch
 
 |travis-ci-image|_
 
