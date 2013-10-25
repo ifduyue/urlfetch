@@ -1,5 +1,5 @@
 import testlib
-from testlib import py3k
+from testlib import py3k, md5sum
 import urlfetch
 
 import unittest
@@ -75,8 +75,10 @@ class PostTest(unittest.TestCase):
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
 
         for i in files:
-            for j in range(3):
-                self.assertEqual(o['files'][i][j].encode('utf-8'), files[i][j])
+            self.assertEqual(o['files'][i][0].encode('utf-8'), files[i][0])
+            self.assertEqual(o['files'][i][1].encode('utf-8'), files[i][1])
+            self.assertEqual(o['files'][i][2].encode('utf-8'), md5sum(files[i][2]))
+            
 
 
     def test_one_file_upload(self):
@@ -95,8 +97,9 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
         for i in files:
-            for j in range(3):
-                self.assertEqual(o['files'][i][j].encode('utf8'), files[i][j])
+            self.assertEqual(o['files'][i][0].encode('utf8'), files[i][0])
+            self.assertEqual(o['files'][i][1].encode('utf8'), files[i][1])
+            self.assertEqual(o['files'][i][2].encode('utf8'), md5sum(files[i][2]))
 
     def test_one_file_upload_gbk(self):
         content = open(path('test.file.gbk'), 'rb').read()
@@ -114,8 +117,9 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
         for i in files:
-            for j in range(3):
-                self.assertEqual(o['files'][i][j].encode('gb2312'), files[i][j])
+            self.assertEqual(o['files'][i][0].encode('gbk'), files[i][0])
+            self.assertEqual(o['files'][i][1].encode('gbk'), files[i][1])
+            self.assertEqual(o['files'][i][2].encode('gbk'), md5sum(files[i][2]))
 
 if __name__ == '__main__':
     unittest.main()

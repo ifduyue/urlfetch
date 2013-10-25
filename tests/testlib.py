@@ -2,9 +2,13 @@ import random
 import string
 import sys
 import os
+import hashlib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
+def md5sum(b):
+    return hashlib.md5(b).hexdigest()
 
 def randstr(l=None, chars=string.ascii_letters+string.digits):
     l = l or random.randint(1, 100)
