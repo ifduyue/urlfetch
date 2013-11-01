@@ -722,7 +722,10 @@ def parse_url(url):
     result['username'] = parsed.username
     result['password'] = parsed.password
     result['host'] = result['hostname'] = parsed.hostname
-    result['port'] = parsed.port
+    try:
+        result['port'] = parsed.port
+    except ValueError:
+        result['port'] = None
     if parsed.port:
         result['http_host'] = '%s:%d' % (parsed.hostname, parsed.port)
     else:
