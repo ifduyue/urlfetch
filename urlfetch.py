@@ -729,7 +729,7 @@ def parse_url(url):
     if parsed.port:
         r['http_host'] = '%s:%d' % (r.host, r.port)
     else:
-        r['http_host'] = parsed.hostname
+        r['http_host'] = r.host
 
     return r
 
