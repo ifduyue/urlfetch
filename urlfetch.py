@@ -710,28 +710,28 @@ def parse_url(url):
         scheme = 'http'
     url = 'http://' + url
     parsed = urlparse.urlsplit(url)
-    result = ObjectDict()
-    result['scheme'] = scheme
-    result['netloc'] = parsed.netloc
-    result['path'] = parsed.path
-    result['query'] = parsed.query
-    result['fragment'] = parsed.fragment
-    result['uri'] = parsed.path
+    r = ObjectDict()
+    r['scheme'] = scheme
+    r['netloc'] = parsed.netloc
+    r['path'] = parsed.path
+    r['query'] = parsed.query
+    r['fragment'] = parsed.fragment
+    r['uri'] = parsed.path
     if parsed.query:
-        result['uri'] += '?' + parsed.query
-    result['username'] = parsed.username
-    result['password'] = parsed.password
-    result['host'] = result['hostname'] = parsed.hostname
+        r['uri'] += '?' + parsed.query
+    r['username'] = parsed.username
+    r['password'] = parsed.password
+    r['host'] = r['hostname'] = parsed.hostname
     try:
-        result['port'] = parsed.port
+        r['port'] = parsed.port
     except ValueError:
-        result['port'] = None
+        r['port'] = None
     if parsed.port:
-        result['http_host'] = '%s:%d' % (parsed.hostname, parsed.port)
+        r['http_host'] = '%s:%d' % (r.host, r.port)
     else:
-        result['http_host'] = parsed.hostname
+        r['http_host'] = parsed.hostname
 
-    return result
+    return r
 
 def get_proxies_from_environ():
     '''get proxies from os.environ'''
