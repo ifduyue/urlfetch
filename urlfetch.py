@@ -726,10 +726,10 @@ def parse_url(url):
         r['port'] = parsed.port
     except ValueError:
         r['port'] = None
-    if parsed.port:
-        r['http_host'] = '%s:%d' % (r.host, r.port)
+    if r['port']:
+        r['http_host'] = '%s:%d' % (r['host'], r['port'])
     else:
-        r['http_host'] = r.host
+        r['http_host'] = r['host']
 
     return r
 
