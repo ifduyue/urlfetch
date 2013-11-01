@@ -526,7 +526,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Host': parsed_url['netloc']
+        'Host': parsed_url['http_host']
     }
 
     # Proxy support
@@ -722,10 +722,11 @@ def parse_url(url):
     result['username'] = parsed.username
     result['password'] = parsed.password
     result['host'] = result['hostname'] = parsed.hostname
-    try:
-        result['port'] = parsed.port
-    except ValueError:
-        result['port'] = None
+    result['port'] = parsed.port
+    if parsed.port:
+        result['http_host'] = '%s:%d' % (parsed.hostname, parsed.port)
+    else:
+        result['http_host'] = parsed.hostname
 
     return result
 
