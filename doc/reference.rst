@@ -39,7 +39,6 @@ helpers
 .. autofunction:: mb_code
 .. autofunction:: sc2cs
 .. autofunction:: random_useragent
-.. autofunction:: import_object
 .. autofunction:: url_concat
 .. autofunction:: choose_boundary
 .. autofunction:: encode_multipart

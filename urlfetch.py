@@ -321,12 +321,9 @@ class Session(object):
     :class:`urlfetch.Session` plays a role in handling cookies, just like a
     cookiejar.
 
-    :param headers: init headers
-    :type headers: dict, optional
-    :param cookies: init cookies
-    :type cookies: dict, optional
-    :param auth: (username, password) for basic authentication
-    :type auth: tuple, optional
+    :arg dict headers: Init headers.
+    :arg dict cookies: Init cookies.
+    :arg tuple auth: (username, password) for basic authentication.
     '''
 
     def __init__(self, headers={}, cookies={}, auth=None):
@@ -461,29 +458,29 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             trust_env=True, max_redirects=0, **kwargs):
     ''' request an URL
 
-    :param url: URL to be fetched.
-    :param method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
+    :arg string url: URL to be fetched.
+    :arg string method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
                    ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``.
                    ``GET`` by default.
-    :param params: (optional) dict or string to attach to url as querystring.
-    :param headers: (optional) HTTP request headers in dict
-    :param timeout: (optional) timeout in seconds
-    :param files: (optional) files to be sended
-    :param randua: (optional) if ``True`` or ``path string``, use a random
+    :arg dict/string params: (optional) Dict or string to attach to url as querystring.
+    :arg dict headers: (optional) HTTP request headers.
+    :arg float timeout: (optional) Timeout in seconds
+    :arg files: (optional) Files to be sended
+    :arg randua: (optional) If ``True`` or ``path string``, use a random
                     user-agent in headers, instead of 
                     ``'urlfetch/' + __version__``
-    :param auth: (optional) (username, password) for basic authentication
-    :param length_limit: (optional) if ``None``, no limits on content length,
+    :arg tuple auth: (optional) (username, password) for basic authentication
+    :arg int length_limit: (optional) If ``None``, no limits on content length,
                         if the limit reached raised exception 'Content length
                         is more than ...'
-    :param proxies: (optional) HTTP proxy, like {'http': '127.0.0.1:8888',
+    :arg dict proxies: (optional) HTTP proxy, like {'http': '127.0.0.1:8888',
                                                  'https': '127.0.0.1:563'}
-    :param trust_env: (optional) If ``True``, urlfetch will get infomations
+    :arg bool trust_env: (optional) If ``True``, urlfetch will get infomations
                         from env, such as HTTP_PROXY, HTTPS_PROXY
-    :param max_redirects: (integer, optional) Max redirects allowed within a
+    :arg int max_redirects: (integer, optional) Max redirects allowed within a
                             request. Default is 0, which means redirects are not
                             allowed.
-    :rtype: A :class:`~urlfetch.Response` object
+    :returns: A :class:`~urlfetch.Response` object
     '''
     def make_connection(conn_type, host, port, timeout):
         ''' return HTTP or HTTPS connection '''
@@ -762,8 +759,8 @@ def sc2cs(sc):
 
         sc = response.getheader('Set-Cookie')
 
-    :param sc: (string) Set-Cookie
-    :rtype: cookie string, which is name=value pairs joined by ``;``.
+    :arg string sc: Set-Cookie.
+    :returns: Cookie string, which is name=value pairs joined by ``;``.
     '''
     c = Cookie.SimpleCookie(sc)
     sc = ['%s=%s' % (i.key, i.value) for i in c.values()]
@@ -778,9 +775,9 @@ def random_useragent(filename=None, *filenames):
     >>> ua = random_useragent(['file1', 'file2'], 'file3')
 
 
-    :param filename: path to the file from which a random useragent
-                     is generated
-    :type filename: string, optional
+    :arg string filename: (Optional) Path to the file from which a random useragent
+        is generated.
+    :returns: A User-Agent string.
     '''
     import random
     from time import time
@@ -841,9 +838,9 @@ def url_concat(url, args, keep_existing=True):
     >>> url_concat("http://example.com/foo?a=b", dict(c="d"))
     'http://example.com/foo?a=b&c=d'
 
-    :param url: (string) url being concat to.
-    :param args: (dict) args being concat.
-    :param keep_existing: (bool, optional) Whether to keep the args which are
+    :arg string url: URL being concat to.
+    :arg dict args: Args being concat.
+    :arg bool keep_existing: (Optional) Whether to keep the args which are
                             alreay in url, default is ``True``.
     """
     if not args:
@@ -862,7 +859,7 @@ def url_concat(url, args, keep_existing=True):
 def choose_boundary():
     '''Generate a multipart boundry.
 
-    :rtype: string
+    :returns: A boundary string
     '''
     global BOUNDARY_PREFIX
     if BOUNDARY_PREFIX is None:
@@ -883,9 +880,9 @@ def choose_boundary():
 def encode_multipart(data, files):
     '''Encode multipart.
 
-    :param data: (dict) data to be encoded
-    :param files: (dict) files to be encoded
-    :rtype: encoded binary string
+    :arg dict data: Data to be encoded
+    :arg dict files: Files to be encoded
+    :returns: Encoded binary string
     '''
     body = BytesIO()
     boundary = choose_boundary()
