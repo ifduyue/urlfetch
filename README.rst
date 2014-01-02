@@ -1,6 +1,9 @@
 urlfetch
 ========
 
+.. image:: https://badge.fury.io/py/urlfetch.png
+    :target: http://badge.fury.io/py/urlfetch
+
 .. image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
 
