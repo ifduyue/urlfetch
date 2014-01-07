@@ -15,10 +15,9 @@ __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
-import os, sys, base64, codecs, uuid, stat
+import os, sys, base64, codecs, uuid, stat, time, collections
 from functools import partial, wraps
 from io import BytesIO
-import time
 try:
     import simplejson as json
 except ImportError:
@@ -249,7 +248,7 @@ class Response(object):
         }
 
         '''
-        return dict((k.lower(), v) for k, v in self.getheaders())
+        return TitledDict(self.getheaders())
 
     @cached_property
     def cookies(self):
@@ -330,47 +329,38 @@ class Session(object):
         '''init a :class:`~urlfetch.Session` object
 
         '''
-        self._headers = {}
-        self._cookies = cookies.copy()
-
-        for k, v in headers.items():
-            self._headers[k.title()] = v
+        #: headers
+        self.headers = TitledDict(headers)
+        #: cookies
+        self.cookies = cookies.copy()
 
         if auth and isinstance(auth, (list, tuple)):
-                auth = '%s:%s' % tuple(auth)
-                auth = base64.b64encode(auth.encode('utf-8'))
-                self._headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+            auth = '%s:%s' % tuple(auth)
+            auth = base64.b64encode(auth.encode('utf-8'))
+            self.headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
 
     def putheader(self, header, value):
         '''Add an header to default headers'''
-        self._headers[header.title()] = value
+        self.headers[header.title()] = value
 
     def popheader(self, header):
         '''Remove an header from default headers'''
-        return self._headers.pop(header.title())
+        return self.headers.pop(header.title())
 
     def putcookie(self, key, value=""):
         '''Add an cookie to default cookies'''
-        self._cookies[key] = value
+        self.cookies[key] = value
 
     def popcookie(self, key):
         '''Remove an cookie from default cookies'''
-        return self._cookies.pop(key)
-
-    @property
-    def headers(self):
-        return dict((k.lower(), v) for k, v in self._headers.items())
-
-    @property
-    def cookies(self):
-        return self._cookies
+        return self.cookies.pop(key)
 
     @property
     def cookiestring(self):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
 
     def snapshot(self):
-        session = {'headers': self._headers.copy(), 'cookies': self._cookies.copy()}
+        session = {'headers': self.headers.copy(), 'cookies': self.cookies.copy()}
         return session
 
     def request(self, *args, **kwargs):
@@ -384,7 +374,7 @@ class Session(object):
         r = request(*args, **kwargs)
 
         cookies = r.cookies
-        self._cookies.update(cookies)
+        self.cookies.update(cookies)
 
         return r
 
@@ -674,6 +664,46 @@ class ObjectDict(dict):
 
     def __setattr__(self, name, value):
         self[name] = value
+
+
+class TitledDict(collections.MutableMapping):
+    """A dictionary that all keys are ``title()``ed."""
+
+    def __init__(self, *args, **kwargs):
+        self._store = dict()
+        self.update(dict(*args, **kwargs))
+
+    def __getitem__(self, key):
+        return self._store[self.__keytransform__(key)]
+
+    def __setitem__(self, key, value):
+        self._store[self.__keytransform__(key)] = value
+
+    def __delitem__(self, key):
+        del self._store[self.__keytransform__(key)]
+
+    def __iter__(self):
+        return iter(self._store)
+
+    def __len__(self):
+        return len(self._store)
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self._store)
+
+    def __eq__(self, other):
+        if isinstance(other, collections.Mapping):
+            other = self.__class__(other)
+            return self._store == other._store
+        else:
+            return False
+
+    def copy(self):
+        return self.__class__(self._store)
+
+    def __keytransform__(self, key):
+        return key.title() if isinstance(key, basestring) else key
+
 
 def _flatten(lst):
     '''flatten nested list/tuple/set.
