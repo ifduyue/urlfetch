@@ -17,7 +17,7 @@ Installation
 -------------
 ::
     
-    $ pip install urlfetch --upgrade
+    $ pip install urlfetch
 
 
 Hello World

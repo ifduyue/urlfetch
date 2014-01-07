@@ -18,12 +18,8 @@ Install
 
 ::
     
-    $ pip install urlfetch --upgrade
+    $ pip install urlfetch
     
-OR::
-
-    $ easy_install urlfetch --upgrade
-
 OR grab the latest source from github
 `ifduyue/urlfetch <https://github.com/ifduyue/urlfetch>`_::
     
