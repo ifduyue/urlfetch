@@ -4,6 +4,9 @@ urlfetch
 .. image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
 
+.. image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master 
+    :target: https://coveralls.io/r/ifduyue/urlfetch?branch=master 
+
 .. image:: https://badge.fury.io/py/urlfetch.png
     :target: http://badge.fury.io/py/urlfetch
 
