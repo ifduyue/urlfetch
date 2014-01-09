@@ -16,7 +16,7 @@ __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
 import os, sys, base64, codecs, uuid, stat, time, collections
-from functools import partial, wraps
+from functools import partial
 from io import BytesIO
 try:
     import simplejson as json
@@ -640,9 +640,11 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
 # Shortcuts and Helpers ########################################################
 ###############################################################################
 
-def _partial_method(method, **kwargs):
-    func = wraps(request)(partial(request, method=method, **kwargs))
-    setattr(func, '__doc__', 'Issue a %s request' % method)
+def _partial_method(method):
+    func = partial(request, method=method)
+    func.__doc__ = 'Issue a %s request' % method.lower()
+    func.__name__ = method.lower()
+    func.__module__ = request.__module__
     return func
 
 get = _partial_method("GET")
@@ -653,6 +655,9 @@ head = _partial_method("HEAD")
 options = _partial_method("OPTIONS")
 trace = _partial_method("TRACE")
 patch = _partial_method("PATCH")
+
+del _partial_method
+
 
 class ObjectDict(dict):
     """Makes a dictionary behave like an object."""
