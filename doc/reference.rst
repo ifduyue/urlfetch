@@ -37,7 +37,6 @@ helpers
 .. autofunction:: parse_url
 .. autofunction:: get_proxies_from_environ
 .. autofunction:: mb_code
-.. autofunction:: sc2cs
 .. autofunction:: random_useragent
 .. autofunction:: url_concat
 .. autofunction:: choose_boundary

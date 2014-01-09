@@ -782,19 +782,6 @@ def mb_code(s, coding=None, errors='replace'):
         except: pass
     return unicode(s, errors=errors)
 
-def sc2cs(sc):
-    '''Convert Set-Cookie header to cookie string.
-
-    Set-Cookie can be retrieved from a :class:`~urlfetch.Response` instance::
-
-        sc = response.getheader('Set-Cookie')
-
-    :arg string sc: Set-Cookie.
-    :returns: Cookie string, which is name=value pairs joined by ``;``.
-    '''
-    c = Cookie.SimpleCookie(sc)
-    sc = ['%s=%s' % (i.key, i.value) for i in c.values()]
-    return '; '.join(sc)
 
 def random_useragent(filename=None, *filenames):
     '''Returns a User-Agent string randomly from file.
