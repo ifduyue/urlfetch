@@ -53,9 +53,12 @@ __all__ = ('request', 'fetch', 'Session',
 class UrlfetchException(Exception): pass
 
 class cached_property(object):
-    ''' A property that is only computed once per instance and then replaces
-        itself with an ordinary attribute. Deleting the attribute resets the
-        property. '''
+    '''Cached property.
+
+    A property that is only computed once per instance and then replaces
+    itself with an ordinary attribute. Deleting the attribute resets the
+    property.
+    '''
     def __init__(self, func):
         self.func = func
 
@@ -155,7 +158,7 @@ class Response(object):
                                     % self.length_limit)
 
     def read(self, chunk_size=8192):
-        ''' read content (for streaming and large files)
+        '''read content (for streaming and large files)
 
         chunk_size: size of chunk, default: 8192       
         '''
@@ -326,9 +329,7 @@ class Session(object):
     '''
 
     def __init__(self, headers={}, cookies={}, auth=None):
-        '''init a :class:`~urlfetch.Session` object
-
-        '''
+        '''init a :class:`~urlfetch.Session` object.'''
         #: headers
         self.headers = TitledDict(headers)
         #: cookies
@@ -429,7 +430,7 @@ class Session(object):
         return self.request(*args, **kwargs)
 
 def fetch(*args, **kwargs):
-    ''' fetch an URL.
+    '''fetch an URL.
 
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
@@ -446,7 +447,7 @@ def fetch(*args, **kwargs):
 def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             files={}, randua=False, auth=None, length_limit=None, proxies=None,
             trust_env=True, max_redirects=0, **kwargs):
-    ''' request an URL
+    '''request an URL
 
     :arg string url: URL to be fetched.
     :arg string method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
@@ -473,7 +474,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :returns: A :class:`~urlfetch.Response` object
     '''
     def make_connection(conn_type, host, port, timeout):
-        ''' return HTTP or HTTPS connection '''
+        '''return HTTP or HTTPS connection '''
         if conn_type == 'http':
             conn = HTTPConnection(host, port, timeout=timeout)
         elif conn_type == 'https':
@@ -712,19 +713,21 @@ class TitledDict(collections.MutableMapping):
 
 def _flatten(lst):
     '''flatten nested list/tuple/set.
-    modified from https://gist.github.com/1308410'''
+
+    modified from https://gist.github.com/1308410
+    '''
     return reduce(lambda l, i: l + _flatten(i)
                   if isinstance(i, (list,tuple,set))
                   else l + [i], lst, [])
 
 def decode_gzip(data):
-    ''' decode gzipped content '''
+    '''Decode gzipped content.'''
     import gzip
     gzipper = gzip.GzipFile(fileobj=BytesIO(data))
     return gzipper.read()
 
 def decode_deflate(data):
-    ''' decode deflate content '''
+    '''Decode deflate content.'''
     import zlib
     try:
         return zlib.decompress(data)
@@ -766,7 +769,7 @@ def parse_url(url):
     return r
 
 def get_proxies_from_environ():
-    '''get proxies from os.environ'''
+    '''get proxies from os.environ.'''
     proxies = {}
     http_proxy = os.getenv('http_proxy') or os.getenv('HTTP_PROXY')
     https_proxy = os.getenv('https_proxy') or os.getenv('HTTPS_PROXY')
@@ -777,7 +780,7 @@ def get_proxies_from_environ():
     return proxies
 
 def mb_code(s, coding=None, errors='replace'):
-    '''encoding/decoding helper'''
+    '''encoding/decoding helper.'''
     if isinstance(s, unicode):
         return s if coding is None else s.encode(coding, errors=errors)
     for c in ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5'):
