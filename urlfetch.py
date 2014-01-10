@@ -50,7 +50,10 @@ __all__ = ('request', 'fetch', 'Session',
            'get', 'head', 'put', 'post', 'delete', 'options', 'trace', 'patch'
            'UrlfetchException')
 
-class UrlfetchException(Exception): pass
+
+class UrlfetchException(Exception):
+    pass
+
 
 class cached_property(object):
     """Cached property.
@@ -63,14 +66,15 @@ class cached_property(object):
         self.func = func
 
     def __get__(self, obj, cls):
-        if obj is None: return self
+        if obj is None:
+            return self
         value = obj.__dict__[self.func.__name__] = self.func(obj)
         return value
 
 
-###############################################################################
-# Core Methods and Classes #####################################################
-###############################################################################
+##############################################################################
+# Core Methods and Classes ####################################################
+##############################################################################
 
 class Response(object):
     """A Response object.
@@ -137,7 +141,7 @@ class Response(object):
         #: HTTP protocol version used by server.
         #: 10 for HTTP/1.0, 11 for HTTP/1.1.
         self.version = r.version
-        
+
         #: total time
         self.total_time = kwargs.pop('total_time', None)
 
@@ -151,7 +155,7 @@ class Response(object):
 
         # if content (length) size is more than length_limit, skip
         content_length = int(self.getheader('Content-Length', 0))
-        if self.length_limit and  content_length > self.length_limit:
+        if self.length_limit and content_length > self.length_limit:
             self.close()
             raise UrlfetchException("Content length is more than %d bytes"
                                     % self.length_limit)
@@ -207,7 +211,6 @@ class Response(object):
             content = decoder(content)
 
         return content
-
 
     # compatible with requests
     #: An alias of :attr:`body`.
@@ -296,7 +299,7 @@ class Response(object):
         status = self.status
         reason = self.reason
 
-        return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] + \
+        return b'\r\n'.join([b'%s %s %s' % (version, status, reason)] +
                [b'%s: %s' % (k, v) for k, v in self.getheaders()])
 
     @cached_property
@@ -360,7 +363,10 @@ class Session(object):
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
 
     def snapshot(self):
-        session = {'headers': self.headers.copy(), 'cookies': self.cookies.copy()}
+        session = {
+            'headers': self.headers.copy(),
+            'cookies': self.cookies.copy()
+        }
         return session
 
     def request(self, *args, **kwargs):
@@ -386,7 +392,6 @@ class Session(object):
         if data and isinstance(data, (basestring, dict)) or files:
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
-
 
     def get(self, *args, **kwargs):
         """Issue a get request."""
@@ -428,6 +433,7 @@ class Session(object):
         kwargs['method'] = 'PATCH'
         return self.request(*args, **kwargs)
 
+
 def fetch(*args, **kwargs):
     """fetch an URL.
 
@@ -443,21 +449,22 @@ def fetch(*args, **kwargs):
     return get(*args, **kwargs)
 
 
-def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
-            files={}, randua=False, auth=None, length_limit=None, proxies=None,
-            trust_env=True, max_redirects=0, **kwargs):
+def request(url, method="GET", params=None, data=None, headers={},
+            timeout=None, files={}, randua=False, auth=None, length_limit=None,
+            proxies=None, trust_env=True, max_redirects=0, **kwargs):
     """request an URL
 
     :arg string url: URL to be fetched.
-    :arg string method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
-                   ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``, ``PATCH``.
-                   ``GET`` by default.
-    :arg dict/string params: (optional) Dict or string to attach to url as querystring.
+    :arg string method: (optional) HTTP method, one of ``GET``, ``DELETE``,
+                        ``HEAD``, ``OPTIONS``, ``PUT``, ``POST``, ``TRACE``,
+                        ``PATCH``. ``GET`` is the default.
+    :arg dict/string params: (optional) Dict or string to attach to url as
+                                querystring.
     :arg dict headers: (optional) HTTP request headers.
     :arg float timeout: (optional) Timeout in seconds
     :arg files: (optional) Files to be sended
     :arg randua: (optional) If ``True`` or ``path string``, use a random
-                    user-agent in headers, instead of 
+                    user-agent in headers, instead of
                     ``'urlfetch/' + __version__``
     :arg tuple auth: (optional) (username, password) for basic authentication
     :arg int length_limit: (optional) If ``None``, no limits on content length,
@@ -468,8 +475,8 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     :arg bool trust_env: (optional) If ``True``, urlfetch will get infomations
                         from env, such as HTTP_PROXY, HTTPS_PROXY
     :arg int max_redirects: (integer, optional) Max redirects allowed within a
-                            request. Default is 0, which means redirects are not
-                            allowed.
+                            request. Default is 0, which means redirects are
+                            not allowed.
     :returns: A :class:`~urlfetch.Response` object
     """
     def make_connection(conn_type, host, port, timeout):
@@ -499,8 +506,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     parsed_url = parse_url(url)
 
     # is randua bool or path
-    if randua and isinstance(randua, basestring) and \
-        os.path.isfile(randua):
+    if randua and isinstance(randua, basestring) and os.path.isfile(randua):
         randua_file = randua
         randua = True
     else:
@@ -508,18 +514,21 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         randua = bool(randua)
 
     # default request headers
+    if randua:
+        ua = random_useragent(randua_file)
+    else:
+        ua = 'urlfetch/' + __version__
     reqheaders = {
         'Accept': '*/*',
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
-        'User-Agent': random_useragent(randua_file) if randua else \
-                        'urlfetch/' + __version__,
+        'User-Agent': ua,
         'Host': parsed_url['http_host']
     }
 
     # Proxy support
     scheme = parsed_url['scheme']
     if proxies is None and trust_env:
-        proxies = PROXIES 
+        proxies = PROXIES
 
     proxy = proxies.get(scheme)
     if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
@@ -529,7 +538,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         parsed_proxy = parse_url(proxy)
         # Proxy-Authorization
         if parsed_proxy['username'] and parsed_proxy['password']:
-            proxyauth = '%s:%s' % (parsed_proxy['username'], 
+            proxyauth = '%s:%s' % (parsed_proxy['username'],
                                    parsed_proxy['password'])
             proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
             reqheaders['Proxy-Authorization'] = 'Basic ' + \
@@ -537,7 +546,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         conn = make_connection(scheme, parsed_proxy['host'],
                                parsed_proxy['port'], timeout)
     else:
-        conn = make_connection(scheme,  parsed_url['host'], parsed_url['port'],
+        conn = make_connection(scheme, parsed_url['host'], parsed_url['port'],
                                timeout)
 
     if not auth and parsed_url['username'] and parsed_url['password']:
@@ -574,10 +583,10 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     total_time = end_time - start_time
     history = []
     response = Response.from_httplib(resp, reqheaders=reqheaders,
-                                         length_limit=length_limit,
-                                         history=history, url=url,
-                                         total_time=total_time,
-                                         start_time=start_time)
+                                     length_limit=length_limit,
+                                     history=history, url=url,
+                                     total_time=total_time,
+                                     start_time=start_time)
 
     while (response.status in (301, 302, 303, 307) and
            'location' in response.headers and max_redirects):
@@ -611,7 +620,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                                        parsed_proxy['username'])
                 proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
                 reqheaders['Proxy-Authorization'] = 'Basic ' + \
-                                                     proxyauth.decode('utf-8')
+                                                    proxyauth.decode('utf-8')
             conn = make_connection(scheme, parsed_proxy['host'],
                                    parsed_proxy['port'], timeout)
         else:
@@ -634,11 +643,9 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
     return response
 
 
-
-
-###############################################################################
-# Shortcuts and Helpers ########################################################
-###############################################################################
+##############################################################################
+# Shortcuts and Helpers #######################################################
+##############################################################################
 
 def _partial_method(method):
     func = partial(request, method=method)
@@ -716,14 +723,16 @@ def _flatten(lst):
     modified from https://gist.github.com/1308410
     """
     return reduce(lambda l, i: l + _flatten(i)
-                  if isinstance(i, (list,tuple,set))
+                  if isinstance(i, (list, tuple, set))
                   else l + [i], lst, [])
+
 
 def decode_gzip(data):
     """Decode gzipped content."""
     import gzip
     gzipper = gzip.GzipFile(fileobj=BytesIO(data))
     return gzipper.read()
+
 
 def decode_deflate(data):
     """Decode deflate content."""
@@ -732,6 +741,7 @@ def decode_deflate(data):
         return zlib.decompress(data)
     except zlib.error:
         return zlib.decompress(data, -zlib.MAX_WBITS)
+
 
 def parse_url(url):
     """Return a dictionary of parsed url
@@ -768,6 +778,7 @@ def parse_url(url):
 
     return r
 
+
 def get_proxies_from_environ():
     """Get proxies from os.environ."""
     proxies = {}
@@ -779,6 +790,7 @@ def get_proxies_from_environ():
         proxies['https'] = https_proxy
     return proxies
 
+
 def mb_code(s, coding=None, errors='replace'):
     """encoding/decoding helper."""
     if isinstance(s, unicode):
@@ -787,7 +799,8 @@ def mb_code(s, coding=None, errors='replace'):
         try:
             s = s.decode(c)
             return s if coding is None else s.encode(coding, errors=errors)
-        except: pass
+        except:
+            pass
     return unicode(s, errors=errors)
 
 
@@ -799,9 +812,8 @@ def random_useragent(filename=None, *filenames):
     >>> ua = random_useragent(['file1', 'file2'])
     >>> ua = random_useragent(['file1', 'file2'], 'file3')
 
-
-    :arg string filename: (Optional) Path to the file from which a random useragent
-        is generated.
+    :arg string filename: (Optional) Path to the file from which a random
+        useragent is generated.
     :returns: A User-Agent string.
     """
     import random
@@ -825,7 +837,8 @@ def random_useragent(filename=None, *filenames):
             st = os.stat(filename)
             if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
                 break
-        except: pass
+        except:
+            pass
     else:
         return 'urlfetch/%s' % __version__
 
@@ -857,6 +870,7 @@ def random_useragent(filename=None, *filenames):
 
     return 'urlfetch/%s' % __version__
 
+
 def url_concat(url, args, keep_existing=True):
     """Concatenate url and argument dictionary
 
@@ -881,6 +895,7 @@ def url_concat(url, args, keep_existing=True):
         query.update(args)
         return url + '?' + urlencode(query, 1)
 
+
 def choose_boundary():
     """Generate a multipart boundry.
 
@@ -901,6 +916,7 @@ def choose_boundary():
             pass
 
     return "%s.%s" % (BOUNDARY_PREFIX, uuid.uuid4().hex)
+
 
 def encode_multipart(data, files):
     """Encode multipart.
@@ -969,9 +985,9 @@ def encode_multipart(data, files):
 
     return content_type, body.getvalue()
 
-###############################################################################
-# Constants and Globals ########################################################
-###############################################################################
+##############################################################################
+# Constants and Globals #######################################################
+##############################################################################
 
 ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE",
                    "PATCH")
@@ -980,4 +996,3 @@ PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
 CONTENT_DECODERS = {'gzip': decode_gzip, 'deflate': decode_deflate}
-
