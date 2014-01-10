@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 urlfetch
 ~~~~~~~~~~
 
@@ -8,7 +8,7 @@ An easy to use HTTP client based on httplib.
 
 :copyright: (c) 2011-2013 by Yue Du.
 :license: BSD 2-clause License, see LICENSE for more details.
-'''
+"""
 
 __version__ = '0.6'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
@@ -53,12 +53,12 @@ __all__ = ('request', 'fetch', 'Session',
 class UrlfetchException(Exception): pass
 
 class cached_property(object):
-    '''Cached property.
+    """Cached property.
 
     A property that is only computed once per instance and then replaces
     itself with an ordinary attribute. Deleting the attribute resets the
     property.
-    '''
+    """
     def __init__(self, func):
         self.func = func
 
@@ -73,7 +73,7 @@ class cached_property(object):
 ###############################################################################
 
 class Response(object):
-    '''A Response object.
+    """A Response object.
 
     >>> import urlfetch
     >>> response = urlfetch.get("http://docs.python.org/")
@@ -115,8 +115,7 @@ class Response(object):
         'content-type': 'text/html',
         'x-cache-lookup': 'MISS from localhost:8080'
     }
-
-    '''
+    """
 
     def __init__(self, r, **kwargs):
 
@@ -158,10 +157,10 @@ class Response(object):
                                     % self.length_limit)
 
     def read(self, chunk_size=8192):
-        '''read content (for streaming and large files)
+        """Read content (for streaming and large files)
 
-        chunk_size: size of chunk, default: 8192       
-        '''
+        :arg int chunk_size: size of chunk, default is 8192.
+        """
         chunk = self._r.read(chunk_size)
         return chunk
 
@@ -185,14 +184,13 @@ class Response(object):
 
     @classmethod
     def from_httplib(cls, connection, **kwargs):
-        '''Generate a :class:`~urlfetch.Response` object from a httplib
-        response object.
-        '''
+        """Make an :class:`~urlfetch.Response` object from a httplib response
+        object."""
         return cls(connection, **kwargs)
 
     @cached_property
     def body(self):
-        '''Response body.'''
+        """Response body."""
         content = b("")
         for chunk in self:
             content += chunk
@@ -219,17 +217,17 @@ class Response(object):
 
     @cached_property
     def text(self):
-        '''Response body in unicode.'''
+        """Response body in unicode."""
         return mb_code(self.content)
 
     @cached_property
     def json(self):
-        '''Load response body as json'''
+        """Load response body as json"""
         return json.loads(self.text)
 
     @cached_property
     def headers(self):
-        '''Response headers.
+        """Response headers.
 
         Response headers is a dict with all keys in lower case.
 
@@ -250,25 +248,25 @@ class Response(object):
             'x-cache-lookup': 'MISS from localhost:8080'
         }
 
-        '''
+        """
         return TitledDict(self.getheaders())
 
     @cached_property
     def cookies(self):
-        '''Cookies in dict'''
+        """Cookies in dict"""
         c = Cookie.SimpleCookie(self.getheader('set-cookie'))
         sc = [(i.key, i.value) for i in c.values()]
         return dict(sc)
 
     @cached_property
     def cookiestring(self):
-        '''Cookie string'''
+        """Cookie string"""
         cookies = self.cookies
         return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
 
     @cached_property
     def links(self):
-        '''Links parsed from HTTP Link header'''
+        """Links parsed from HTTP Link header"""
         ret = []
         for i in self.getheader('link', '').split(','):
             try:
@@ -288,7 +286,7 @@ class Response(object):
 
     @cached_property
     def raw_header(self):
-        '''Raw response header.'''
+        """Raw response header."""
         if self.version == 11:
             version = 'HTTP/1.1'
         elif self.version == 10:
@@ -306,7 +304,7 @@ class Response(object):
         return self.raw_header + b'\r\n\r\n' + self.body
 
     def close(self):
-        '''Close the connection'''
+        """Close the connection."""
         self._r.close()
 
     def __del__(self):
@@ -314,7 +312,7 @@ class Response(object):
 
 
 class Session(object):
-    '''A session object.
+    """A session object.
 
     :class:`urlfetch.Session` can hold common headers and cookies.
     Every request issued by a :class:`urlfetch.Session` object will bring u
@@ -326,10 +324,10 @@ class Session(object):
     :arg dict headers: Init headers.
     :arg dict cookies: Init cookies.
     :arg tuple auth: (username, password) for basic authentication.
-    '''
+    """
 
     def __init__(self, headers={}, cookies={}, auth=None):
-        '''init a :class:`~urlfetch.Session` object.'''
+        """Init a :class:`~urlfetch.Session` object"""
         #: headers
         self.headers = TitledDict(headers)
         #: cookies
@@ -341,23 +339,24 @@ class Session(object):
             self.headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
 
     def putheader(self, header, value):
-        '''Add an header to default headers'''
+        """Add an header to default headers."""
         self.headers[header.title()] = value
 
     def popheader(self, header):
-        '''Remove an header from default headers'''
+        """Remove an header from default headers."""
         return self.headers.pop(header.title())
 
     def putcookie(self, key, value=""):
-        '''Add an cookie to default cookies'''
+        """Add an cookie to default cookies."""
         self.cookies[key] = value
 
     def popcookie(self, key):
-        '''Remove an cookie from default cookies'''
+        """Remove an cookie from default cookies."""
         return self.cookies.pop(key)
 
     @property
     def cookiestring(self):
+        """Cookie string."""
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
 
     def snapshot(self):
@@ -365,7 +364,7 @@ class Session(object):
         return session
 
     def request(self, *args, **kwargs):
-        '''Issue a request'''
+        """Issue a request."""
         headers = self.headers.copy()
         if self.cookiestring:
             headers['Cookie'] = self.cookiestring
@@ -380,7 +379,7 @@ class Session(object):
         return r
 
     def fetch(self, *args, **kwargs):
-        '''Fetch an URL'''
+        """Fetch an URL"""
         data = kwargs.get('data', None)
         files = kwargs.get('files', {})
 
@@ -390,52 +389,52 @@ class Session(object):
 
 
     def get(self, *args, **kwargs):
-        '''Issue a get request'''
+        """Issue a get request."""
         kwargs['method'] = 'GET'
         return self.request(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        '''Issue a post request'''
+        """Issue a post request."""
         kwargs['method'] = 'POST'
         return self.request(*args, **kwargs)
 
     def put(self, *args, **kwargs):
-        '''Issue a put request'''
+        """Issue a put request."""
         kwargs['method'] = 'PUT'
         return self.request(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        '''Issue a delete request'''
+        """Issue a delete request."""
         kwargs['method'] = 'DELETE'
         return self.request(*args, **kwargs)
 
     def head(self, *args, **kwargs):
-        '''Issue a head request'''
+        """Issue a head request."""
         kwargs['method'] = 'HEAD'
         return self.request(*args, **kwargs)
 
     def options(self, *args, **kwargs):
-        '''Issue a options request'''
+        """Issue a options request."""
         kwargs['method'] = 'OPTIONS'
         return self.request(*args, **kwargs)
 
     def trace(self, *args, **kwargs):
-        '''Issue a trace request'''
+        """Issue a trace request."""
         kwargs['method'] = 'TRACE'
         return self.request(*args, **kwargs)
 
     def patch(self, *args, **kwargs):
-        '''Issue a patch request'''
+        """Issue a patch request."""
         kwargs['method'] = 'PATCH'
         return self.request(*args, **kwargs)
 
 def fetch(*args, **kwargs):
-    '''fetch an URL.
+    """fetch an URL.
 
     :func:`~urlfetch.fetch` is a wrapper of :func:`~urlfetch.request`.
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
-    '''
+    """
     data = kwargs.get('data', None)
     files = kwargs.get('files', {})
 
@@ -447,7 +446,7 @@ def fetch(*args, **kwargs):
 def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             files={}, randua=False, auth=None, length_limit=None, proxies=None,
             trust_env=True, max_redirects=0, **kwargs):
-    '''request an URL
+    """request an URL
 
     :arg string url: URL to be fetched.
     :arg string method: (optional) HTTP method, one of ``GET``, ``DELETE``, ``HEAD``,
@@ -472,9 +471,9 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
                             request. Default is 0, which means redirects are not
                             allowed.
     :returns: A :class:`~urlfetch.Response` object
-    '''
+    """
     def make_connection(conn_type, host, port, timeout):
-        '''return HTTP or HTTPS connection '''
+        """Return HTTP or HTTPS connection."""
         if conn_type == 'http':
             conn = HTTPConnection(host, port, timeout=timeout)
         elif conn_type == 'https':
@@ -712,22 +711,22 @@ class TitledDict(collections.MutableMapping):
 
 
 def _flatten(lst):
-    '''flatten nested list/tuple/set.
+    """Flatten nested list/tuple/set.
 
     modified from https://gist.github.com/1308410
-    '''
+    """
     return reduce(lambda l, i: l + _flatten(i)
                   if isinstance(i, (list,tuple,set))
                   else l + [i], lst, [])
 
 def decode_gzip(data):
-    '''Decode gzipped content.'''
+    """Decode gzipped content."""
     import gzip
     gzipper = gzip.GzipFile(fileobj=BytesIO(data))
     return gzipper.read()
 
 def decode_deflate(data):
-    '''Decode deflate content.'''
+    """Decode deflate content."""
     import zlib
     try:
         return zlib.decompress(data)
@@ -735,10 +734,11 @@ def decode_deflate(data):
         return zlib.decompress(data, -zlib.MAX_WBITS)
 
 def parse_url(url):
-    '''returns dictionary of parsed url:
-    scheme, netloc, path, params, query, fragment, uri, username, password,
-    host and port
-    '''
+    """Return a dictionary of parsed url
+
+    Including scheme, netloc, path, params, query, fragment, uri, username,
+    password, host, port and http_host
+    """
     if '://' in url:
         scheme, url = url.split('://', 1)
     else:
@@ -769,7 +769,7 @@ def parse_url(url):
     return r
 
 def get_proxies_from_environ():
-    '''get proxies from os.environ.'''
+    """Get proxies from os.environ."""
     proxies = {}
     http_proxy = os.getenv('http_proxy') or os.getenv('HTTP_PROXY')
     https_proxy = os.getenv('https_proxy') or os.getenv('HTTPS_PROXY')
@@ -780,7 +780,7 @@ def get_proxies_from_environ():
     return proxies
 
 def mb_code(s, coding=None, errors='replace'):
-    '''encoding/decoding helper.'''
+    """encoding/decoding helper."""
     if isinstance(s, unicode):
         return s if coding is None else s.encode(coding, errors=errors)
     for c in ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5'):
@@ -792,7 +792,7 @@ def mb_code(s, coding=None, errors='replace'):
 
 
 def random_useragent(filename=None, *filenames):
-    '''Returns a User-Agent string randomly from file.
+    """Returns a User-Agent string randomly from file.
 
     >>> ua = random_useragent('file1')
     >>> ua = random_useragent('file1', 'file2')
@@ -803,7 +803,7 @@ def random_useragent(filename=None, *filenames):
     :arg string filename: (Optional) Path to the file from which a random useragent
         is generated.
     :returns: A User-Agent string.
-    '''
+    """
     import random
     from time import time
 
@@ -882,10 +882,10 @@ def url_concat(url, args, keep_existing=True):
         return url + '?' + urlencode(query, 1)
 
 def choose_boundary():
-    '''Generate a multipart boundry.
+    """Generate a multipart boundry.
 
     :returns: A boundary string
-    '''
+    """
     global BOUNDARY_PREFIX
     if BOUNDARY_PREFIX is None:
         BOUNDARY_PREFIX = "urlfetch"
@@ -903,12 +903,12 @@ def choose_boundary():
     return "%s.%s" % (BOUNDARY_PREFIX, uuid.uuid4().hex)
 
 def encode_multipart(data, files):
-    '''Encode multipart.
+    """Encode multipart.
 
     :arg dict data: Data to be encoded
     :arg dict files: Files to be encoded
     :returns: Encoded binary string
-    '''
+    """
     body = BytesIO()
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
