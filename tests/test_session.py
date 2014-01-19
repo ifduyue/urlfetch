@@ -15,13 +15,12 @@ class GetTest(unittest.TestCase):
         cookies = testlib.randdict()
         s = urlfetch.Session(headers=headers, cookies=cookies)
         
-        headers = dict((k.title(), v) for k, v in headers.items())
         self.assertEqual(s.snapshot(), {'headers': headers, 'cookies': cookies})
         
         randstr = testlib.randstr
         
         header = (randstr(), randstr())
-        headers[header[0].title()] = header[1]
+        headers[header[0]] = header[1]
         s.putheader(*header)
         self.assertEqual(s.snapshot(), {'headers': headers, 'cookies': cookies})
         
@@ -59,7 +58,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
 
     def test_session_get(self):
@@ -71,7 +70,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         
     def test_session_fragment(self):
@@ -83,7 +82,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
 
     def test_session_query_string(self):
@@ -98,7 +97,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         
         r = s.get(testlib.test_server_host + '?' + query_string)
@@ -106,7 +105,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -123,7 +122,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         
         r = s.get(testlib.test_server_host + '?' + query_string + '#urlfetch')
@@ -131,7 +130,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -145,7 +144,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         
     def test_session_fragment_basic_auth(self):
@@ -157,7 +156,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
 
     def test_session_basic_auth_query_string(self):
@@ -172,7 +171,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -189,7 +188,7 @@ class GetTest(unittest.TestCase):
         
         self.assertEqual(r.status, 200)
         self.assertEqual(o['method'], 'GET')
-        self.assertEqual(r.reqheaders[headerpair[0].title()], headerpair[1])
+        self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)

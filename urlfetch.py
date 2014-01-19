@@ -252,7 +252,7 @@ class Response(object):
         }
 
         """
-        return TitledDict(self.getheaders())
+        return dict(self.getheaders())
 
     @cached_property
     def cookies(self):
@@ -332,7 +332,7 @@ class Session(object):
     def __init__(self, headers={}, cookies={}, auth=None):
         """Init a :class:`~urlfetch.Session` object"""
         #: headers
-        self.headers = TitledDict(headers)
+        self.headers = headers.copy()
         #: cookies
         self.cookies = cookies.copy()
 
@@ -343,11 +343,11 @@ class Session(object):
 
     def putheader(self, header, value):
         """Add an header to default headers."""
-        self.headers[header.title()] = value
+        self.headers[header] = value
 
     def popheader(self, header):
         """Remove an header from default headers."""
-        return self.headers.pop(header.title())
+        return self.headers.pop(header)
 
     def putcookie(self, key, value=""):
         """Add an cookie to default cookies."""
@@ -569,8 +569,7 @@ def request(url, method="GET", params=None, data=None, headers={},
         # what if the method is GET, HEAD or DELETE
         # just do not make so much decisions for users
 
-    for k, v in headers.items():
-        reqheaders[k.title()] = v
+    reqheaders.update(headers)
 
     start_time = time.time()
     if via_proxy:
@@ -676,45 +675,6 @@ class ObjectDict(dict):
 
     def __setattr__(self, name, value):
         self[name] = value
-
-
-class TitledDict(collections.MutableMapping):
-    """A dictionary that all keys are ``title()``ed."""
-
-    def __init__(self, *args, **kwargs):
-        self._store = dict()
-        self.update(dict(*args, **kwargs))
-
-    def __getitem__(self, key):
-        return self._store[self.__keytransform__(key)]
-
-    def __setitem__(self, key, value):
-        self._store[self.__keytransform__(key)] = value
-
-    def __delitem__(self, key):
-        del self._store[self.__keytransform__(key)]
-
-    def __iter__(self):
-        return iter(self._store)
-
-    def __len__(self):
-        return len(self._store)
-
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self._store)
-
-    def __eq__(self, other):
-        if isinstance(other, collections.Mapping):
-            other = self.__class__(other)
-            return self._store == other._store
-        else:
-            return False
-
-    def copy(self):
-        return self.__class__(self._store)
-
-    def __keytransform__(self, key):
-        return key.title() if isinstance(key, basestring) else key
 
 
 def _flatten(lst):

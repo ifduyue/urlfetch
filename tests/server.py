@@ -89,5 +89,6 @@ for arg in sys.argv[1:]:
         quiet = True
         break
 
+quiet = True
 bottle.debug(not quiet)
 bottle.run(app=app, host='127.0.0.1', port=port, reloader=True, quiet=quiet, debug=not quiet,)
