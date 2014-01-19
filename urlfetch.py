@@ -754,34 +754,27 @@ def mb_code(s, coding=None, errors='replace'):
     return unicode(s, errors=errors)
 
 
-def random_useragent(filename=None, *filenames):
+def random_useragent(filename=None):
     """Returns a User-Agent string randomly from file.
 
-    >>> ua = random_useragent('file1')
-    >>> ua = random_useragent('file1', 'file2')
-    >>> ua = random_useragent(['file1', 'file2'])
-    >>> ua = random_useragent(['file1', 'file2'], 'file3')
-
     :arg string filename: (Optional) Path to the file from which a random
-        useragent is generated.
+        useragent is generated. By default it's ``None``, a file shiped 
+        with this module will be used.
     :returns: A User-Agent string.
     """
     import random
-    from time import time
-
-    filenames = list(filenames)
 
     if filename is None:
-        filenames.extend([
+        filenames= [
             os.path.join(os.path.abspath(os.path.dirname(__file__)),
                          'urlfetch.useragents.list'),
             os.path.join(sys.prefix, 'share', 'urlfetch',
                          'urlfetch.useragents.list'),
-        ])
+        ]
     else:
-        filenames.append(filename)
+        filenames = [filename]
 
-    for filename in set(filenames):
+    for filename in filenames:
         try:
             st = os.stat(filename)
             if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
@@ -793,8 +786,8 @@ def random_useragent(filename=None, *filenames):
 
     with open(filename, 'rb') as f:
         filesize = st.st_size
-        r = random.Random(time())
         pos = 0
+        r = random.Random()
 
         # try getting a valid line for no more than 64 times
         for i in range(64):
