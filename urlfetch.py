@@ -42,6 +42,7 @@ else:
     from urllib import urlencode
     import urlparse
     import Cookie
+    basestring = basestring
     b = lambda s: s
     u = lambda s: unicode(s, 'unicode_escape')
 
