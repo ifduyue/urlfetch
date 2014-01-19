@@ -677,16 +677,6 @@ class ObjectDict(dict):
         self[name] = value
 
 
-def _flatten(lst):
-    """Flatten nested list/tuple/set.
-
-    modified from https://gist.github.com/1308410
-    """
-    return reduce(lambda l, i: l + _flatten(i)
-                  if isinstance(i, (list, tuple, set))
-                  else l + [i], lst, [])
-
-
 def decode_gzip(data):
     """Decode gzipped content."""
     import gzip
@@ -791,8 +781,7 @@ def random_useragent(filename=None, *filenames):
     else:
         filenames.append(filename)
 
-    filenames = set(_flatten(filenames))
-    for filename in filenames:
+    for filename in set(filenames):
         try:
             st = os.stat(filename)
             if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
