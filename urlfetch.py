@@ -66,12 +66,12 @@ class cached_property(object):
     def __init__(self, func):
         self.func = func
 
-    def __get__(self, obj, cls):
-        if obj is None:
+    def __get__(self, instance, cls):
+        if instance is None:
+            # attribute is accessed through the owner class
             return self
-        value = obj.__dict__[self.func.__name__] = self.func(obj)
+        value = instance.__dict__[self.func.__name__] = self.func(instance)
         return value
-
 
 ##############################################################################
 # Core Methods and Classes ####################################################
