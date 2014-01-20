@@ -46,7 +46,7 @@ class HelpersTest(unittest.TestCase):
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
         self.assertTrue(isinstance(ua, urlfetch.basestring))
-        self.assertGreaterEqual(len(ua), 1)
+        self.assertTrue(len(ua) > 0)
         self.assertNotEqual(ua[0], '#')
 
     def test_choose_boundary(self):
