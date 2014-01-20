@@ -15,7 +15,7 @@ __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
-import os, sys, base64, codecs, uuid, stat, time, collections
+import os, sys, base64, codecs, uuid, stat, time
 from functools import partial
 from io import BytesIO
 try:
