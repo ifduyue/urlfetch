@@ -7,7 +7,7 @@ import signal
 
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(here)
-bottlepid = os.spawnlp(os.P_NOWAIT, "python", "python", os.path.join(here, "server.py"), "quiet")
+pid = os.spawnlp(os.P_NOWAIT, "gunicorn", *("gunicorn --pythonpath tests -w 4 --log-level warning -b 0:8800 server:app".split()))
 time.sleep(1)
 
 tests = [i[:-3] for i in os.listdir(here) 
@@ -20,4 +20,4 @@ try:
 except:
     raise
 finally:
-    os.kill(bottlepid, signal.SIGTERM)
+    os.kill(pid, signal.SIGTERM)

@@ -73,22 +73,25 @@ def setcookie(name, value):
 
 
 @app.route('http://www.example.com', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
-def index():
+def proxy():
     return normal_formsdict()
 
 
-import sys
-try:
-    port = int(sys.argv[1])
-except:
-    port = 8800
+if __name__ == '__main__':
+    import sys
+    try:
+        port = int(sys.argv[1])
+    except:
+        port = 8800
 
-quiet = False
-for arg in sys.argv[1:]:
-    if arg == 'quiet':
-        quiet = True
-        break
+    quiet = False
+    for arg in sys.argv[1:]:
+        if arg == 'quiet':
+            quiet = True
+            break
 
-quiet = True
-bottle.debug(not quiet)
-bottle.run(app=app, host='127.0.0.1', port=port, reloader=True, quiet=quiet, debug=not quiet,)
+
+    quiet = True
+    bottle.debug(not quiet)
+    bottle.run(app=app, host='127.0.0.1', port=port, reloader=True,
+               quiet=quiet, debug=not quiet,)
