@@ -73,6 +73,7 @@ class cached_property(object):
         value = instance.__dict__[self.func.__name__] = self.func(instance)
         return value
 
+
 ##############################################################################
 # Core Methods and Classes ####################################################
 ##############################################################################
@@ -759,14 +760,14 @@ def random_useragent(filename=None):
     """Returns a User-Agent string randomly from file.
 
     :arg string filename: (Optional) Path to the file from which a random
-        useragent is generated. By default it's ``None``, a file shiped 
+        useragent is generated. By default it's ``None``, a file shiped
         with this module will be used.
     :returns: A User-Agent string.
     """
     import random
 
     if filename is None:
-        filenames= [
+        filenames = [
             os.path.join(os.path.abspath(os.path.dirname(__file__)),
                          'urlfetch.useragents.list'),
             os.path.join(sys.prefix, 'share', 'urlfetch',
