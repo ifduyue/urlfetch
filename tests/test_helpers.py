@@ -28,6 +28,7 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(foo.cached, 1)
         self.assertEqual(foo.normal, 2)
         self.assertEqual(foo.normal, 3)
+        self.assertTrue(isinstance(Foo.cached, urlfetch.cached_property))
 
     def test_parse_url(self):
         url = 'http://www.example.com'

@@ -1,7 +1,8 @@
-import bottle
-from bottle import request, response
+import os
 import json
 import hashlib
+import bottle
+from bottle import request, response, static_file
 
 def md5sum(b):
     return hashlib.md5(b).hexdigest()
@@ -75,6 +76,15 @@ def setcookie(name, value):
 @app.route('http://www.example.com', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def proxy():
     return normal_formsdict()
+
+
+@app.route('/utf8.txt')
+def utf8_file():
+    return static_file('test.file', root=os.path.dirname(__file__))
+
+@app.route('/gbk.txt')
+def gbk_file():
+    return static_file('test.file.gbk', root=os.path.dirname(__file__))
 
 
 if __name__ == '__main__':
