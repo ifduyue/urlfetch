@@ -5,6 +5,30 @@ import unittest
 
 class HelpersTest(unittest.TestCase):
 
+    def test_cached_property(self):
+
+        class Foo:
+            def __init__(self):
+                self.calls = 0
+
+            @property
+            def normal(self):
+                self.calls += 1
+                return self.calls
+
+            @urlfetch.cached_property
+            def cached(self):
+                self.calls += 1
+                return self.calls
+
+        foo = Foo()
+
+        self.assertEqual(foo.calls, 0)
+        self.assertEqual(foo.cached, 1)
+        self.assertEqual(foo.cached, 1)
+        self.assertEqual(foo.normal, 2)
+        self.assertEqual(foo.normal, 3)
+
     def test_parse_url(self):
         url = 'http://www.example.com'
         parsed_url = urlfetch.parse_url(url)
