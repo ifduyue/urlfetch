@@ -25,7 +25,6 @@ except ImportError:
 
 if sys.version_info >= (3, 0):
     py3k = True
-    unicode = str
 else:
     py3k = False
 
@@ -35,6 +34,7 @@ if py3k:
     import urllib.parse as urlparse
     import http.cookies as Cookie
     basestring = (str, bytes)
+    unicode = str
     b = lambda s: s.encode('latin-1')
     u = lambda s: s
 else:
@@ -43,6 +43,7 @@ else:
     import urlparse
     import Cookie
     basestring = basestring
+    unicode = unicode
     b = lambda s: s
     u = lambda s: unicode(s, 'unicode_escape')
 

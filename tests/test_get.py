@@ -5,6 +5,7 @@ import unittest
 import json
 import os
 import socket
+import tempfile
 
 
 class GetTest(unittest.TestCase):
@@ -15,7 +16,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
 
     def test_get(self):
@@ -24,7 +25,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         
     def test_fragment(self):
@@ -33,7 +34,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
 
     def test_query_string(self):
@@ -45,7 +46,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -59,7 +60,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -70,7 +71,7 @@ class GetTest(unittest.TestCase):
         
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         
     def test_fragment_basic_auth(self):
@@ -79,7 +80,7 @@ class GetTest(unittest.TestCase):
         
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
 
     def test_basic_auth_query_string(self):
@@ -91,7 +92,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -105,7 +106,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, unicode))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -117,14 +118,14 @@ class GetTest(unittest.TestCase):
         self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.test_server_host, length_limit=1))
 
     def test_streaming(self):
-        with os.tmpfile() as f:
+        with tempfile.TemporaryFile() as f:
             with urlfetch.get(testlib.test_server_host + '/utf8.txt') as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file'), 'rb').read())
 
-        with os.tmpfile() as f:
+        with tempfile.TemporaryFile() as f:
             with urlfetch.get(testlib.test_server_host + '/gbk.txt') as r:
                 for chunk in r:
                     f.write(chunk)

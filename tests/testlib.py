@@ -26,7 +26,4 @@ def randdict(l=None):
     return d
 
 
-py3k = (sys.version_info[0] == 3)
-
-
 test_server_host = 'http://127.0.0.1:8800/'
