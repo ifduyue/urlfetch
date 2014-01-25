@@ -6,11 +6,11 @@ urlfetch
 
 An easy to use HTTP client based on httplib.
 
-:copyright: (c) 2011-2013 by Yue Du.
+:copyright: (c) 2011-2014 by Yue Du.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = '0.6'
+__version__ = '1.0rc1'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
