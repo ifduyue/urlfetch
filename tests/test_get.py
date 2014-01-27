@@ -132,6 +132,13 @@ class GetTest(unittest.TestCase):
             f.seek(0)
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file.gbk'), 'rb').read())
 
+    def test_cookie(self):
+        randstr = testlib.randstr
+        cookie = (randstr(), randstr())
+        r = urlfetch.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
+        self.assertEqual(r.cookies[cookie[0]], cookie[1])
+        self.assertTrue(('%s=%s' % cookie) in r.cookiestring)
+
 
 if __name__ == '__main__':
     unittest.main()

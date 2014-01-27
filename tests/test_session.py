@@ -39,13 +39,15 @@ class GetTest(unittest.TestCase):
         cookie = (randstr(), randstr())
         r = s.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
         self.assertEqual(s.cookies[cookie[0]], cookie[1])
+        self.assertTrue(('%s=%s' % cookie) in s.cookiestring)
 
         cookie2 = (randstr(), randstr())
         r = s.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie2)
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookie))
         self.assertEqual(s.cookies[cookie[0]], cookie[1])
+        self.assertTrue(('%s=%s' % cookie) in s.cookiestring)
         self.assertEqual(s.cookies[cookie2[0]], cookie2[1])
-        
+        self.assertTrue(('%s=%s' % cookie2) in s.cookiestring)
 
     def test_session_fetch(self):
         cookiepair = (testlib.randstr(), testlib.randstr())
