@@ -64,7 +64,7 @@ class GetTest(unittest.TestCase):
     def test_query_string(self):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
-        
+
         r = urlfetch.get(testlib.test_server_host + '?'+ query_string)
         o = json.loads(r.text)
 
@@ -74,11 +74,11 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
-        
+
     def test_fragment_query_string(self):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
-        
+
         r = urlfetch.get(testlib.test_server_host + '?'+ query_string + '#urlfetch')
         o = json.loads(r.text)
 
@@ -92,16 +92,16 @@ class GetTest(unittest.TestCase):
     def test_basic_auth(self):
         r = urlfetch.get(testlib.test_server_host + 'basic_auth', auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
-        
+
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
-        
+
     def test_fragment_basic_auth(self):
         r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
-        
+
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
@@ -110,7 +110,7 @@ class GetTest(unittest.TestCase):
     def test_basic_auth_query_string(self):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
-        
+
         r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string, auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 
@@ -120,11 +120,11 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
-        
+
     def test_fragment_basic_auth_query_string(self):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
-        
+
         r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 

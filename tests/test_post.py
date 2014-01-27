@@ -85,7 +85,7 @@ class PostTest(unittest.TestCase):
             self.assertEqual(o['files'][i][0].encode('utf-8'), files[i][0])
             self.assertEqual(o['files'][i][1].encode('utf-8'), files[i][1])
             self.assertEqual(o['files'][i][2].encode('utf-8'), md5sum(files[i][2]))
-            
+
 
 
     def test_one_file_upload(self):
