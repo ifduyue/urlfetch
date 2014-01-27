@@ -1,4 +1,5 @@
 import testlib
+from testlib import randstr
 import urlfetch
 
 import unittest
@@ -27,7 +28,6 @@ class GetTest(unittest.TestCase):
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'POST')
-    
 
     def test_get(self):
         r = urlfetch.get(testlib.test_server_host)
@@ -37,7 +37,21 @@ class GetTest(unittest.TestCase):
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
-        
+
+    def test_get_params(self):
+        p1 = (randstr(), randstr())
+        p2 = (randstr(), randstr())
+        params = dict((p1, p2))
+        r = urlfetch.get(testlib.test_server_host, params=params)
+        o = json.loads(r.text)
+
+        self.assertEqual(r.status, 200)
+        self.assertTrue(isinstance(r.json, dict))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(o['method'], 'GET')
+        self.assertTrue(('%s=%s' % p1) in r.url)
+        self.assertTrue(('%s=%s' % p2) in r.url)
+
     def test_fragment(self):
         r = urlfetch.get(testlib.test_server_host + '#urlfetch')
         o = json.loads(r.text)
@@ -143,7 +157,6 @@ class GetTest(unittest.TestCase):
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file.gbk'), 'rb').read())
 
     def test_cookie(self):
-        randstr = testlib.randstr
         cookie = (randstr(), randstr())
         r = urlfetch.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
         self.assertEqual(r.cookies[cookie[0]], cookie[1])
