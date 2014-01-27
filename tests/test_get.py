@@ -19,6 +19,16 @@ class GetTest(unittest.TestCase):
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
         self.assertEqual(o['method'], 'GET')
 
+    def test_fetch_data(self,):
+        r = urlfetch.fetch(testlib.test_server_host, data='foo=bar')
+        o = json.loads(r.text)
+
+        self.assertEqual(r.status, 200)
+        self.assertTrue(isinstance(r.json, dict))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(o['method'], 'POST')
+    
+
     def test_get(self):
         r = urlfetch.get(testlib.test_server_host)
         o = json.loads(r.text)
