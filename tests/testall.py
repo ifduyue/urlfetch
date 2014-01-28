@@ -10,7 +10,7 @@ sys.path.append(here)
 pid = os.spawnlp(os.P_NOWAIT, "gunicorn", *("gunicorn --pythonpath tests -w 4 --log-level warning -b 0:8800 server:app".split()))
 time.sleep(1)
 
-tests = [i[:-3] for i in os.listdir(here) 
+tests = [i[:-3] for i in os.listdir(here)
         if i.startswith('test_') and i.endswith('.py')]
 suite = unittest.defaultTestLoader.loadTestsFromNames(tests)
 

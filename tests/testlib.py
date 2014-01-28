@@ -3,6 +3,10 @@ import string
 import sys
 import os
 import hashlib
+if sys.version_info >= (3, 0):
+    import urllib.parse as urlparse
+else:
+    import urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -27,3 +31,4 @@ def randdict(l=None):
 
 
 test_server_host = 'http://127.0.0.1:8800/'
+url = lambda path=None: urlparse.urljoin(test_server_host, path) if path else test_server_host

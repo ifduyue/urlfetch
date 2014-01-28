@@ -45,7 +45,7 @@ class PostTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.post(testlib.test_server_host + '?'+query_string, data=data)
+        r = urlfetch.post(testlib.url('?' + query_string), data=data)
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -86,7 +86,6 @@ class PostTest(unittest.TestCase):
             self.assertEqual(o['files'][i][1].encode('utf-8'), files[i][1])
             self.assertEqual(o['files'][i][2].encode('utf-8'), md5sum(files[i][2]))
 
-
     def test_file_upload_multipart(self):
         content = open(path('test.file'), 'rb').read()
         files = {}
@@ -124,7 +123,6 @@ class PostTest(unittest.TestCase):
 
         for k, v in params.items():
             self.assertTrue(('%s=%s' % (k, v)) in r.url)
-            
 
     def test_one_file_upload(self):
         content = open(path('test.file'), 'rb').read()

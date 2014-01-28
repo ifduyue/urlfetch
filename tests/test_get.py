@@ -12,7 +12,7 @@ import tempfile
 class GetTest(unittest.TestCase):
 
     def test_fetch(self):
-        r = urlfetch.fetch(testlib.test_server_host)
+        r = urlfetch.fetch(testlib.url())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -30,7 +30,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
 
     def test_get(self):
-        r = urlfetch.get(testlib.test_server_host)
+        r = urlfetch.get(testlib.url())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -53,7 +53,7 @@ class GetTest(unittest.TestCase):
         self.assertTrue(('%s=%s' % p2) in r.url)
 
     def test_fragment(self):
-        r = urlfetch.get(testlib.test_server_host + '#urlfetch')
+        r = urlfetch.get(testlib.url('#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -65,7 +65,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.get(testlib.test_server_host + '?'+ query_string)
+        r = urlfetch.get(testlib.url('?'+ query_string))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -79,7 +79,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.get(testlib.test_server_host + '?'+ query_string + '#urlfetch')
+        r = urlfetch.get(testlib.url('?'+ query_string + '#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -90,7 +90,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_basic_auth(self):
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth', auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.url('basic_auth'), auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -99,7 +99,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
 
     def test_fragment_basic_auth(self):
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth#urlfetch', auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.url('basic_auth#urlfetch'), auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -111,7 +111,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string, auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.url('basic_auth?'+ query_string), auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -125,7 +125,7 @@ class GetTest(unittest.TestCase):
         qs = testlib.randdict(5)
         query_string = urlfetch.urlencode(qs)
 
-        r = urlfetch.get(testlib.test_server_host + 'basic_auth?'+ query_string + '#urlfetch', auth=('urlfetch', 'fetchurl'))
+        r = urlfetch.get(testlib.url('basic_auth?'+ query_string + '#urlfetch'), auth=('urlfetch', 'fetchurl'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -136,21 +136,21 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        self.assertRaises(socket.timeout, lambda: urlfetch.get(testlib.test_server_host + 'sleep/1', timeout=0.5))
+        self.assertRaises(socket.timeout, lambda: urlfetch.get(testlib.url('sleep/1'), timeout=0.5))
 
     def test_length_limit(self):
-        self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.test_server_host, length_limit=1))
+        self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url(), length_limit=1))
 
     def test_streaming(self):
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get(testlib.test_server_host + '/utf8.txt') as r:
+            with urlfetch.get(testlib.url('utf8.txt')) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file'), 'rb').read())
 
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get(testlib.test_server_host + '/gbk.txt') as r:
+            with urlfetch.get(testlib.url('/gbk.txt')) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
@@ -158,9 +158,16 @@ class GetTest(unittest.TestCase):
 
     def test_cookie(self):
         cookie = (randstr(), randstr())
-        r = urlfetch.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
+        r = urlfetch.get(testlib.url('setcookie/%s/%s' % cookie))
         self.assertEqual(r.cookies[cookie[0]], cookie[1])
         self.assertTrue(('%s=%s' % cookie) in r.cookiestring)
+
+    def test_redirect(self):
+        r = urlfetch.get(testlib.url('/redirect/3/0'))
+        self.assertTrue(r.status in (301, 302, 303, 307))
+        self.assertTrue('location' in r.headers)
+
+        self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=1))
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import os
 import json
 import hashlib
 import bottle
-from bottle import request, response, static_file
+from bottle import request, response, static_file, abort
 
 def md5sum(b):
     return hashlib.md5(b).hexdigest()
@@ -14,7 +14,7 @@ def mb_code(s, encoding='utf-8'):
         except: pass
     try:
         return s.encode(encoding)
-    except: raise 
+    except: raise
 
 def normal_formsdict():
     d = {}
@@ -48,7 +48,6 @@ app = bottle.app()
 @app.route('/', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def index():
     return normal_formsdict()
-    
 
 def basic_auth_check(username, password):
     if username == "urlfetch" and password == "fetchurl":
@@ -77,7 +76,6 @@ def setcookie(name, value):
 def proxy():
     return normal_formsdict()
 
-
 @app.route('/utf8.txt')
 def utf8_file():
     return static_file('test.file', root=os.path.dirname(__file__))
@@ -85,6 +83,17 @@ def utf8_file():
 @app.route('/gbk.txt')
 def gbk_file():
     return static_file('test.file.gbk', root=os.path.dirname(__file__))
+
+@app.route('/redirect/<max>/<now>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def redirect(max, now):
+    max = int(max)
+    now = int(now)
+    if now == max:
+        return normal_formsdict()
+    elif now < max:
+        return bottle.redirect('/redirect/%s/%s' % (max, now+1))
+    else:
+        abort(400)
 
 
 if __name__ == '__main__':
@@ -100,8 +109,8 @@ if __name__ == '__main__':
             quiet = True
             break
 
-
     quiet = True
     bottle.debug(not quiet)
     bottle.run(app=app, host='127.0.0.1', port=port, reloader=True,
                quiet=quiet, debug=not quiet,)
+

@@ -37,12 +37,12 @@ class GetTest(unittest.TestCase):
 
         s = urlfetch.Session()
         cookie = (randstr(), randstr())
-        r = s.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie)
+        r = s.get(testlib.url('setcookie/%s/%s' % cookie))
         self.assertEqual(s.cookies[cookie[0]], cookie[1])
         self.assertTrue(('%s=%s' % cookie) in s.cookiestring)
 
         cookie2 = (randstr(), randstr())
-        r = s.get(testlib.test_server_host + 'setcookie/%s/%s' % cookie2)
+        r = s.get(testlib.url('setcookie/%s/%s' % cookie2))
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookie))
         self.assertEqual(s.cookies[cookie[0]], cookie[1])
         self.assertTrue(('%s=%s' % cookie) in s.cookiestring)
@@ -53,7 +53,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)))
-        r = s.fetch(testlib.test_server_host)
+        r = s.fetch(testlib.url())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -67,7 +67,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)))
-        r = s.get(testlib.test_server_host)
+        r = s.get(testlib.url())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -81,7 +81,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)))
-        r = s.get(testlib.test_server_host + '#urlfetch')
+        r = s.get(testlib.url('#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -108,7 +108,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
 
-        r = s.get(testlib.test_server_host + '?' + query_string)
+        r = s.get(testlib.url('?' + query_string))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -127,7 +127,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)))
-        r = s.get(testlib.test_server_host)
+        r = s.get(testlib.url())
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -137,7 +137,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
 
-        r = s.get(testlib.test_server_host + '?' + query_string + '#urlfetch')
+        r = s.get(testlib.url('?' + query_string + '#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -153,7 +153,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)), auth=('urlfetch', 'fetchurl'))
-        r = s.get(testlib.test_server_host + 'basic_auth')
+        r = s.get(testlib.url('basic_auth'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -167,7 +167,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)), auth=('urlfetch', 'fetchurl'))
-        r = s.get(testlib.test_server_host + 'basic_auth#urlfetch')
+        r = s.get(testlib.url('basic_auth#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -184,7 +184,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)), auth=('urlfetch', 'fetchurl'))
-        r = s.get(testlib.test_server_host + 'basic_auth?' + query_string)
+        r = s.get(testlib.url('basic_auth?' + query_string))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -203,7 +203,7 @@ class GetTest(unittest.TestCase):
         cookiepair = (testlib.randstr(), testlib.randstr())
         headerpair = (testlib.randstr(), testlib.randstr())
         s = urlfetch.Session(headers=dict((headerpair,)), cookies=dict((cookiepair,)), auth=('urlfetch', 'fetchurl'))
-        r = s.get(testlib.test_server_host + 'basic_auth?' + query_string + '#urlfetch')
+        r = s.get(testlib.url('basic_auth?' + query_string + '#urlfetch'))
         o = json.loads(r.text)
 
         self.assertEqual(r.status, 200)
@@ -216,7 +216,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        self.assertRaises(socket.timeout, lambda:urlfetch.Session().get(testlib.test_server_host + 'sleep/1', timeout=0.5))
+        self.assertRaises(socket.timeout, lambda:urlfetch.Session().get(testlib.url('sleep/1'), timeout=0.5))
 
 
 if __name__ == '__main__':
