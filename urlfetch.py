@@ -255,7 +255,11 @@ class Response(object):
         }
 
         """
-        return dict(self.getheaders())
+        if py3k:
+            return dict((k.lower(), v) for k, v in self.getheaders())
+        else:
+            return dict(self.getheaders())
+            
 
     @cached_property
     def cookies(self):
