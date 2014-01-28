@@ -68,6 +68,13 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(parsed_url['username'], 'username')
         self.assertEqual(parsed_url['password'], 'password')
 
+        url = 'https://username:password@www.example.com:-'
+        parsed_url = urlfetch.parse_url(url)
+        self.assertEqual(parsed_url['scheme'], 'https')
+        self.assertEqual(parsed_url['username'], 'username')
+        self.assertEqual(parsed_url['password'], 'password')
+        self.assertEqual(parsed_url['port'], None)
+
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
         self.assertTrue(isinstance(ua, urlfetch.basestring))
