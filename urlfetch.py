@@ -259,7 +259,6 @@ class Response(object):
             return dict((k.lower(), v) for k, v in self.getheaders())
         else:
             return dict(self.getheaders())
-            
 
     @cached_property
     def cookies(self):

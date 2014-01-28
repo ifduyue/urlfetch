@@ -10,7 +10,7 @@ def pub2fanfou(username, password, status):
         "http://m.fanfou.com/"
     )
     token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
-    
+
     #登录
     response = s.fetch(
         "http://m.fanfou.com/",
@@ -22,16 +22,16 @@ def pub2fanfou(username, password, status):
             'auto_login': 'on',
         },
     )
-    
+
     #cookies
     print s.cookiestring
-    
+
     #获取表单token
     response = s.fetch(
         "http://m.fanfou.com/home",
     )
     token = re.search('''name="token".*?value="(.*?)"''', response.body).group(1)
-    
+
     #发布状态
     response = s.fetch(
         "http://m.fanfou.com/",
@@ -45,6 +45,3 @@ def pub2fanfou(username, password, status):
 if __name__ == '__main__':
     import sys
     pub2fanfou(*sys.argv[1:4])
-    
-
-
