@@ -39,7 +39,7 @@ def normal_formsdict():
     d['files'] = dict(request.files)
     for i in d['files']:
         del d['post'][i]
-        d['files'][i] = (d['files'][i].name, d['files'][i].filename, md5sum(d['files'][i].value))
+        d['files'][i] = (d['files'][i].name, d['files'][i].filename, md5sum(d['files'][i].file.read()))
     d['cookies'] = dict(request.cookies)
     return json.dumps(d)
 
