@@ -379,8 +379,22 @@ class Session(object):
 
     @property
     def cookiestring(self):
-        """Cookie string."""
+        """Cookie string. It's assignalbe, and will change ``self.cookies``
+        correspondingly.
+
+        >>> s = Session()
+        >>> s.cookiestring = 'foo=bar; 1=2'
+        >>> s.cookies
+        {'1': '2', 'foo': 'bar'}
+        """
         return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
+
+    @cookiestring.setter
+    def cookiestring(self, value):
+        """"Cookie string setter"""
+        c = Cookie.SimpleCookie(value)
+        sc = [(i.key, i.value) for i in c.values()]
+        self.cookies = dict(sc)
 
     def snapshot(self):
         session = {

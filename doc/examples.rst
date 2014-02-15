@@ -216,6 +216,10 @@ ess=BAh7CDoPY3JlYXRlZF9hdGwrCGoD0084ASIKZmxhc2hJQzonQWN0aW9uQ29u%250AdHJvbGxlcjo
 EwYTZjMTc2ZWI0--81b8c092d264be1adb8b52eef177ab4466520f65; k=10.35.53.118.1341369
 025382790; foo=bar; yah=let's dance", 'What': 'a nice day', 'Accept': '*/*', 'Us
 er-Agent': 'urlfetch session'}
+>>> # session cookiestring is also assignable
+>>> s.cookiestring = 'foo=bar; 1=2'
+>>> s.cookies
+{'1': '2', 'foo': 'bar'}
 
 
 Streaming

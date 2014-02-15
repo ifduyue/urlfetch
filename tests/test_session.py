@@ -218,6 +218,20 @@ class GetTest(unittest.TestCase):
     def test_timeout(self):
         self.assertRaises(socket.timeout, lambda:urlfetch.Session().get(testlib.url('sleep/1'), timeout=0.5))
 
+    def test_cookiestring_setter(self):
+        headers = testlib.randdict()
+        cookies = testlib.randdict()
+        s1 = urlfetch.Session(headers=headers, cookies=cookies)
+
+        headers = testlib.randdict()
+        cookies = testlib.randdict()
+        s2 = urlfetch.Session(headers=headers, cookies=cookies)
+        s2.cookiestring = s1.cookiestring
+        self.assertEqual(s1.cookies, s2.cookies)
+
+        s1.cookiestring = ''
+        self.assertEqual(s1.cookies, {})
+
 
 if __name__ == '__main__':
     unittest.main()
