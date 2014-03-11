@@ -80,8 +80,9 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(not not urlfetch.parse_url(url), True)
         url = u'http://www.example.com/?中国'
         self.assertEqual(not not urlfetch.parse_url(url), True)
-        url = 'http://www.example.中国/?中国'
-        self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
+        if not urlfetch.py3k:
+            url = 'http://www.example.中国/?中国'
+            self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
         url = u'http://www.example.中国/?中国'
         self.assertEqual(not not urlfetch.parse_url(url), True)
 
