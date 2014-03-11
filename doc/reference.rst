@@ -29,6 +29,15 @@ Reference
 .. autofunction:: trace
 .. autofunction:: patch
 
+Exceptions
+~~~~~~~~~~~
+
+.. autoclass:: UrlfetchException
+.. autoclass:: ContentLimitExceeded
+.. autoclass:: URLError
+.. autoclass:: ContentDecodingError
+.. autoclass:: TooManyRedirects
+
 helpers
 ~~~~~~~~~~~
 

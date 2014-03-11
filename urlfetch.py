@@ -50,11 +50,28 @@ else:
 
 __all__ = ('request', 'fetch', 'Session',
            'get', 'head', 'put', 'post', 'delete', 'options', 'trace', 'patch'
-           'UrlfetchException')
+           'UrlfetchException', 'ContentLimitExceeded', 'URLError',
+           'ContentDecodingError', 'TooManyRedirects')
 
 
-class UrlfetchException(Exception):
-    pass
+class UrlfetchException(IOError):
+    "Base exception. All exceptions and errors will subclass from this."
+
+
+class ContentLimitExceeded(UrlfetchException):
+    "Content length is beyond the limit."
+
+
+class URLError(UrlfetchException, ValueError):
+    "Error parsing or handling the URL."
+
+
+class ContentDecodingError(UrlfetchException):
+    "Failed to decode the content."
+
+
+class TooManyRedirects(UrlfetchException):
+    """Too many redirects."""
 
 
 class cached_property(object):
@@ -155,6 +172,8 @@ class Response(object):
         'content-type': 'text/html',
         'x-cache-lookup': 'MISS from localhost:8080'
     }
+
+    :raises: :class:`ContentLimitExceeded`
     """
 
     def __init__(self, r, **kwargs):
@@ -193,7 +212,7 @@ class Response(object):
         content_length = int(self.getheader('Content-Length', 0))
         if self.length_limit and content_length > self.length_limit:
             self.close()
-            raise UrlfetchException("Content length is more than %d bytes"
+            raise ContentLimitExceeded("Content length is more than %d bytes"
                                     % self.length_limit)
 
     def read(self, chunk_size=8192):
@@ -230,21 +249,27 @@ class Response(object):
 
     @cached_property
     def body(self):
-        """Response body."""
+        """Response body.
+        
+        :raises: :class:`ContentLimitExceeded`, :class:`ContentDecodingError`
+        """
         content = b("")
         for chunk in self:
             content += chunk
             if self.length_limit and len(content) > self.length_limit:
-                raise UrlfetchException("Content length is more than %d "
+                raise ContentLimitExceeded("Content length is more than %d "
                                         "bytes" % self.length_limit)
         # decode content if encoded
         encoding = self.headers.get('content-encoding', None)
         decoder = CONTENT_DECODERS.get(encoding)
         if encoding and not decoder:
-            raise UrlfetchException('Unknown encoding: %s' % encoding)
+            raise ContentDecodingError('Unknown encoding: %s' % encoding)
 
         if decoder:
-            content = decoder(content)
+            try:
+                content = decoder(content)
+            except Exception as e:
+                raise ContentDecodingError(e)
 
         return content
 
@@ -256,13 +281,21 @@ class Response(object):
 
     @cached_property
     def text(self):
-        """Response body in unicode."""
+        """Response body in unicode.
+        
+        """
         return mb_code(self.content)
 
     @cached_property
     def json(self):
-        """Load response body as json"""
-        return json.loads(self.text)
+        """Load response body as json.
+
+        :raises: :class:`ContentDecodingError`
+        """
+        try:
+            return json.loads(self.text)
+        except Exception as e:
+            raise ContentDecodingError(e)
 
     @cached_property
     def headers(self):
@@ -512,6 +545,8 @@ def request(url, method="GET", params=None, data=None, headers={},
                             request. Default is 0, which means redirects are
                             not allowed.
     :returns: A :class:`~urlfetch.Response` object
+    :raises: :class:`URLError`, :class:`UrlfetchException`,
+             :class:`TooManyRedirects`, 
     """
     def make_connection(conn_type, host, port, timeout):
         """Return HTTP or HTTPS connection."""
@@ -520,7 +555,7 @@ def request(url, method="GET", params=None, data=None, headers={},
         elif conn_type == 'https':
             conn = HTTPSConnection(host, port, timeout=timeout)
         else:
-            raise UrlfetchException('Unknown Connection Type: %s' % conn_type)
+            raise URLError('Unknown Connection Type: %s' % conn_type)
         return conn
 
     via_proxy = False
@@ -626,7 +661,7 @@ def request(url, method="GET", params=None, data=None, headers={},
         response.body, response.close(), history.append(response)
 
         if len(history) > max_redirects:
-            raise UrlfetchException('max_redirects exceeded')
+            raise TooManyRedirects('max_redirects exceeded')
 
         method = method if response.status == 307 else 'GET'
         location = response.headers['location']
@@ -911,6 +946,7 @@ def encode_multipart(data, files):
     :arg dict data: Data to be encoded
     :arg dict files: Files to be encoded
     :returns: Encoded binary string
+    :raises: :class:`UrlfetchException`
     """
     body = BytesIO()
     boundary = choose_boundary()
