@@ -1,3 +1,4 @@
+#coding: utf8
 import testlib
 import urlfetch
 import unittest
@@ -74,6 +75,15 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(parsed_url['username'], 'username')
         self.assertEqual(parsed_url['password'], 'password')
         self.assertEqual(parsed_url['port'], None)
+
+        url = 'http://www.example.com/?中国'
+        self.assertEqual(not not urlfetch.parse_url(url), True)
+        url = u'http://www.example.com/?中国'
+        self.assertEqual(not not urlfetch.parse_url(url), True)
+        url = 'http://www.example.中国/?中国'
+        self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
+        url = u'http://www.example.中国/?中国'
+        self.assertEqual(not not urlfetch.parse_url(url), True)
 
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
