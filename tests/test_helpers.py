@@ -78,13 +78,16 @@ class HelpersTest(unittest.TestCase):
 
         url = 'http://www.example.com/?中国'
         self.assertEqual(not not urlfetch.parse_url(url), True)
-        url = u'http://www.example.com/?中国'
-        self.assertEqual(not not urlfetch.parse_url(url), True)
-        if not urlfetch.py3k:
+        if urlfetch.py3k:
+            url = 'http://www.example.中国/?中国'
+            self.assertEqual(not not urlfetch.parse_url(url), True)
+        else:
             url = 'http://www.example.中国/?中国'
             self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
-        url = u'http://www.example.中国/?中国'
-        self.assertEqual(not not urlfetch.parse_url(url), True)
+            url = u'http://www.example.com/?中国'
+            self.assertEqual(not not urlfetch.parse_url(url), True)
+            url = u'http://www.example.中国/?中国'
+            self.assertEqual(not not urlfetch.parse_url(url), True)
 
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
