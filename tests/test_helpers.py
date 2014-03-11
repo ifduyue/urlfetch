@@ -84,9 +84,9 @@ class HelpersTest(unittest.TestCase):
         else:
             url = 'http://www.example.中国/?中国'
             self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
-            url = u'http://www.example.com/?中国'
+            url = 'http://www.example.com/?中国'.decode('utf-8')
             self.assertEqual(not not urlfetch.parse_url(url), True)
-            url = u'http://www.example.中国/?中国'
+            url = 'http://www.example.中国/?中国'.decode('utf-8')
             self.assertEqual(not not urlfetch.parse_url(url), True)
 
     def test_random_useragent(self):
