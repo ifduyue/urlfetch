@@ -343,7 +343,10 @@ class Response(object):
     def links(self):
         """Links parsed from HTTP Link header"""
         ret = []
-        for i in self.getheader('link', '').split(','):
+        linkheader = self.getheader('link')
+        if not linkheader:
+            return ret
+        for i in linkheader.split(','):
             try:
                 url, params = i.split(';', 1)
             except ValueError:
