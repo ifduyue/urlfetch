@@ -18,6 +18,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
     def test_fetch_data(self,):
@@ -27,6 +28,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'POST')
 
     def test_get(self):
@@ -36,6 +38,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
     def test_get_params(self):
@@ -48,6 +51,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertTrue(('%s=%s' % p1) in r.url)
         self.assertTrue(('%s=%s' % p2) in r.url)
@@ -59,6 +63,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
     def test_query_string(self):
@@ -71,6 +76,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -85,6 +91,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -96,6 +103,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
     def test_fragment_basic_auth(self):
@@ -105,6 +113,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
     def test_basic_auth_query_string(self):
@@ -117,6 +126,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -131,6 +141,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
         self.assertEqual(o['get'], qs)
@@ -159,12 +170,14 @@ class GetTest(unittest.TestCase):
     def test_cookie(self):
         cookie = (randstr(), randstr())
         r = urlfetch.get(testlib.url('setcookie/%s/%s' % cookie))
+        self.assertEqual(r.links, [])
         self.assertEqual(r.cookies[cookie[0]], cookie[1])
         self.assertTrue(('%s=%s' % cookie) in r.cookiestring)
 
     def test_redirect(self):
         r = urlfetch.get(testlib.url('/redirect/3/0'))
         self.assertTrue(r.status in (301, 302, 303, 307))
+        self.assertEqual(r.links, [])
         self.assertTrue('location' in r.headers)
 
         self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=1))
