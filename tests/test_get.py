@@ -217,6 +217,31 @@ class GetTest(unittest.TestCase):
 
         self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=1))
 
+    def test_links(self):
+        r = urlfetch.get(testlib.url('/links/0'))
+        self.assertTrue(r.links)
+        self.assertTrue(isinstance(r.links, list))
+        self.assertTrue(len(r.links) == 1)
+
+        r = urlfetch.get(testlib.url('/links/1'))
+        self.assertTrue(r.links)
+        self.assertTrue(isinstance(r.links, list))
+        self.assertTrue(len(r.links) == 2)
+
+        r = urlfetch.get(testlib.url('/links/2'))
+        self.assertTrue(r.links)
+        self.assertTrue(isinstance(r.links, list))
+        self.assertTrue(len(r.links) == 4)
+
+        r = urlfetch.get(testlib.url('/links/3'))
+        self.assertTrue(r.links)
+        self.assertTrue(isinstance(r.links, list))
+        self.assertTrue(len(r.links) == 2)
+
+        r = urlfetch.get(testlib.url('/links/none'))
+        self.assertTrue(r.links)
+        self.assertTrue(isinstance(r.links, list))
+        self.assertTrue(len(r.links) == 1)
 
 if __name__ == '__main__':
     unittest.main()

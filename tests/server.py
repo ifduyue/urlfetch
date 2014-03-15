@@ -95,6 +95,23 @@ def redirect(max, now):
     else:
         abort(400)
 
+@app.route('/links/<n>')
+def links(n):
+    try:
+        n = int(n)
+    except:
+        n = None
+    if n == 1:
+        response.set_header('Link', '</links/2>; rel="next", </links/3>; rel="last"')
+    elif n == 2:
+        response.set_header('Link', '</links/3>; rel="next", </links/3>; rel="last", </links/1>; rel="prev", </links/1>; rel="first"')
+    elif n == 3:
+        response.set_header('Link', '</links/1>; rel="prev", </links/1>; rel="first"')
+    elif n is None:
+        response.set_header('Link', '</links/none>; rel="self"')
+    else:
+        response.set_header('Link', '</links/1>')
+    return normal_formsdict()
 
 if __name__ == '__main__':
     import sys
