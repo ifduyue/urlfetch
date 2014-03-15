@@ -4,8 +4,8 @@ urlfetch
 .. image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
 
-.. image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master 
-    :target: https://coveralls.io/r/ifduyue/urlfetch?branch=master 
+.. image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master
+    :target: https://coveralls.io/r/ifduyue/urlfetch?branch=master
 
 .. image:: https://badge.fury.io/py/urlfetch.png
     :target: http://badge.fury.io/py/urlfetch
@@ -17,8 +17,20 @@ urlfetch
    :alt: Bitdeli badge
    :target: https://bitdeli.com/free
 
-urlfetch is a simple, lightweight and easy to use HTTP client for Python. 
+urlfetch is a simple, lightweight and easy to use HTTP client for Python.
 It is distributed as a single file module and has no depencencies other than the Python Standard Library.
+
+
+Highlights
+-------------
+
+* Distributed as a single file module, has no depencencies other than the Python Standard Library.
+* Pure Python, works fine with gevent_.
+* Small codebase, about 1000 lines and 30% are comments and blank lines. Only 10 minutes you can known every detail.
+* Random user-agent.
+* Support streaming.
+
+.. _gevent: http://www.gevent.org/
 
 Installation
 -------------
