@@ -167,6 +167,41 @@ class GetTest(unittest.TestCase):
             f.seek(0)
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file.gbk'), 'rb').read())
 
+    def test_compressed_streaming(self):
+        sina = urlfetch.b('sina')
+
+        with tempfile.TemporaryFile() as f:
+            with urlfetch.get('http://news.sina.com.cn/') as r:
+                for chunk in r:
+                    f.write(chunk)
+            f.seek(0)
+            html = f.read()
+            self.assertTrue(sina in html)
+
+        with tempfile.TemporaryFile() as f:
+            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': 'deflate'}) as r:
+                for chunk in r:
+                    f.write(chunk)
+            f.seek(0)
+            html = f.read()
+            self.assertTrue(sina in html)
+
+        with tempfile.TemporaryFile() as f:
+            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': 'gzip'}) as r:
+                for chunk in r:
+                    f.write(chunk)
+            f.seek(0)
+            html = f.read()
+            self.assertTrue(sina in html)
+
+        with tempfile.TemporaryFile() as f:
+            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': '*'}) as r:
+                for chunk in r:
+                    f.write(chunk)
+            f.seek(0)
+            html = f.read()
+            self.assertTrue(sina in html)
+
     def test_cookie(self):
         cookie = (randstr(), randstr())
         r = urlfetch.get(testlib.url('setcookie/%s/%s' % cookie))

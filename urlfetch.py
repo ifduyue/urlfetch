@@ -203,6 +203,9 @@ class Response(object):
         self.getheader = r.getheader
         self.getheaders = r.getheaders
 
+        self._content_encoding = self.getheader('content-encoding', None)
+        self._decoder = None
+
         try:
             self.length_limit = int(kwargs.get('length_limit'))
         except:
@@ -213,7 +216,7 @@ class Response(object):
         if self.length_limit and content_length > self.length_limit:
             self.close()
             raise ContentLimitExceeded("Content length is more than %d bytes"
-                                    % self.length_limit)
+                                       % self.length_limit)
 
     def read(self, chunk_size=8192):
         """Read content (for streaming and large files)
@@ -229,8 +232,33 @@ class Response(object):
     def __next__(self):
         chunk = self.read()
         if not chunk:
-            raise StopIteration
-        return chunk
+            if self._decoder:
+                chunk = self._decoder.flush()
+                self._decoder = None
+                return chunk
+            else:
+                raise StopIteration
+        else:
+            ce = self._content_encoding
+            if ce in ('gzip', 'deflate'):
+                if not self._decoder:
+                    import zlib
+                    if ce == 'gzip':
+                        self._decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+                    else:
+                        self._decoder = zlib.decompressobj()
+                        try:
+                            return self._decoder.decompress(chunk)
+                        except zlib.error:
+                            self._decoder = zlib.decompressobj(-zlib.MAX_WBITS)
+                try:
+                    return self._decoder.decompress(chunk)
+                except (IOError, zlib.error) as e:
+                    raise ContentDecodingError(e)
+
+            if self._content_encoding:
+                raise ContentDecodingError('Unknown encoding: %s' % ce)
+            return chunk
 
     next = __next__
 
@@ -258,18 +286,7 @@ class Response(object):
             content += chunk
             if self.length_limit and len(content) > self.length_limit:
                 raise ContentLimitExceeded("Content length is more than %d "
-                                        "bytes" % self.length_limit)
-        # decode content if encoded
-        encoding = self.headers.get('content-encoding', None)
-        decoder = CONTENT_DECODERS.get(encoding)
-        if encoding and not decoder:
-            raise ContentDecodingError('Unknown encoding: %s' % encoding)
-
-        if decoder:
-            try:
-                content = decoder(content)
-            except Exception as e:
-                raise ContentDecodingError(e)
+                                           "bytes" % self.length_limit)
 
         return content
 
@@ -281,9 +298,7 @@ class Response(object):
 
     @cached_property
     def text(self):
-        """Response body in unicode.
-        
-        """
+        """Response body in unicode."""
         return mb_code(self.content)
 
     @cached_property
@@ -549,7 +564,7 @@ def request(url, method="GET", params=None, data=None, headers={},
                             not allowed.
     :returns: A :class:`~urlfetch.Response` object
     :raises: :class:`URLError`, :class:`UrlfetchException`,
-             :class:`TooManyRedirects`, 
+             :class:`TooManyRedirects`,
     """
     def make_connection(conn_type, host, port, timeout):
         """Return HTTP or HTTPS connection."""
@@ -749,22 +764,6 @@ class ObjectDict(dict):
         self[name] = value
 
 
-def decode_gzip(data):
-    """Decode gzipped content."""
-    import gzip
-    gzipper = gzip.GzipFile(fileobj=BytesIO(data))
-    return gzipper.read()
-
-
-def decode_deflate(data):
-    """Decode deflate content."""
-    import zlib
-    try:
-        return zlib.decompress(data)
-    except zlib.error:
-        return zlib.decompress(data, -zlib.MAX_WBITS)
-
-
 def parse_url(url):
     """Return a dictionary of parsed url
 
@@ -779,7 +778,7 @@ def parse_url(url):
     if py3k:
         make_utf8 = lambda x: x
     else:
-        make_utf8 = lambda x: x.encode('utf-8') if isinstance(x, unicode) else x
+        make_utf8 = lambda x: isinstance(x, unicode) and x.encode('utf-8') or x
 
     if '://' in url:
         scheme, url = url.split('://', 1)
@@ -1021,4 +1020,3 @@ PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
-CONTENT_DECODERS = {'gzip': decode_gzip, 'deflate': decode_deflate}
