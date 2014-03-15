@@ -41,8 +41,6 @@ Exceptions
 helpers
 ~~~~~~~~~~~
 
-.. autofunction:: decode_gzip
-.. autofunction:: decode_deflate
 .. autofunction:: parse_url
 .. autofunction:: get_proxies_from_environ
 .. autofunction:: mb_code
