@@ -250,7 +250,7 @@ class Response(object):
     @cached_property
     def body(self):
         """Response body.
-        
+
         :raises: :class:`ContentLimitExceeded`, :class:`ContentDecodingError`
         """
         content = b("")
