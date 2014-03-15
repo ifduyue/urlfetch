@@ -11,7 +11,11 @@ urlfetch
     :target: http://badge.fury.io/py/urlfetch
 
 .. image:: https://pypip.in/d/urlfetch/badge.png
-        :target: https://crate.io/packages/urlfetch/
+    :target: https://crate.io/packages/urlfetch/
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/ifduyue/urlfetch/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
 
 urlfetch is a simple, lightweight and easy to use HTTP client for Python. 
 It is distributed as a single file module and has no depencencies other than the Python Standard Library.
@@ -19,16 +23,16 @@ It is distributed as a single file module and has no depencencies other than the
 Installation
 -------------
 ::
-    
+
     $ pip install urlfetch
 
 
 Hello World
 -----------
 ::
-    
+
     from urlfetch import get
-    
+
     response = get('http://python.org/')
     print response.content
 
@@ -39,7 +43,7 @@ Upload file
     from urlfetch import post
 
     response = post(
-        'http://127.0.0.1:8888/upload', 
+        'http://127.0.0.1:8888/upload',
         headers = {
             'Referer': 'http://127.0.0.1/',
         },
@@ -55,10 +59,4 @@ Upload file
     )
 
     print response.status, response.content
-
-
-
-.. image:: https://d2weczhvl823v0.cloudfront.net/ifduyue/urlfetch/trend.png
-   :alt: Bitdeli badge
-   :target: https://bitdeli.com/free
 
