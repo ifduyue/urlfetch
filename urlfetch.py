@@ -689,7 +689,7 @@ def request(url, method="GET", params=None, data=None, headers={},
             url = urlparse.urljoin(url, location)
         parsed_url = parse_url(url)
 
-        reqheaders['Host'] = parsed_url['host']
+        reqheaders['Host'] = parsed_url['http_host']
         reqheaders['Referer'] = response.url
 
         # Proxy

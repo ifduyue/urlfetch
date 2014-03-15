@@ -216,6 +216,16 @@ class GetTest(unittest.TestCase):
         self.assertTrue('location' in r.headers)
 
         self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=1))
+        self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=2))
+
+        r = urlfetch.get(testlib.url('/redirect/3/0'), max_redirects=3)
+        o = r.json
+        self.assertEqual(r.status, 200)
+        self.assertEqual(len(r.history), 3)
+        self.assertEqual(o['method'], 'GET')
+        self.assertTrue('location' not in r.headers)
+        self.assertTrue(isinstance(r.json, dict))
+        self.assertTrue(isinstance(r.text, urlfetch.unicode))
 
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
