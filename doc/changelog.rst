@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+0.6.1 (2013-08-26)
+++++++++++++++++++++
+
+Fix:
+
+* Parsing links: If ``Link`` header is empty, ``[]`` should be returned, not ``[{'url': ''}]``.
+
 0.6   (2013-08-26)
 ++++++++++++++++++++
 
