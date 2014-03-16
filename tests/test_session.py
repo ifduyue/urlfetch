@@ -3,7 +3,6 @@ import urlfetch
 
 import unittest
 import json
-import socket
 
 
 class GetTest(unittest.TestCase):
@@ -216,7 +215,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        self.assertRaises(socket.timeout, lambda:urlfetch.Session().get(testlib.url('sleep/1'), timeout=0.5))
+        self.assertRaises(urlfetch.Timeout, lambda:urlfetch.Session().get(testlib.url('sleep/1'), timeout=0.5))
 
     def test_cookiestring_setter(self):
         headers = testlib.randdict()

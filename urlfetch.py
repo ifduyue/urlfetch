@@ -15,7 +15,7 @@ __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
-import os, sys, base64, codecs, uuid, stat, time
+import os, sys, base64, codecs, uuid, stat, time, socket
 from functools import partial
 from io import BytesIO
 try:
@@ -72,6 +72,10 @@ class ContentDecodingError(UrlfetchException):
 
 class TooManyRedirects(UrlfetchException):
     """Too many redirects."""
+
+
+class Timeout(UrlfetchException):
+    """Request timed out."""
 
 
 class cached_property(object):
@@ -659,11 +663,16 @@ def request(url, method="GET", params=None, data=None, headers={},
     reqheaders.update(headers)
 
     start_time = time.time()
-    if via_proxy:
-        conn.request(method, url, data, reqheaders)
-    else:
-        conn.request(method, parsed_url['uri'], data, reqheaders)
-    resp = conn.getresponse()
+    try:
+        if via_proxy:
+            conn.request(method, url, data, reqheaders)
+        else:
+            conn.request(method, parsed_url['uri'], data, reqheaders)
+        resp = conn.getresponse()
+    except socket.timeout as e:
+        raise Timeout(e)
+    except Exception as e:
+        raise UrlfetchException(e)
 
     end_time = time.time()
     total_time = end_time - start_time
@@ -715,11 +724,17 @@ def request(url, method="GET", params=None, data=None, headers={},
             conn = make_connection(scheme, parsed_url['host'],
                                    parsed_url['port'], timeout)
 
-        if via_proxy:
-            conn.request(method, url, None, reqheaders)
-        else:
-            conn.request(method, parsed_url['uri'], None, reqheaders)
-        resp = conn.getresponse()
+        try:
+            if via_proxy:
+                conn.request(method, url, None, reqheaders)
+            else:
+                conn.request(method, parsed_url['uri'], None, reqheaders)
+            resp = conn.getresponse()
+        except socket.timeout as e:
+            raise Timeout(e)
+        except Exception as e:
+            raise UrlfetchException(e)
+
         response = Response.from_httplib(resp, reqheaders=reqheaders,
                                          length_limit=length_limit,
                                          history=history, url=url,

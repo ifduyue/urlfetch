@@ -5,7 +5,6 @@ import urlfetch
 import unittest
 import json
 import os
-import socket
 import tempfile
 
 
@@ -147,7 +146,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['get'], qs)
 
     def test_timeout(self):
-        self.assertRaises(socket.timeout, lambda: urlfetch.get(testlib.url('sleep/1'), timeout=0.5))
+        self.assertRaises(urlfetch.Timeout, lambda: urlfetch.get(testlib.url('sleep/1'), timeout=0.5))
 
     def test_length_limit(self):
         self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url(), length_limit=1))

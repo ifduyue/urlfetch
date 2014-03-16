@@ -1,5 +1,4 @@
 #coding: utf8
-import testlib
 import urlfetch
 import unittest
 
