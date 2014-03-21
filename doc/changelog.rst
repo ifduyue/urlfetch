@@ -3,7 +3,14 @@ Changelog
 
 **Time flies!!**
 
-0.6.1 (2013-08-26)
+0.6.2 (2014-03-22)
+++++++++++++++++++++
+
+Fix:
+
+* Http request's host header should include the port. Using ``netloc`` as the http host header is wrong, it could include user:pass.
+
+0.6.1 (2014-03-15)
 ++++++++++++++++++++
 
 Fix:

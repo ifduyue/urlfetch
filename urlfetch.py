@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 '''
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -529,7 +529,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
         'User-Agent': random_useragent(randua_file) if randua else \
                         'urlfetch/' + __version__,
-        'Host': parsed_url['netloc']
+        'Host': parsed_url['http_host']
     }
 
     # Proxy support
@@ -610,7 +610,7 @@ def request(url, method="GET", params=None, data=None, headers={}, timeout=None,
             url = urlparse.urljoin(url, location)
         parsed_url = parse_url(url)
 
-        reqheaders['Host'] = parsed_url['host']
+        reqheaders['Host'] = parsed_url['http_host']
         reqheaders['Referer'] = response.url
 
         # Proxy
@@ -729,6 +729,10 @@ def parse_url(url):
         result['port'] = parsed.port
     except ValueError:
         result['port'] = None
+    if result['port']:
+        result['http_host'] = '%s:%d' % (result['host'], result['port'])
+    else:
+        result['http_host'] = result['host']
 
     return result
 
