@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = '1.0rc1'
+__version__ = '1.0'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -434,7 +434,9 @@ class Session(object):
 
     @property
     def cookiestring(self):
-        """Cookie string. It's assignalbe, and will change ``self.cookies``
+        """Cookie string.
+
+        It's assignalbe, and will change :attr:`~.Session.cookies`
         correspondingly.
 
         >>> s = Session()

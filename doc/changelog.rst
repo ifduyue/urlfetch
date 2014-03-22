@@ -3,6 +3,29 @@ Changelog
 
 **Time flies!!**
 
+0.1 (2014-03-22)
+++++++++++++++++++++
+
+New features:
+
+* Support idna.
+* Assignable :attr:`.Session.cookiestring`.
+
+Backwards-incompatible changes:
+
+* Remove ``raw_header`` and ``raw_response``.
+* :func:`random_useragent` now takes a single ``filename`` as parameter. It used to be a list of filenames.
+* No more ``.title()`` on request headers' keys.
+* Exceptions are re-designed. :class:`socket.timeout` now is :class:`.Timeout`, ..., see section `Exceptions` in :doc:`reference` for more details.
+
+Fixes:
+
+* Parsing links: If ``Link`` header is empty, ``[]`` should be returned, not ``[{'url': ''}]``.
+* Http request's ``Host`` header should include the port. Using ``netloc`` as the http host header is wrong, it could include user:pass.
+* Redirects: ``Host`` in reqheaders should be ``host:port``.
+* Streaming decompress not working.
+
+
 0.6.2 (2014-03-22)
 ++++++++++++++++++++
 
