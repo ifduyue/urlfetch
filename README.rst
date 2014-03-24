@@ -39,14 +39,15 @@ Installation
     $ pip install urlfetch
 
 
-Hello World
------------
+Hello, world
+-------------
 ::
 
     from urlfetch import get
 
     response = get('http://python.org/')
-    print response.content
+    print response.status, response.reason
+    print len(response.content)
 
 Upload file
 -----------
