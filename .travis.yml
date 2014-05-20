@@ -5,7 +5,7 @@ python:
     - "3.2"
     - "3.3"
 install: 
-    - pip install . --use-mirrors
+    - pip install .
     - pip install python-coveralls gunicorn bottle
 script: coverage run tests/testall.py
 after_success:
