@@ -23,10 +23,7 @@ try:
 except ImportError:
     import json
 
-if sys.version_info >= (3, 0):
-    py3k = True
-else:
-    py3k = False
+py3k = sys.version_info >= (3, 0)
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
