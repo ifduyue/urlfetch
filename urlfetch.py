@@ -257,7 +257,7 @@ class Response(object):
                 except (IOError, zlib.error) as e:
                     raise ContentDecodingError(e)
 
-            if self._content_encoding:
+            if ce:
                 raise ContentDecodingError('Unknown encoding: %s' % ce)
             return chunk
 
@@ -466,9 +466,7 @@ class Session(object):
         kwargs['headers'] = headers
 
         r = request(*args, **kwargs)
-
-        cookies = r.cookies
-        self.cookies.update(cookies)
+        self.cookies.update(r.cookies)
 
         return r
 
