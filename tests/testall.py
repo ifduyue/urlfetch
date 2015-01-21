@@ -14,8 +14,7 @@ time.sleep(1)
 
 @atexit.register
 def clean_gunicorn():
-    print 'clean gunicorn'
-    print os.kill(pid, signal.SIGTERM)
+    os.kill(pid, signal.SIGTERM)
 
 tests = [i[:-3] for i in os.listdir(here)
         if i.startswith('test_') and i.endswith('.py')]
