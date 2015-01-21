@@ -40,9 +40,9 @@ Hello, world
 -------------
 ::
 
-    from urlfetch import get
+    import urlfetch
 
-    response = get('http://python.org/')
+    response = urlfetch.get('http://python.org/')
     print response.status, response.reason
     print len(response.content)
 
@@ -50,9 +50,9 @@ Uploading files
 ----------------
 ::
 
-    from urlfetch import post
+    import urlfetch
 
-    response = post(
+    response = urlfetch.post(
         'http://127.0.0.1:8888/upload',
         headers = {
             'Referer': 'http://127.0.0.1/',
