@@ -46,8 +46,8 @@ Hello, world
     print response.status, response.reason
     print len(response.content)
 
-Upload file
------------
+Uploading files
+----------------
 ::
 
     from urlfetch import post
