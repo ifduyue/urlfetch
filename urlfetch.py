@@ -46,7 +46,8 @@ else:
 
 
 __all__ = ('request', 'fetch', 'Session',
-           'get', 'head', 'put', 'post', 'delete', 'options', 'trace', 'patch'
+           'get', 'head', 'put', 'post', 'delete',
+           'options', 'trace', 'patch',
            'UrlfetchException', 'ContentLimitExceeded', 'URLError',
            'ContentDecodingError', 'TooManyRedirects')
 
