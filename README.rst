@@ -1,16 +1,16 @@
-urlfetch
-========
+urlfetch |travis-badge| |coveralls-badge| |furyio-badge| |pypipin-badge|
+=========================================================================
 
-.. image:: https://travis-ci.org/ifduyue/urlfetch.png
+.. |travis-badge| image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
 
-.. image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master
+.. |coveralls-badge| image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master
     :target: https://coveralls.io/r/ifduyue/urlfetch?branch=master
 
-.. image:: https://badge.fury.io/py/urlfetch.png
+.. |furyio-badge| image:: https://badge.fury.io/py/urlfetch.png
     :target: http://badge.fury.io/py/urlfetch
 
-.. image:: https://pypip.in/d/urlfetch/badge.png
+.. |pypipin-badge| image:: https://pypip.in/d/urlfetch/badge.png
     :target: https://crate.io/packages/urlfetch/
 
 
