@@ -242,6 +242,15 @@ class GetTest(unittest.TestCase):
         for r1, r2 in zip(responses, responses[1:]):
             self.assertEqual(r1.history[:-1], r2.history)
 
+    def test_content_encoding(self):
+        url = testlib.url('/content-encoding/invalid-body')
+        call_invalid_body = lambda: urlfetch.get(url).body
+        self.assertRaises(urlfetch.ContentDecodingError, call_invalid_body)
+
+        url = testlib.url('/content-encoding/invalid-header')
+        call_invalid_header = lambda: urlfetch.get(url).body
+        self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header)
+
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
         self.assertTrue(r.links)

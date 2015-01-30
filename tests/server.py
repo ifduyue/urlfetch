@@ -95,6 +95,16 @@ def redirect(max, now):
     else:
         abort(400)
 
+@app.route('/content-encoding/invalid-header')
+def content_encoding_invalid_header():
+    response.set_header('Content-Encoding', 'invalid')
+    return os.urandom(64)
+
+@app.route('/content-encoding/invalid-body')
+def content_encoding_invalid_body():
+    response.set_header('Content-Encoding', 'gzip')
+    return os.urandom(64)
+    
 @app.route('/links/<n>')
 def links(n):
     try:
