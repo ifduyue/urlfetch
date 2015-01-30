@@ -594,23 +594,10 @@ def request(url, method="GET", params=None, data=None, headers={},
 
     parsed_url = parse_url(url)
 
-    # is randua bool or path
-    if randua and isinstance(randua, basestring) and os.path.isfile(randua):
-        randua_file = randua
-        randua = True
-    else:
-        randua_file = None
-        randua = bool(randua)
-
-    # default request headers
-    if randua:
-        ua = random_useragent(randua_file)
-    else:
-        ua = 'urlfetch/' + __version__
     reqheaders = {
         'Accept': '*/*',
         'Accept-Encoding': 'gzip, deflate, compress, identity, *',
-        'User-Agent': ua,
+        'User-Agent': random_useragent(randua),
         'Host': parsed_url['http_host']
     }
 
@@ -859,15 +846,18 @@ def random_useragent(filename=None):
     """
     import random
 
-    if filename is None:
-        filenames = [
+    if isinstance(filename, basestring):
+        filenames = [filename]
+    else:
+        filenames = []
+
+    if filename:
+        filenames.extend([
             os.path.join(os.path.abspath(os.path.dirname(__file__)),
                          'urlfetch.useragents.list'),
             os.path.join(sys.prefix, 'share', 'urlfetch',
                          'urlfetch.useragents.list'),
-        ]
-    else:
-        filenames = [filename]
+        ])
 
     for filename in filenames:
         try:
