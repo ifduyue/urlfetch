@@ -3,6 +3,19 @@ Changelog
 
 **Time flies!!**
 
+1.0.1 (2015-01-31)
+++++++++++++++++++++
+
+Fixes:
+
+* :attr:`urlfetch.Response.history` of a redirected response and its
+  precedent responses should be different.
+
+Improvements:
+
+* Simplified some code.
+* Added some tests.
+
 1.0 (2014-03-22)
 ++++++++++++++++++++
 
