@@ -38,7 +38,8 @@ Installation
 
 Hello, world
 -------------
-::
+
+.. code-block:: python
 
     import urlfetch
 
@@ -48,7 +49,8 @@ Hello, world
 
 Uploading files
 ----------------
-::
+
+.. code-block:: python
 
     import urlfetch
 
