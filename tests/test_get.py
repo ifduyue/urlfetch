@@ -20,6 +20,11 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
+    def test_json(self):
+        url = testlib.url('utf8.txt')
+        call = lambda: urlfetch.get(url).json
+        self.assertRaises(urlfetch.ContentDecodingError, call)
+
     def test_fetch_data(self,):
         r = urlfetch.fetch(testlib.test_server_host, data='foo=bar')
         o = json.loads(r.text)
