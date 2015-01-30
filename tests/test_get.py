@@ -226,6 +226,17 @@ class GetTest(unittest.TestCase):
         self.assertTrue(isinstance(r.json, dict))
         self.assertTrue(isinstance(r.text, urlfetch.unicode))
 
+    def test_history(self):
+        r = urlfetch.get(testlib.url('/redirect/5/0'), max_redirects=10)
+        self.assertTrue(not not r.history)
+
+        responses = r.history[:]
+        responses.append(r)
+        responses.reverse()
+
+        for r1, r2 in zip(responses, responses[1:]):
+            self.assertEqual(r1.history[:-1], r2.history)
+
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
         self.assertTrue(r.links)
