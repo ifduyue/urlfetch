@@ -874,8 +874,8 @@ def random_useragent(filename=None):
         pos = 0
         r = random.Random()
 
-        # try getting a valid line for no more than 64 times
-        for i in range(64):
+        # try getting a valid line for no more than 3 times
+        for i in range(3):
 
             pos += r.randint(0, filesize)
             pos %= filesize
