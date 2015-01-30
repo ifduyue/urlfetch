@@ -251,6 +251,10 @@ class GetTest(unittest.TestCase):
         call_invalid_header = lambda: urlfetch.get(url).body
         self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header)
 
+        url = testlib.url('/content-encoding/invalid-body/deflate')
+        call_invalid_header_deflate = lambda: urlfetch.get(url).body
+        self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header_deflate)
+
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
         self.assertTrue(r.links)

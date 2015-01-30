@@ -104,6 +104,11 @@ def content_encoding_invalid_header():
 def content_encoding_invalid_body():
     response.set_header('Content-Encoding', 'gzip')
     return os.urandom(64)
+
+@app.route('/content-encoding/invalid-body/deflate')
+def content_encoding_invalid_body():
+    response.set_header('Content-Encoding', 'deflate')
+    return os.urandom(64)
     
 @app.route('/links/<n>')
 def links(n):
