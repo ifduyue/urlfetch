@@ -128,6 +128,10 @@ def links(n):
         response.set_header('Link', '</links/1>')
     return normal_formsdict()
 
+@app.route('/bytes/<n:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def sleep(n):
+    return os.urandom(int(n))
+
 if __name__ == '__main__':
     import sys
     try:

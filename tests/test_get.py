@@ -255,6 +255,13 @@ class GetTest(unittest.TestCase):
         call_invalid_header_deflate = lambda: urlfetch.get(url).body
         self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header_deflate)
 
+    def length_limit(self):
+        url = testlib.url('/bytes/64')
+        call = lambda: urlfetch.get(url, length_limit=1)
+        self.assertRaises(urlfetch.ContentLimitExceeded, call)
+        call = lambda: urlfetch.get(url, length_limit=63)
+        self.assertRaises(urlfetch.ContentLimitExceeded, call)
+
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
         self.assertTrue(r.links)
