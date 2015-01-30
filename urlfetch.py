@@ -649,10 +649,8 @@ def request(url, method="GET", params=None, data=None, headers={},
 
     start_time = time.time()
     try:
-        if via_proxy:
-            conn.request(method, url, data, reqheaders)
-        else:
-            conn.request(method, parsed_url['uri'], data, reqheaders)
+        request_url = url if via_proxy else parsed_url['uri']
+        conn.request(method, request_url, data, reqheaders)
         resp = conn.getresponse()
     except socket.timeout as e:
         raise Timeout(e)
@@ -710,10 +708,8 @@ def request(url, method="GET", params=None, data=None, headers={},
                                    parsed_url['port'], timeout)
 
         try:
-            if via_proxy:
-                conn.request(method, url, None, reqheaders)
-            else:
-                conn.request(method, parsed_url['uri'], None, reqheaders)
+            request_url = url if via_proxy else parsed_url['uri']
+            conn.request(method, request_url, data, reqheaders)
             resp = conn.getresponse()
         except socket.timeout as e:
             raise Timeout(e)
