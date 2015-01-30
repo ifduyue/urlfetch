@@ -662,7 +662,7 @@ def request(url, method="GET", params=None, data=None, headers={},
     history = []
     response = Response.from_httplib(resp, reqheaders=reqheaders,
                                      length_limit=length_limit,
-                                     history=history, url=url,
+                                     history=history[:], url=url,
                                      total_time=total_time,
                                      start_time=start_time)
 
@@ -718,7 +718,7 @@ def request(url, method="GET", params=None, data=None, headers={},
 
         response = Response.from_httplib(resp, reqheaders=reqheaders,
                                          length_limit=length_limit,
-                                         history=history, url=url,
+                                         history=history[:], url=url,
                                          total_time=total_time,
                                          start_time=start_time)
 
