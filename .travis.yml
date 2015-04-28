@@ -7,7 +7,7 @@ python:
     - "3.4"
 install: 
     - pip install .
-    - pip install python-coveralls gunicorn bottle
-script: coverage run tests/testall.py
+    - pip install python-coveralls
+script: coverage run setup.py test
 after_success:
   - coveralls
