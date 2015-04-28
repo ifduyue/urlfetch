@@ -832,7 +832,7 @@ def mb_code(s, coding=None, errors='replace'):
     return unicode(s, errors=errors)
 
 
-def random_useragent(filename=None):
+def random_useragent(filename=True):
     """Returns a User-Agent string randomly from file.
 
     :arg string filename: (Optional) Path to the file from which a random
@@ -841,16 +841,14 @@ def random_useragent(filename=None):
     :returns: An user-agent string.
     """
     import random
-    from os.path import join, abspath, dirname
 
     if isinstance(filename, basestring):
         filenames = [filename]
     else:
         filenames = []
 
-    if filename:
-        uafile = join(dirname(abspath(__file__)), 'urlfetch.useragents.list')
-        filenames.append(uafile)
+    if filename and HAS_UAFILE:
+        filenames.append(UAFILE_PATH)
 
     for filename in filenames:
         try:
@@ -1016,3 +1014,6 @@ PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
+UAFILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'urlfetch.useragents.list')
+HAS_UAFILE = os.path.isfile(UAFILE_PATH)
