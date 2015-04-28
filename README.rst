@@ -72,3 +72,17 @@ Uploading files
 
     print response.status, response.content
 
+
+Testing
+--------
+
+.. __: http://bottlepy.org/
+.. __: http://gunicorn.org/
+
+To run the tests, urlfetch relies on `bottle`__ and `gunicorn`__.
+If the tests are run by calling ``python setup.py test``,  the
+dependencies will be handled automatically (via ``tests_require``).
+So, if you want to run the tests directly, that is,
+``python tests/testall.py``, make sure bottle and gunicorn are installed
+under the PYTHONPATH.
+
