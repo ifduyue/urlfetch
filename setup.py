@@ -28,4 +28,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     test_suite='tests.testall',
+    tests_require=['bottle', 'gunicorn'],
 )

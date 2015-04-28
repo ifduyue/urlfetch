@@ -132,7 +132,7 @@ def links(n):
 def sleep(n):
     return os.urandom(int(n))
 
-if __name__ == '__main__':
+def run():
     import sys
     try:
         port = int(sys.argv[1])
@@ -146,6 +146,8 @@ if __name__ == '__main__':
             break
 
     bottle.debug(not quiet)
-    bottle.run(app=app, host='127.0.0.1', port=port, reloader=True,
+    bottle.run(app=app, host='127.0.0.1', port=port, server='gunicorn',
                quiet=quiet, debug=not quiet,)
 
+if __name__ == '__main__':
+    run()
