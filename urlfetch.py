@@ -841,6 +841,7 @@ def random_useragent(filename=None):
     :returns: A User-Agent string.
     """
     import random
+    from os.path import join, abspath, dirname
 
     if isinstance(filename, basestring):
         filenames = [filename]
@@ -848,12 +849,8 @@ def random_useragent(filename=None):
         filenames = []
 
     if filename:
-        filenames.extend([
-            os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                         'urlfetch.useragents.list'),
-            os.path.join(sys.prefix, 'share', 'urlfetch',
-                         'urlfetch.useragents.list'),
-        ])
+        uafile = join(dirname(abspath(__file__)), 'urlfetch.useragents.list')
+        filenames.append(uafile)
 
     for filename in filenames:
         try:
