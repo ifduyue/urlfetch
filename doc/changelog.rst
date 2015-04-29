@@ -3,6 +3,19 @@ Changelog
 
 **Time flies!!**
 
+1.0.2 (2015-04-29)
+++++++++++++++++++++
+
+Fixes:
+
+* ``python setup.py test`` causes SandboxViolation.
+
+Improvements:
+
+* ``python setup.py test`` handles dependencies automatically.
+* :func:`random_useragent`: check if ``urlfetch.useragents.list`` exists at
+  the import time.
+
 1.0.1 (2015-01-31)
 ++++++++++++++++++++
 
