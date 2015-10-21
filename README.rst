@@ -10,10 +10,6 @@ urlfetch |travis-badge| |coveralls-badge| |furyio-badge| |pypipin-badge|
 .. |furyio-badge| image:: https://badge.fury.io/py/urlfetch.png
     :target: http://badge.fury.io/py/urlfetch
 
-.. |pypipin-badge| image:: https://pypip.in/d/urlfetch/badge.png
-    :target: https://crate.io/packages/urlfetch/
-
-
 urlfetch is a simple, lightweight and easy to use HTTP client for Python.
 It is distributed as a single file module and has no depencencies other than the Python Standard Library.
 
