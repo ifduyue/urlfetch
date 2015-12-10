@@ -1,5 +1,5 @@
-urlfetch |travis-badge| |coveralls-badge| |furyio-badge| |pypipin-badge|
-=========================================================================
+urlfetch |travis-badge| |coveralls-badge| |furyio-badge|
+==========================================================
 
 .. |travis-badge| image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
