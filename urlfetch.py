@@ -847,8 +847,8 @@ def random_useragent(filename=True):
     else:
         filenames = []
 
-    if filename and HAS_UAFILE:
-        filenames.append(UAFILE_PATH)
+    if filename and UAFILE:
+        filenames.append(UAFILE)
 
     for filename in filenames:
         try:
@@ -1014,6 +1014,13 @@ PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
-UAFILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           'urlfetch.useragents.list')
-HAS_UAFILE = os.path.isfile(UAFILE_PATH)
+
+UAFILENAME = 'urlfetch.useragents.list'
+for i in set((os.path.join(sys.prefix, UAFILENAME),
+              os.path.join(sys.prefix, 'local', UAFILENAME),
+              os.path.join(os.path.dirname(os.path.abspath(__file__)), UAFILENAME))):
+    if os.path.isfile(i):
+        UAFILE = i
+        break
+else:
+    UAFILE = None
