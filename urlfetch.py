@@ -947,6 +947,7 @@ def encode_multipart(data, files):
     body = BytesIO()
     boundary = choose_boundary()
     part_boundary = b('--%s\r\n' % boundary)
+    writer = codecs.lookup('utf-8')[3]
 
     if isinstance(data, dict):
         for name, values in data.items():
@@ -1012,7 +1013,6 @@ ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE",
                    "PATCH")
 PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
-writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
 
 UAFILENAME = 'urlfetch.useragents.list'
