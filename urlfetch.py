@@ -16,6 +16,7 @@ __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
 import os, sys, base64, codecs, uuid, stat, time, socket
+from os.path import basename, dirname, basename, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
 try:
@@ -225,8 +226,7 @@ class Response(object):
 
         :arg int chunk_size: size of chunk, default is 8192.
         """
-        chunk = self._r.read(chunk_size)
-        return chunk
+        return self._r.read(chunk_size)
 
     def __iter__(self):
         return self
@@ -336,7 +336,6 @@ class Response(object):
             'content-type': 'text/html',
             'x-cache-lookup': 'MISS from localhost:8080'
         }
-
         """
         if py3k:
             return dict((k.lower(), v) for k, v in self.getheaders())
@@ -347,14 +346,12 @@ class Response(object):
     def cookies(self):
         """Cookies in dict"""
         c = Cookie.SimpleCookie(self.getheader('set-cookie'))
-        sc = [(i.key, i.value) for i in c.values()]
-        return dict(sc)
+        return dict((i.key, i.value) for i in c.values())
 
     @cached_property
     def cookiestring(self):
         """Cookie string"""
-        cookies = self.cookies
-        return '; '.join(['%s=%s' % (k, v) for k, v in cookies.items()])
+        return '; '.join('%s=%s' % (k, v) for k, v in self.cookies.items())
 
     @cached_property
     def links(self):
@@ -442,7 +439,7 @@ class Session(object):
         >>> s.cookies
         {'1': '2', 'foo': 'bar'}
         """
-        return '; '.join(['%s=%s' % (k, v) for k, v in self.cookies.items()])
+        return '; '.join('%s=%s' % (k, v) for k, v in self.cookies.items())
 
     @cookiestring.setter
     def cookiestring(self, value):
@@ -971,7 +968,7 @@ def encode_multipart(data, files):
         if isinstance(f, tuple):
             filename, f = f
         elif hasattr(f, 'name'):
-            filename = os.path.basename(f.name)
+            filename = basename(f.name)
         else:
             filename = None
             raise UrlfetchException("file must has filename")
@@ -1016,9 +1013,9 @@ PROXIES = get_proxies_from_environ()
 BOUNDARY_PREFIX = None
 
 UAFILENAME = 'urlfetch.useragents.list'
-for i in set((os.path.join(sys.prefix, UAFILENAME),
-              os.path.join(sys.prefix, 'local', UAFILENAME),
-              os.path.join(os.path.dirname(os.path.abspath(__file__)), UAFILENAME))):
+for i in set((pathjoin(sys.prefix, UAFILENAME),
+              pathjoin(sys.prefix, 'local', UAFILENAME),
+              pathjoin(dirname(abspath(__file__)), UAFILENAME))):
     if os.path.isfile(i):
         UAFILE = i
         break
