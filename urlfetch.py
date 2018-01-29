@@ -16,7 +16,7 @@ __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
 
 import os, sys, base64, codecs, uuid, stat, time, socket
-from os.path import basename, dirname, basename, abspath, join as pathjoin
+from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
 try:
