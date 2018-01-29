@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = '1.0.3'
+__version__ = '1.1.0'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -25,6 +25,8 @@ except ImportError:
     import json
 
 py3k = sys.version_info >= (3, 0)
+support_source_address = (sys.version_info >= (2, 7)
+                          or sys.version_info >= (3, 2))
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
@@ -44,7 +46,6 @@ else:
     unicode = unicode
     b = lambda s: s
     u = lambda s: unicode(s, 'unicode_escape')
-
 
 __all__ = ('request', 'fetch', 'Session',
            'get', 'head', 'put', 'post', 'delete',
@@ -535,7 +536,8 @@ def fetch(*args, **kwargs):
 
 def request(url, method="GET", params=None, data=None, headers={},
             timeout=None, files={}, randua=False, auth=None, length_limit=None,
-            proxies=None, trust_env=True, max_redirects=0, **kwargs):
+            proxies=None, trust_env=True, max_redirects=0,
+            source_address=None, **kwargs):
     """request an URL
 
     :arg string url: URL to be fetched.
@@ -561,16 +563,27 @@ def request(url, method="GET", params=None, data=None, headers={},
     :arg int max_redirects: (integer, optional) Max redirects allowed within a
                             request. Default is 0, which means redirects are
                             not allowed.
+    :arg tuple source_address: (optional) A tuple of (host, port) to
+                               specify the source_address to bind to. This
+                               argument is ignored if you're using Python prior
+                               to 2.7/3.2.
     :returns: A :class:`~urlfetch.Response` object
     :raises: :class:`URLError`, :class:`UrlfetchException`,
              :class:`TooManyRedirects`,
     """
-    def make_connection(conn_type, host, port, timeout):
+    def make_connection(conn_type, host, port, timeout, source_address):
         """Return HTTP or HTTPS connection."""
+        if support_source_address:
+            kwargs = {'timeout': timeout, 'source_address': source_address}
+        else:
+            kwargs = {'timeout': timeout}
+            if source_address is not None:
+                raise UrlfetchException('source_address requires'
+                                        'Python 2.7/3.2 or newer versions')
         if conn_type == 'http':
-            conn = HTTPConnection(host, port, timeout=timeout)
+            conn = HTTPConnection(host, port, **kwargs)
         elif conn_type == 'https':
-            conn = HTTPSConnection(host, port, timeout=timeout)
+            conn = HTTPSConnection(host, port, **kwargs)
         else:
             raise URLError('Unknown Connection Type: %s' % conn_type)
         return conn
@@ -617,10 +630,10 @@ def request(url, method="GET", params=None, data=None, headers={},
             reqheaders['Proxy-Authorization'] = 'Basic ' + \
                                                 proxyauth.decode('utf-8')
         conn = make_connection(scheme, parsed_proxy['host'],
-                               parsed_proxy['port'], timeout)
+                               parsed_proxy['port'], timeout, source_address)
     else:
         conn = make_connection(scheme, parsed_url['host'], parsed_url['port'],
-                               timeout)
+                               timeout, source_address)
 
     if not auth and parsed_url['username'] and parsed_url['password']:
         auth = (parsed_url['username'], parsed_url['password'])
@@ -697,12 +710,13 @@ def request(url, method="GET", params=None, data=None, headers={},
                 reqheaders['Proxy-Authorization'] = 'Basic ' + \
                                                     proxyauth.decode('utf-8')
             conn = make_connection(scheme, parsed_proxy['host'],
-                                   parsed_proxy['port'], timeout)
+                                   parsed_proxy['port'], timeout,
+                                   source_address)
         else:
             via_proxy = False
             reqheaders.pop('Proxy-Authorization', None)
             conn = make_connection(scheme, parsed_url['host'],
-                                   parsed_url['port'], timeout)
+                                   parsed_url['port'], timeout, source_address)
 
         try:
             request_url = url if via_proxy else parsed_url['uri']
