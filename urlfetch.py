@@ -639,7 +639,7 @@ def request(url, method="GET", params=None, data=None, headers={},
             ignore_hosts = no_proxy.split(",")
 
     proxy = proxies.get(scheme)
-    if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+    if proxy and not any(match_no_proxy(parsed_url['host'], host) for host in ignore_hosts):
         via_proxy = True
         if '://' not in proxy:
             proxy = '%s://%s' % (scheme, proxy)
