@@ -19,6 +19,7 @@ import os, sys, base64, codecs, uuid, stat, time, socket
 from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
+import re
 try:
     import simplejson as json
 except ImportError:
@@ -533,6 +534,21 @@ def fetch(*args, **kwargs):
         return post(*args, **kwargs)
     return get(*args, **kwargs)
 
+def match_no_proxy(host, no_proxy):
+    ip_regex = r"(\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})"
+    no_proxy_ip_regex = r"(\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})(?=/(\d+))?"
+    ip_match = re.match(ip_regex, host)
+    no_proxy_ip_match = re.match(no_proxy_ip_regex, no_proxy)
+    if no_proxy_ip_match and ip_match:
+        host_bits = "".join("{:08b}".format(int(section)) for section in ip_match.group(1, 2, 3, 4))
+        no_proxy_bits = "".join("{:08b}".format(int(section)) for section in no_proxy_ip_match.group(1, 2, 3, 4))
+        if no_proxy_ip_match.group(5) is not None:
+            bit_match_count = int(no_proxy_ip_match.group(5))
+            return host_bits[:bit_match_count] == no_proxy_bits[:bit_match_count]
+        else:
+            return host_bits == no_proxy_bits
+    else:
+        return host.endswith(no_proxy)
 
 def request(url, method="GET", params=None, data=None, headers={},
             timeout=None, files={}, randua=False, auth=None, length_limit=None,
@@ -615,6 +631,12 @@ def request(url, method="GET", params=None, data=None, headers={},
     scheme = parsed_url['scheme']
     if proxies is None and trust_env:
         proxies = PROXIES
+
+    ignore_hosts = PROXY_IGNORE_HOSTS
+    if trust_env:
+        no_proxy = os.getenv('no_proxy') or os.getenv('NO_PROXY')
+        if no_proxy:
+            ignore_hosts = no_proxy.split(",")
 
     proxy = proxies.get(scheme)
     if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
