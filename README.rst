@@ -1,11 +1,8 @@
-urlfetch |travis-badge| |coveralls-badge| |furyio-badge|
+urlfetch |travis-badge| |furyio-badge|
 ==========================================================
 
 .. |travis-badge| image:: https://travis-ci.org/ifduyue/urlfetch.png
     :target: https://travis-ci.org/ifduyue/urlfetch
-
-.. |coveralls-badge| image:: https://coveralls.io/repos/ifduyue/urlfetch/badge.png?branch=master
-    :target: https://coveralls.io/r/ifduyue/urlfetch?branch=master
 
 .. |furyio-badge| image:: https://badge.fury.io/py/urlfetch.png
     :target: http://badge.fury.io/py/urlfetch

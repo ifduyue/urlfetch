@@ -11,11 +11,4 @@ python:
   - 3.7
   - pypy
 
-install: 
-  - pip install .
-  - pip install 'python-coveralls<2.6'
-
-script: coverage run setup.py test
-
-after_success:
-  - coveralls
+script: python setup.py test
