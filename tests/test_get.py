@@ -175,7 +175,7 @@ class GetTest(unittest.TestCase):
         sina = urlfetch.b('sina')
 
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/') as r:
+            with urlfetch.get('http://news.sina.com.cn/', max_redirects=3) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
@@ -183,7 +183,9 @@ class GetTest(unittest.TestCase):
             self.assertTrue(sina in html)
 
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': 'deflate'}) as r:
+            with urlfetch.get('http://news.sina.com.cn/',
+                              headers={'Accept-Encoding': 'deflate'},
+                              max_redirects=3) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
@@ -191,7 +193,9 @@ class GetTest(unittest.TestCase):
             self.assertTrue(sina in html)
 
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': 'gzip'}) as r:
+            with urlfetch.get('http://news.sina.com.cn/',
+                              headers={'Accept-Encoding': 'gzip'},
+                              max_redirects=3) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
@@ -199,7 +203,8 @@ class GetTest(unittest.TestCase):
             self.assertTrue(sina in html)
 
         with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': '*'}) as r:
+            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': '*'},
+                              max_redirects=3) as r:
                 for chunk in r:
                     f.write(chunk)
             f.seek(0)
