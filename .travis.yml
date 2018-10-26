@@ -17,6 +17,4 @@ matrix:
   allow_failures:
     - python: nightly
 
-install: pip install --upgrade pip setuptools
-
 script: python setup.py test
