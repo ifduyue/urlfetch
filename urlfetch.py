@@ -875,6 +875,8 @@ def random_useragent(filename=True):
     """
     import random
 
+    default_ua = 'urlfetch/%s' % __version__
+
     if isinstance(filename, basestring):
         filenames = [filename]
     else:
@@ -891,7 +893,7 @@ def random_useragent(filename=True):
         except:
             pass
     else:
-        return 'urlfetch/%s' % __version__
+        return default_ua
 
     with open(filename, 'rb') as f:
         filesize = st.st_size
@@ -919,7 +921,7 @@ def random_useragent(filename=True):
             if line and line[0] != '#':
                 return line
 
-    return 'urlfetch/%s' % __version__
+    return default_ua
 
 
 def url_concat(url, args, keep_existing=True):
