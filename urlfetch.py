@@ -1051,11 +1051,7 @@ PROXIES = get_proxies_from_environ()
 BOUNDARY_PREFIX = None
 
 UAFILENAME = 'urlfetch.useragents.list'
-for i in set((pathjoin(sys.prefix, UAFILENAME),
-              pathjoin(sys.prefix, 'local', UAFILENAME),
-              pathjoin(dirname(abspath(__file__)), UAFILENAME))):
-    if os.path.isfile(i):
-        UAFILE = i
-        break
-else:
-    UAFILE = None
+UAFILE = next((i for i in set((pathjoin(sys.prefix, UAFILENAME),
+                               pathjoin(sys.prefix, 'local', UAFILENAME),
+                               pathjoin(dirname(abspath(__file__)), UAFILENAME)))
+                if os.path.isfile(i)), None)
