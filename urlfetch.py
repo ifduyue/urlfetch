@@ -26,7 +26,7 @@ except ImportError:
     import json
 
 py3k = sys.version_info >= (3, 0)
-support_source_address = (sys.version_info >= (2, 7)
+support_source_address = (sys.version_info >= (2, 7) and not py3k
                           or sys.version_info >= (3, 2))
 
 if py3k:
