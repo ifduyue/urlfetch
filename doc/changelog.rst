@@ -3,6 +3,14 @@ Changelog
 
 **Time flies!!**
 
+1.1.0 (2018-11-16)
+++++++++++++++++++++
+
+New features:
+
+* Support source_address
+* Support no_proxy environment variable
+
 1.0.3 (2018-01-03)
 ++++++++++++++++++++
 
@@ -11,8 +19,6 @@ Improvements:
 * Run tests against Python 3.5 3.6 3.7 and PyPy.
 * Try to deal with data_files paths.
 * Some minor changes regarding coding style.
-
-
 
 1.0.2 (2015-04-29)
 ++++++++++++++++++++
