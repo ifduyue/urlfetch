@@ -98,17 +98,17 @@ def redirect(max, now):
 @app.route('/content-encoding/invalid-header')
 def content_encoding_invalid_header():
     response.set_header('Content-Encoding', 'invalid')
-    return os.urandom(64)
+    return os.urandom(256)
 
 @app.route('/content-encoding/invalid-body')
 def content_encoding_invalid_body():
     response.set_header('Content-Encoding', 'gzip')
-    return os.urandom(64)
+    return os.urandom(256)
 
 @app.route('/content-encoding/invalid-body/deflate')
 def content_encoding_invalid_body():
     response.set_header('Content-Encoding', 'deflate')
-    return os.urandom(64)
+    return os.urandom(256)
     
 @app.route('/links/<n>')
 def links(n):
