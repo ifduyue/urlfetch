@@ -258,9 +258,11 @@ class Response(object):
                 try:
                     return self._decoder.decompress(chunk)
                 except (IOError, zlib.error) as e:
+                    self.close()
                     raise ContentDecodingError(e)
 
             if ce:
+                self.close()
                 raise ContentDecodingError('Unknown encoding: %s' % ce)
             return chunk
 
@@ -291,6 +293,7 @@ class Response(object):
             content.append(chunk)
             length += len(chunk)
             if self.length_limit and length > self.length_limit:
+                self.close()
                 raise ContentLimitExceeded("Content length is more than %d "
                                            "bytes" % self.length_limit)
 
