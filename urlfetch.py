@@ -285,14 +285,16 @@ class Response(object):
 
         :raises: :class:`ContentLimitExceeded`, :class:`ContentDecodingError`
         """
-        content = b("")
+        content = []
+        length = 0
         for chunk in self:
-            content += chunk
-            if self.length_limit and len(content) > self.length_limit:
+            content.append(chunk)
+            length += len(chunk)
+            if self.length_limit and length > self.length_limit:
                 raise ContentLimitExceeded("Content length is more than %d "
                                            "bytes" % self.length_limit)
 
-        return content
+        return b("").join(content)
 
     # compatible with requests
     #: An alias of :attr:`body`.
