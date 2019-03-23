@@ -223,7 +223,7 @@ class Response(object):
             raise ContentLimitExceeded("Content length is more than %d bytes"
                                        % self.length_limit)
 
-    def read(self, chunk_size=8192):
+    def read(self, chunk_size=65536):
         """Read content (for streaming and large files)
 
         :arg int chunk_size: size of chunk, default is 8192.
