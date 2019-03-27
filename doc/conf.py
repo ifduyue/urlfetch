@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'urlfetch'
-copyright = u'2011-2018, Yue Du <ifduyue@gmail.com>'
+copyright = u'2011-2019, Yue Du <ifduyue@gmail.com>'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

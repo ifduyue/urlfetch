@@ -3,6 +3,15 @@ Changelog
 
 **Time flies!!**
 
+1.1.2 (2019-03-27)
+++++++++++++++++++++
+
+Small optimizations:
+
+* Larger chunk when reading response
+* Read chuncks into list and then join them to bytes
+* Close response when exception occurs
+
 1.1.1 (2018-12-20)
 ++++++++++++++++++++
 
