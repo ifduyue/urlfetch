@@ -54,6 +54,15 @@ __all__ = ('request', 'fetch', 'Session',
            'UrlfetchException', 'ContentLimitExceeded', 'URLError',
            'ContentDecodingError', 'TooManyRedirects')
 
+GET = 'GET'
+POST = 'POST'
+PUT = 'PUT'
+DELETE = 'DELETE'
+HEAD = 'HEAD'
+OPTIONS = 'OPTIONS'
+TRACE = 'TRACE'
+PATCH = 'PATCH'
+
 
 class UrlfetchException(IOError):
     "Base exception. All exceptions and errors will subclass from this."
@@ -491,37 +500,37 @@ class Session(object):
 
     def post(self, *args, **kwargs):
         """Issue a post request."""
-        kwargs['method'] = 'POST'
+        kwargs['method'] = POST
         return self.request(*args, **kwargs)
 
     def put(self, *args, **kwargs):
         """Issue a put request."""
-        kwargs['method'] = 'PUT'
+        kwargs['method'] = PUT
         return self.request(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         """Issue a delete request."""
-        kwargs['method'] = 'DELETE'
+        kwargs['method'] = DELETE
         return self.request(*args, **kwargs)
 
     def head(self, *args, **kwargs):
         """Issue a head request."""
-        kwargs['method'] = 'HEAD'
+        kwargs['method'] = HEAD
         return self.request(*args, **kwargs)
 
     def options(self, *args, **kwargs):
         """Issue a options request."""
-        kwargs['method'] = 'OPTIONS'
+        kwargs['method'] = OPTIONS
         return self.request(*args, **kwargs)
 
     def trace(self, *args, **kwargs):
         """Issue a trace request."""
-        kwargs['method'] = 'TRACE'
+        kwargs['method'] = TRACE
         return self.request(*args, **kwargs)
 
     def patch(self, *args, **kwargs):
         """Issue a patch request."""
-        kwargs['method'] = 'PATCH'
+        kwargs['method'] = PATCH
         return self.request(*args, **kwargs)
 
 
@@ -774,14 +783,14 @@ def _partial_method(method):
     func.__module__ = request.__module__
     return func
 
-get = _partial_method("GET")
-post = _partial_method("POST")
-put = _partial_method("PUT")
-delete = _partial_method("DELETE")
-head = _partial_method("HEAD")
-options = _partial_method("OPTIONS")
-trace = _partial_method("TRACE")
-patch = _partial_method("PATCH")
+get = _partial_method(GET)
+post = _partial_method(POST)
+put = _partial_method(PUT)
+delete = _partial_method(DELETE)
+head = _partial_method(HEAD)
+options = _partial_method(OPTIONS)
+trace = _partial_method(TRACE)
+patch = _partial_method(PATCH)
 
 del _partial_method
 
@@ -1049,8 +1058,8 @@ def encode_multipart(data, files):
 # Constants and Globals #######################################################
 ##############################################################################
 
-ALLOWED_METHODS = ("GET", "DELETE", "HEAD", "OPTIONS", "PUT", "POST", "TRACE",
-                   "PATCH")
+ALLOWED_METHODS = (GET, DELETE, HEAD, OPTIONS, PUT, POST, TRACE,
+                   PATCH)
 PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 BOUNDARY_PREFIX = None
