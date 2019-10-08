@@ -10,58 +10,75 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = '1.1.2'
-__author__ = 'Yue Du <ifduyue@gmail.com>'
-__url__ = 'https://github.com/ifduyue/urlfetch'
-__license__ = 'BSD 2-Clause License'
+__version__ = "1.1.2"
+__author__ = "Yue Du <ifduyue@gmail.com>"
+__url__ = "https://github.com/ifduyue/urlfetch"
+__license__ = "BSD 2-Clause License"
 
 import os, sys, base64, codecs, uuid, stat, time, socket
 from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
 import re
+
 try:
     import simplejson as json
 except ImportError:
     import json
 
 py3k = sys.version_info >= (3, 0)
-support_source_address = (sys.version_info >= (2, 7) and not py3k
-                          or sys.version_info >= (3, 2))
+support_source_address = (
+    sys.version_info >= (2, 7) and not py3k or sys.version_info >= (3, 2)
+)
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
     from urllib.parse import urlencode
     import urllib.parse as urlparse
     import http.cookies as Cookie
+
     basestring = (str, bytes)
     unicode = str
-    b = lambda s: s.encode('latin-1')
+    b = lambda s: s.encode("latin-1")
     u = lambda s: s
 else:
     from httplib import HTTPConnection, HTTPSConnection
     from urllib import urlencode
     import urlparse
     import Cookie
+
     basestring = basestring
     unicode = unicode
     b = lambda s: s
-    u = lambda s: unicode(s, 'unicode_escape')
+    u = lambda s: unicode(s, "unicode_escape")
 
-__all__ = ('request', 'fetch', 'Session',
-           'get', 'head', 'put', 'post', 'delete',
-           'options', 'trace', 'patch',
-           'UrlfetchException', 'ContentLimitExceeded', 'URLError',
-           'ContentDecodingError', 'TooManyRedirects')
+__all__ = (
+    "request",
+    "fetch",
+    "Session",
+    "get",
+    "head",
+    "put",
+    "post",
+    "delete",
+    "options",
+    "trace",
+    "patch",
+    "UrlfetchException",
+    "ContentLimitExceeded",
+    "URLError",
+    "ContentDecodingError",
+    "TooManyRedirects",
+)
 
-GET = 'GET'
-POST = 'POST'
-PUT = 'PUT'
-DELETE = 'DELETE'
-HEAD = 'HEAD'
-OPTIONS = 'OPTIONS'
-TRACE = 'TRACE'
-PATCH = 'PATCH'
+GET = "GET"
+POST = "POST"
+PUT = "PUT"
+DELETE = "DELETE"
+HEAD = "HEAD"
+OPTIONS = "OPTIONS"
+TRACE = "TRACE"
+PATCH = "PATCH"
 
 
 class UrlfetchException(IOError):
@@ -143,6 +160,7 @@ class cached_property(object):
 # Core Methods and Classes ####################################################
 ##############################################################################
 
+
 class Response(object):
     """A Response object.
 
@@ -212,25 +230,26 @@ class Response(object):
         self.version = r.version
 
         #: total time
-        self.total_time = kwargs.pop('total_time', None)
+        self.total_time = kwargs.pop("total_time", None)
 
         self.getheader = r.getheader
         self.getheaders = r.getheaders
 
-        self._content_encoding = self.getheader('content-encoding', None)
+        self._content_encoding = self.getheader("content-encoding", None)
         self._decoder = None
 
         try:
-            self.length_limit = int(kwargs.get('length_limit'))
+            self.length_limit = int(kwargs.get("length_limit"))
         except:
             self.length_limit = None
 
         # if content (length) size is more than length_limit, skip
-        content_length = int(self.getheader('Content-Length', 0))
+        content_length = int(self.getheader("Content-Length", 0))
         if self.length_limit and content_length > self.length_limit:
             self.close()
-            raise ContentLimitExceeded("Content length is more than %d bytes"
-                                       % self.length_limit)
+            raise ContentLimitExceeded(
+                "Content length is more than %d bytes" % self.length_limit
+            )
 
     def read(self, chunk_size=65536):
         """Read content (for streaming and large files)
@@ -253,10 +272,11 @@ class Response(object):
                 raise StopIteration
         else:
             ce = self._content_encoding
-            if ce in ('gzip', 'deflate'):
+            if ce in ("gzip", "deflate"):
                 if not self._decoder:
                     import zlib
-                    if ce == 'gzip':
+
+                    if ce == "gzip":
                         self._decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
                     else:
                         self._decoder = zlib.decompressobj()
@@ -272,7 +292,7 @@ class Response(object):
 
             if ce:
                 self.close()
-                raise ContentDecodingError('Unknown encoding: %s' % ce)
+                raise ContentDecodingError("Unknown encoding: %s" % ce)
             return chunk
 
     next = __next__
@@ -303,8 +323,9 @@ class Response(object):
             length += len(chunk)
             if self.length_limit and length > self.length_limit:
                 self.close()
-                raise ContentLimitExceeded("Content length is more than %d "
-                                           "bytes" % self.length_limit)
+                raise ContentLimitExceeded(
+                    "Content length is more than %d " "bytes" % self.length_limit
+                )
 
         return b("").join(content)
 
@@ -361,31 +382,31 @@ class Response(object):
     @cached_property
     def cookies(self):
         """Cookies in dict"""
-        c = Cookie.SimpleCookie(self.getheader('set-cookie'))
+        c = Cookie.SimpleCookie(self.getheader("set-cookie"))
         return dict((i.key, i.value) for i in c.values())
 
     @cached_property
     def cookiestring(self):
         """Cookie string"""
-        return '; '.join('%s=%s' % (k, v) for k, v in self.cookies.items())
+        return "; ".join("%s=%s" % (k, v) for k, v in self.cookies.items())
 
     @cached_property
     def links(self):
         """Links parsed from HTTP Link header"""
         ret = []
-        linkheader = self.getheader('link')
+        linkheader = self.getheader("link")
         if not linkheader:
             return ret
-        for i in linkheader.split(','):
+        for i in linkheader.split(","):
             try:
-                url, params = i.split(';', 1)
+                url, params = i.split(";", 1)
             except ValueError:
-                url, params = i, ''
+                url, params = i, ""
             link = {}
-            link['url'] = url.strip('''<> '"''')
-            for param in params.split(';'):
+            link["url"] = url.strip('''<> '"''')
+            for param in params.split(";"):
                 try:
-                    k, v = param.split('=')
+                    k, v = param.split("=")
                 except ValueError:
                     break
                 link[k.strip(''' '"''')] = v.strip(''' '"''')
@@ -423,9 +444,9 @@ class Session(object):
         self.cookies = cookies.copy()
 
         if auth and isinstance(auth, (list, tuple)):
-            auth = '%s:%s' % tuple(auth)
-            auth = base64.b64encode(auth.encode('utf-8'))
-            self.headers['Authorization'] = 'Basic ' + auth.decode('utf-8')
+            auth = "%s:%s" % tuple(auth)
+            auth = base64.b64encode(auth.encode("utf-8"))
+            self.headers["Authorization"] = "Basic " + auth.decode("utf-8")
 
     def putheader(self, header, value):
         """Add an header to default headers."""
@@ -455,7 +476,7 @@ class Session(object):
         >>> s.cookies
         {'1': '2', 'foo': 'bar'}
         """
-        return '; '.join('%s=%s' % (k, v) for k, v in self.cookies.items())
+        return "; ".join("%s=%s" % (k, v) for k, v in self.cookies.items())
 
     @cookiestring.setter
     def cookiestring(self, value):
@@ -465,19 +486,16 @@ class Session(object):
         self.cookies = dict(sc)
 
     def snapshot(self):
-        session = {
-            'headers': self.headers.copy(),
-            'cookies': self.cookies.copy()
-        }
+        session = {"headers": self.headers.copy(), "cookies": self.cookies.copy()}
         return session
 
     def request(self, *args, **kwargs):
         """Issue a request."""
         headers = self.headers.copy()
         if self.cookiestring:
-            headers['Cookie'] = self.cookiestring
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
+            headers["Cookie"] = self.cookiestring
+        headers.update(kwargs.get("headers", {}))
+        kwargs["headers"] = headers
 
         r = request(*args, **kwargs)
         self.cookies.update(r.cookies)
@@ -486,8 +504,8 @@ class Session(object):
 
     def fetch(self, *args, **kwargs):
         """Fetch an URL"""
-        data = kwargs.get('data', None)
-        files = kwargs.get('files', {})
+        data = kwargs.get("data", None)
+        files = kwargs.get("files", {})
 
         if data and isinstance(data, (basestring, dict)) or files:
             return self.post(*args, **kwargs)
@@ -495,42 +513,42 @@ class Session(object):
 
     def get(self, *args, **kwargs):
         """Issue a get request."""
-        kwargs['method'] = 'GET'
+        kwargs["method"] = "GET"
         return self.request(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         """Issue a post request."""
-        kwargs['method'] = POST
+        kwargs["method"] = POST
         return self.request(*args, **kwargs)
 
     def put(self, *args, **kwargs):
         """Issue a put request."""
-        kwargs['method'] = PUT
+        kwargs["method"] = PUT
         return self.request(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         """Issue a delete request."""
-        kwargs['method'] = DELETE
+        kwargs["method"] = DELETE
         return self.request(*args, **kwargs)
 
     def head(self, *args, **kwargs):
         """Issue a head request."""
-        kwargs['method'] = HEAD
+        kwargs["method"] = HEAD
         return self.request(*args, **kwargs)
 
     def options(self, *args, **kwargs):
         """Issue a options request."""
-        kwargs['method'] = OPTIONS
+        kwargs["method"] = OPTIONS
         return self.request(*args, **kwargs)
 
     def trace(self, *args, **kwargs):
         """Issue a trace request."""
-        kwargs['method'] = TRACE
+        kwargs["method"] = TRACE
         return self.request(*args, **kwargs)
 
     def patch(self, *args, **kwargs):
         """Issue a patch request."""
-        kwargs['method'] = PATCH
+        kwargs["method"] = PATCH
         return self.request(*args, **kwargs)
 
 
@@ -541,12 +559,13 @@ def fetch(*args, **kwargs):
     It calls :func:`~urlfetch.get` by default. If one of parameter ``data``
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     """
-    data = kwargs.get('data', None)
-    files = kwargs.get('files', {})
+    data = kwargs.get("data", None)
+    files = kwargs.get("files", {})
 
     if data and isinstance(data, (basestring, dict)) or files:
         return post(*args, **kwargs)
     return get(*args, **kwargs)
+
 
 def match_no_proxy(host, no_proxy):
     ip_regex = r"(\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})"
@@ -554,8 +573,13 @@ def match_no_proxy(host, no_proxy):
     ip_match = re.match(ip_regex, host)
     no_proxy_ip_match = re.match(no_proxy_ip_regex, no_proxy)
     if no_proxy_ip_match and ip_match:
-        host_bits = "".join("{:08b}".format(int(section)) for section in ip_match.group(1, 2, 3, 4))
-        no_proxy_bits = "".join("{:08b}".format(int(section)) for section in no_proxy_ip_match.group(1, 2, 3, 4))
+        host_bits = "".join(
+            "{:08b}".format(int(section)) for section in ip_match.group(1, 2, 3, 4)
+        )
+        no_proxy_bits = "".join(
+            "{:08b}".format(int(section))
+            for section in no_proxy_ip_match.group(1, 2, 3, 4)
+        )
         if no_proxy_ip_match.group(5) is not None:
             bit_match_count = int(no_proxy_ip_match.group(5))
             return host_bits[:bit_match_count] == no_proxy_bits[:bit_match_count]
@@ -564,10 +588,24 @@ def match_no_proxy(host, no_proxy):
     else:
         return host.endswith(no_proxy)
 
-def request(url, method="GET", params=None, data=None, headers={},
-            timeout=None, files={}, randua=False, auth=None, length_limit=None,
-            proxies=None, trust_env=True, max_redirects=0,
-            source_address=None, **kwargs):
+
+def request(
+    url,
+    method="GET",
+    params=None,
+    data=None,
+    headers={},
+    timeout=None,
+    files={},
+    randua=False,
+    auth=None,
+    length_limit=None,
+    proxies=None,
+    trust_env=True,
+    max_redirects=0,
+    source_address=None,
+    **kwargs
+):
     """request an URL
 
     :arg string url: URL to be fetched.
@@ -601,87 +639,90 @@ def request(url, method="GET", params=None, data=None, headers={},
     :raises: :class:`URLError`, :class:`UrlfetchException`,
              :class:`TooManyRedirects`,
     """
+
     def make_connection(conn_type, host, port, timeout, source_address):
         """Return HTTP or HTTPS connection."""
         if support_source_address:
-            kwargs = {'timeout': timeout, 'source_address': source_address}
+            kwargs = {"timeout": timeout, "source_address": source_address}
         else:
-            kwargs = {'timeout': timeout}
+            kwargs = {"timeout": timeout}
             if source_address is not None:
-                raise UrlfetchException('source_address requires'
-                                        'Python 2.7/3.2 or newer versions')
-        if conn_type == 'http':
+                raise UrlfetchException(
+                    "source_address requires" "Python 2.7/3.2 or newer versions"
+                )
+        if conn_type == "http":
             conn = HTTPConnection(host, port, **kwargs)
-        elif conn_type == 'https':
+        elif conn_type == "https":
             conn = HTTPSConnection(host, port, **kwargs)
         else:
-            raise URLError('Unknown Connection Type: %s' % conn_type)
+            raise URLError("Unknown Connection Type: %s" % conn_type)
         return conn
 
     via_proxy = False
 
     method = method.upper()
     if method not in ALLOWED_METHODS:
-        raise UrlfetchException("Method should be one of " +
-                                ", ".join(ALLOWED_METHODS))
+        raise UrlfetchException("Method should be one of " + ", ".join(ALLOWED_METHODS))
     if params:
         if isinstance(params, dict):
             url = url_concat(url, params)
         elif isinstance(params, basestring):
-            if url[-1] not in ('?', '&'):
-                url += '&' if ('?' in url) else '?'
+            if url[-1] not in ("?", "&"):
+                url += "&" if ("?" in url) else "?"
             url += params
 
     parsed_url = parse_url(url)
 
     reqheaders = {
-        'Accept': '*/*',
-        'Accept-Encoding': 'gzip, deflate, compress, identity, *',
-        'User-Agent': random_useragent(randua),
-        'Host': parsed_url['http_host']
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, compress, identity, *",
+        "User-Agent": random_useragent(randua),
+        "Host": parsed_url["http_host"],
     }
 
     # Proxy support
-    scheme = parsed_url['scheme']
+    scheme = parsed_url["scheme"]
     if proxies is None and trust_env:
         proxies = PROXIES
 
     ignore_hosts = PROXY_IGNORE_HOSTS
     if trust_env:
-        no_proxy = os.getenv('no_proxy') or os.getenv('NO_PROXY')
+        no_proxy = os.getenv("no_proxy") or os.getenv("NO_PROXY")
         if no_proxy:
             ignore_hosts = no_proxy.split(",")
 
     proxy = proxies.get(scheme)
-    if proxy and not any(match_no_proxy(parsed_url['host'], host) for host in ignore_hosts):
+    if proxy and not any(
+        match_no_proxy(parsed_url["host"], host) for host in ignore_hosts
+    ):
         via_proxy = True
-        if '://' not in proxy:
-            proxy = '%s://%s' % (scheme, proxy)
+        if "://" not in proxy:
+            proxy = "%s://%s" % (scheme, proxy)
         parsed_proxy = parse_url(proxy)
         # Proxy-Authorization
-        if parsed_proxy['username'] and parsed_proxy['password']:
-            proxyauth = '%s:%s' % (parsed_proxy['username'],
-                                   parsed_proxy['password'])
-            proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-            reqheaders['Proxy-Authorization'] = 'Basic ' + \
-                                                proxyauth.decode('utf-8')
-        conn = make_connection(scheme, parsed_proxy['host'],
-                               parsed_proxy['port'], timeout, source_address)
+        if parsed_proxy["username"] and parsed_proxy["password"]:
+            proxyauth = "%s:%s" % (parsed_proxy["username"], parsed_proxy["password"])
+            proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
+            reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
+        conn = make_connection(
+            scheme, parsed_proxy["host"], parsed_proxy["port"], timeout, source_address
+        )
     else:
-        conn = make_connection(scheme, parsed_url['host'], parsed_url['port'],
-                               timeout, source_address)
+        conn = make_connection(
+            scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
+        )
 
-    if not auth and parsed_url['username'] and parsed_url['password']:
-        auth = (parsed_url['username'], parsed_url['password'])
+    if not auth and parsed_url["username"] and parsed_url["password"]:
+        auth = (parsed_url["username"], parsed_url["password"])
     if auth:
         if isinstance(auth, (list, tuple)):
-            auth = '%s:%s' % tuple(auth)
-        auth = base64.b64encode(auth.encode('utf-8'))
-        reqheaders['Authorization'] = 'Basic ' + auth.decode('utf-8')
+            auth = "%s:%s" % tuple(auth)
+        auth = base64.b64encode(auth.encode("utf-8"))
+        reqheaders["Authorization"] = "Basic " + auth.decode("utf-8")
 
     if files:
         content_type, data = encode_multipart(data, files)
-        reqheaders['Content-Type'] = content_type
+        reqheaders["Content-Type"] = content_type
     elif isinstance(data, dict):
         data = urlencode(data, 1)
 
@@ -695,7 +736,7 @@ def request(url, method="GET", params=None, data=None, headers={},
 
     start_time = time.time()
     try:
-        request_url = url if via_proxy else parsed_url['uri']
+        request_url = url if via_proxy else parsed_url["uri"]
         conn.request(method, request_url, data, reqheaders)
         resp = conn.getresponse()
     except socket.timeout as e:
@@ -706,56 +747,69 @@ def request(url, method="GET", params=None, data=None, headers={},
     end_time = time.time()
     total_time = end_time - start_time
     history = []
-    response = Response.from_httplib(resp, reqheaders=reqheaders,
-                                     length_limit=length_limit,
-                                     history=history[:], url=url,
-                                     total_time=total_time,
-                                     start_time=start_time)
+    response = Response.from_httplib(
+        resp,
+        reqheaders=reqheaders,
+        length_limit=length_limit,
+        history=history[:],
+        url=url,
+        total_time=total_time,
+        start_time=start_time,
+    )
 
-    while (response.status in (301, 302, 303, 307) and
-           'location' in response.headers and max_redirects):
+    while (
+        response.status in (301, 302, 303, 307)
+        and "location" in response.headers
+        and max_redirects
+    ):
         response.body, response.close(), history.append(response)
 
         if len(history) > max_redirects:
-            raise TooManyRedirects('max_redirects exceeded')
+            raise TooManyRedirects("max_redirects exceeded")
 
-        method = method if response.status == 307 else 'GET'
-        location = response.headers['location']
-        if location[:2] == '//':
-            url = parsed_url['scheme'] + ':' + location
+        method = method if response.status == 307 else "GET"
+        location = response.headers["location"]
+        if location[:2] == "//":
+            url = parsed_url["scheme"] + ":" + location
         else:
             url = urlparse.urljoin(url, location)
         parsed_url = parse_url(url)
 
-        reqheaders['Host'] = parsed_url['http_host']
-        reqheaders['Referer'] = response.url
+        reqheaders["Host"] = parsed_url["http_host"]
+        reqheaders["Referer"] = response.url
 
         # Proxy
-        scheme = parsed_url['scheme']
+        scheme = parsed_url["scheme"]
         proxy = proxies.get(scheme)
-        if proxy and parsed_url['host'] not in PROXY_IGNORE_HOSTS:
+        if proxy and parsed_url["host"] not in PROXY_IGNORE_HOSTS:
             via_proxy = True
-            if '://' not in proxy:
-                proxy = '%s://%s' % (parsed_url['scheme'], proxy)
+            if "://" not in proxy:
+                proxy = "%s://%s" % (parsed_url["scheme"], proxy)
             parsed_proxy = parse_url(proxy)
             # Proxy-Authorization
-            if parsed_proxy['username'] and parsed_proxy['password']:
-                proxyauth = '%s:%s' % (parsed_proxy['username'],
-                                       parsed_proxy['username'])
-                proxyauth = base64.b64encode(proxyauth.encode('utf-8'))
-                reqheaders['Proxy-Authorization'] = 'Basic ' + \
-                                                    proxyauth.decode('utf-8')
-            conn = make_connection(scheme, parsed_proxy['host'],
-                                   parsed_proxy['port'], timeout,
-                                   source_address)
+            if parsed_proxy["username"] and parsed_proxy["password"]:
+                proxyauth = "%s:%s" % (
+                    parsed_proxy["username"],
+                    parsed_proxy["username"],
+                )
+                proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
+                reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
+            conn = make_connection(
+                scheme,
+                parsed_proxy["host"],
+                parsed_proxy["port"],
+                timeout,
+                source_address,
+            )
         else:
             via_proxy = False
-            reqheaders.pop('Proxy-Authorization', None)
-            conn = make_connection(scheme, parsed_url['host'],
-                                   parsed_url['port'], timeout, source_address)
+            reqheaders.pop("Proxy-Authorization", None)
+            conn = make_connection(
+                scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
+            )
 
         try:
-            request_url = url if via_proxy else parsed_url['uri']
+            request_url = url if via_proxy else parsed_url["uri"]
             conn.request(method, request_url, data, reqheaders)
             resp = conn.getresponse()
         except socket.timeout as e:
@@ -763,11 +817,15 @@ def request(url, method="GET", params=None, data=None, headers={},
         except Exception as e:
             raise UrlfetchException(e)
 
-        response = Response.from_httplib(resp, reqheaders=reqheaders,
-                                         length_limit=length_limit,
-                                         history=history[:], url=url,
-                                         total_time=total_time,
-                                         start_time=start_time)
+        response = Response.from_httplib(
+            resp,
+            reqheaders=reqheaders,
+            length_limit=length_limit,
+            history=history[:],
+            url=url,
+            total_time=total_time,
+            start_time=start_time,
+        )
 
     return response
 
@@ -776,12 +834,14 @@ def request(url, method="GET", params=None, data=None, headers={},
 # Shortcuts and Helpers #######################################################
 ##############################################################################
 
+
 def _partial_method(method):
     func = partial(request, method=method)
-    func.__doc__ = 'Issue a %s request' % method.lower()
+    func.__doc__ = "Issue a %s request" % method.lower()
     func.__name__ = method.lower()
     func.__module__ = request.__module__
     return func
+
 
 get = _partial_method(GET)
 post = _partial_method(POST)
@@ -797,6 +857,7 @@ del _partial_method
 
 class ObjectDict(dict):
     """Makes a dictionary behave like an object."""
+
     def __getattr__(self, name):
         try:
             return self[name]
@@ -821,35 +882,35 @@ def parse_url(url):
     if py3k:
         make_utf8 = lambda x: x
     else:
-        make_utf8 = lambda x: isinstance(x, unicode) and x.encode('utf-8') or x
+        make_utf8 = lambda x: isinstance(x, unicode) and x.encode("utf-8") or x
 
-    if '://' in url:
-        scheme, url = url.split('://', 1)
+    if "://" in url:
+        scheme, url = url.split("://", 1)
     else:
-        scheme = 'http'
-    url = 'http://' + url
+        scheme = "http"
+    url = "http://" + url
     parsed = urlparse.urlsplit(url)
     r = ObjectDict()
-    r['scheme'] = make_utf8(scheme)
-    r['netloc'] = make_utf8(parsed.netloc)
-    r['path'] = make_utf8(parsed.path)
-    r['query'] = make_utf8(parsed.query)
-    r['fragment'] = make_utf8(parsed.fragment)
-    r['uri'] = make_utf8(parsed.path)
+    r["scheme"] = make_utf8(scheme)
+    r["netloc"] = make_utf8(parsed.netloc)
+    r["path"] = make_utf8(parsed.path)
+    r["query"] = make_utf8(parsed.query)
+    r["fragment"] = make_utf8(parsed.fragment)
+    r["uri"] = make_utf8(parsed.path)
     if parsed.query:
-        r['uri'] += '?' + make_utf8(parsed.query)
-    r['username'] = make_utf8(parsed.username)
-    r['password'] = make_utf8(parsed.password)
-    host = make_utf8(parsed.hostname.encode('idna').decode('utf-8'))
-    r['host'] = r['hostname'] = host
+        r["uri"] += "?" + make_utf8(parsed.query)
+    r["username"] = make_utf8(parsed.username)
+    r["password"] = make_utf8(parsed.password)
+    host = make_utf8(parsed.hostname.encode("idna").decode("utf-8"))
+    r["host"] = r["hostname"] = host
     try:
-        r['port'] = parsed.port
+        r["port"] = parsed.port
     except ValueError:
-        r['port'] = None
-    if r['port']:
-        r['http_host'] = '%s:%d' % (r['host'], r['port'])
+        r["port"] = None
+    if r["port"]:
+        r["http_host"] = "%s:%d" % (r["host"], r["port"])
     else:
-        r['http_host'] = r['host']
+        r["http_host"] = r["host"]
 
     return r
 
@@ -857,20 +918,20 @@ def parse_url(url):
 def get_proxies_from_environ():
     """Get proxies from os.environ."""
     proxies = {}
-    http_proxy = os.getenv('http_proxy') or os.getenv('HTTP_PROXY')
-    https_proxy = os.getenv('https_proxy') or os.getenv('HTTPS_PROXY')
+    http_proxy = os.getenv("http_proxy") or os.getenv("HTTP_PROXY")
+    https_proxy = os.getenv("https_proxy") or os.getenv("HTTPS_PROXY")
     if http_proxy:
-        proxies['http'] = http_proxy
+        proxies["http"] = http_proxy
     if https_proxy:
-        proxies['https'] = https_proxy
+        proxies["https"] = https_proxy
     return proxies
 
 
-def mb_code(s, coding=None, errors='replace'):
+def mb_code(s, coding=None, errors="replace"):
     """encoding/decoding helper."""
     if isinstance(s, unicode):
         return s if coding is None else s.encode(coding, errors=errors)
-    for c in ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5'):
+    for c in ("utf-8", "gb2312", "gbk", "gb18030", "big5"):
         try:
             s = s.decode(c)
             return s if coding is None else s.encode(coding, errors=errors)
@@ -889,7 +950,7 @@ def random_useragent(filename=True):
     """
     import random
 
-    default_ua = 'urlfetch/%s' % __version__
+    default_ua = "urlfetch/%s" % __version__
 
     if isinstance(filename, basestring):
         filenames = [filename]
@@ -909,7 +970,7 @@ def random_useragent(filename=True):
     else:
         return default_ua
 
-    with open(filename, 'rb') as f:
+    with open(filename, "rb") as f:
         filesize = st.st_size
         pos = 0
         r = random.Random()
@@ -932,7 +993,7 @@ def random_useragent(filename=True):
                     line = f.readline()
 
             line = line.strip()
-            if line and line[0] != '#':
+            if line and line[0] != "#":
                 return line
 
     return default_ua
@@ -953,14 +1014,14 @@ def url_concat(url, args, keep_existing=True):
         return url
 
     if keep_existing:
-        if url[-1] not in ('?', '&'):
-            url += '&' if ('?' in url) else '?'
+        if url[-1] not in ("?", "&"):
+            url += "&" if ("?" in url) else "?"
         return url + urlencode(args, 1)
     else:
-        url, seq, query = url.partition('?')
+        url, seq, query = url.partition("?")
         query = urlparse.parse_qs(query, True)
         query.update(args)
-        return url + '?' + urlencode(query, 1)
+        return url + "?" + urlencode(query, 1)
 
 
 def choose_boundary():
@@ -995,37 +1056,38 @@ def encode_multipart(data, files):
     """
     body = BytesIO()
     boundary = choose_boundary()
-    part_boundary = b('--%s\r\n' % boundary)
-    writer = codecs.lookup('utf-8')[3]
+    part_boundary = b("--%s\r\n" % boundary)
+    writer = codecs.lookup("utf-8")[3]
 
     if isinstance(data, dict):
         for name, values in data.items():
             if not isinstance(values, (list, tuple, set)):
                 # behave like urllib.urlencode(dict, 1)
-                values = (values, )
+                values = (values,)
             for value in values:
                 body.write(part_boundary)
-                writer(body).write('Content-Disposition: form-data; '
-                                   'name="%s"\r\n' % name)
-                body.write(b'Content-Type: text/plain\r\n\r\n')
+                writer(body).write(
+                    "Content-Disposition: form-data; " 'name="%s"\r\n' % name
+                )
+                body.write(b"Content-Type: text/plain\r\n\r\n")
                 if isinstance(value, int):
                     value = str(value)
                 if py3k and isinstance(value, str):
                     writer(body).write(value)
                 else:
                     body.write(value)
-                body.write(b'\r\n')
+                body.write(b"\r\n")
 
     for fieldname, f in files.items():
         if isinstance(f, tuple):
             filename, f = f
-        elif hasattr(f, 'name'):
+        elif hasattr(f, "name"):
             filename = basename(f.name)
         else:
             filename = None
             raise UrlfetchException("file must has filename")
 
-        if hasattr(f, 'read'):
+        if hasattr(f, "read"):
             value = f.read()
         elif isinstance(f, basestring):
             value = f
@@ -1034,38 +1096,51 @@ def encode_multipart(data, files):
 
         body.write(part_boundary)
         if filename:
-            writer(body).write('Content-Disposition: form-data; name="%s"; '
-                               'filename="%s"\r\n' % (fieldname, filename))
-            body.write(b'Content-Type: application/octet-stream\r\n\r\n')
+            writer(body).write(
+                'Content-Disposition: form-data; name="%s"; '
+                'filename="%s"\r\n' % (fieldname, filename)
+            )
+            body.write(b"Content-Type: application/octet-stream\r\n\r\n")
         else:
-            writer(body).write('Content-Disposition: form-data; name="%s"'
-                               '\r\n' % name)
-            body.write(b'Content-Type: text/plain\r\n\r\n')
+            writer(body).write(
+                'Content-Disposition: form-data; name="%s"' "\r\n" % name
+            )
+            body.write(b"Content-Type: text/plain\r\n\r\n")
 
         if py3k and isinstance(value, str):
             writer(body).write(value)
         else:
             body.write(value)
-        body.write(b'\r\n')
+        body.write(b"\r\n")
 
-    body.write(b('--' + boundary + '--\r\n'))
+    body.write(b("--" + boundary + "--\r\n"))
 
-    content_type = 'multipart/form-data; boundary=%s' % boundary
+    content_type = "multipart/form-data; boundary=%s" % boundary
 
     return content_type, body.getvalue()
+
 
 ##############################################################################
 # Constants and Globals #######################################################
 ##############################################################################
 
-ALLOWED_METHODS = (GET, DELETE, HEAD, OPTIONS, PUT, POST, TRACE,
-                   PATCH)
-PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
+ALLOWED_METHODS = (GET, DELETE, HEAD, OPTIONS, PUT, POST, TRACE, PATCH)
+PROXY_IGNORE_HOSTS = ("127.0.0.1", "localhost")
 PROXIES = get_proxies_from_environ()
 BOUNDARY_PREFIX = None
 
-UAFILENAME = 'urlfetch.useragents.list'
-UAFILE = next((i for i in set((pathjoin(sys.prefix, UAFILENAME),
-                               pathjoin(sys.prefix, 'local', UAFILENAME),
-                               pathjoin(dirname(abspath(__file__)), UAFILENAME)))
-                if os.path.isfile(i)), None)
+UAFILENAME = "urlfetch.useragents.list"
+UAFILE = next(
+    (
+        i
+        for i in set(
+            (
+                pathjoin(sys.prefix, UAFILENAME),
+                pathjoin(sys.prefix, "local", UAFILENAME),
+                pathjoin(dirname(abspath(__file__)), UAFILENAME),
+            )
+        )
+        if os.path.isfile(i)
+    ),
+    None,
+)
