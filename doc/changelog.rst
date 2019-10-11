@@ -3,6 +3,12 @@ Changelog
 
 **Time flies!!**
 
+1.1.3 (2019-10-11)
+++++++++++++++++++++
+
+* (Contributed by @chmoder) Define HTTP request methods as string constants,
+  now we can use `urlfetch.request(urlfetch.POST, ...)`.
+
 1.1.2 (2019-03-27)
 ++++++++++++++++++++
 
