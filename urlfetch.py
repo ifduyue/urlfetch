@@ -16,6 +16,7 @@ __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
 
 import os, sys, base64, codecs, uuid, stat, time, socket
+import ssl
 from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
@@ -604,6 +605,7 @@ def request(
     trust_env=True,
     max_redirects=0,
     source_address=None,
+    validate_certificate=None,
     **kwargs
 ):
     """request an URL
@@ -635,6 +637,8 @@ def request(
                                specify the source_address to bind to. This
                                argument is ignored if you're using Python prior
                                to 2.7/3.2.
+    :arg bool validate_certificate: (optional) If ``False``, urlfetch skips
+                                all the necessary certificate and hostname checks
     :returns: A :class:`~urlfetch.Response` object
     :raises: :class:`URLError`, :class:`UrlfetchException`,
              :class:`TooManyRedirects`,
@@ -650,10 +654,15 @@ def request(
                 raise UrlfetchException(
                     "source_address requires" "Python 2.7/3.2 or newer versions"
                 )
+
+        ssl_context = None
+        if validate_certificate is False:
+            ssl_context = ssl._create_unverified_context()
+
         if conn_type == "http":
             conn = HTTPConnection(host, port, **kwargs)
         elif conn_type == "https":
-            conn = HTTPSConnection(host, port, **kwargs)
+            conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
         else:
             raise URLError("Unknown Connection Type: %s" % conn_type)
         return conn
