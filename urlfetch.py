@@ -862,8 +862,6 @@ def parse_url(url):
     except UnicodeDecodeError:
         pass
 
-    make_utf8 = lambda x: x
-
     if "://" in url:
         scheme, url = url.split("://", 1)
     else:
@@ -871,17 +869,17 @@ def parse_url(url):
     url = "http://" + url
     parsed = urlparse.urlsplit(url)
     r = ObjectDict()
-    r["scheme"] = make_utf8(scheme)
-    r["netloc"] = make_utf8(parsed.netloc)
-    r["path"] = make_utf8(parsed.path)
-    r["query"] = make_utf8(parsed.query)
-    r["fragment"] = make_utf8(parsed.fragment)
-    r["uri"] = make_utf8(parsed.path)
+    r["scheme"] = scheme
+    r["netloc"] = parsed.netloc
+    r["path"] = parsed.path
+    r["query"] = parsed.query
+    r["fragment"] = parsed.fragment
+    r["uri"] = parsed.path
     if parsed.query:
-        r["uri"] += "?" + make_utf8(parsed.query)
-    r["username"] = make_utf8(parsed.username)
-    r["password"] = make_utf8(parsed.password)
-    host = make_utf8(parsed.hostname.encode("idna").decode("utf-8"))
+        r["uri"] += "?" + parsed.query
+    r["username"] = parsed.username
+    r["password"] = parsed.password
+    host = parsed.hostname.encode("idna").decode("utf-8")
     r["host"] = r["hostname"] = host
     try:
         r["port"] = parsed.port
