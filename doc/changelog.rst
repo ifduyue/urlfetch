@@ -3,6 +3,11 @@ Changelog
 
 **Time flies!!**
 
+1.2.1 (2020-04-29)
+++++++++++++++++++++
+
+* Fixed bug: passing context to HTTPSConnection
+
 1.2.0 (2020-04-29)
 ++++++++++++++++++++
 

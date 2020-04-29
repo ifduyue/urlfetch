@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -666,7 +666,7 @@ def request(
             conn = HTTPConnection(host, port, **kwargs)
         elif conn_type == "https":
             if support_ssl_context:
-                conn = HTTPSConnection(host, port, ssl_context, **kwargs)
+                conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
             else:
                 conn = HTTPSConnection(host, port, **kwargs)
         else:
