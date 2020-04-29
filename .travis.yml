@@ -10,7 +10,7 @@ matrix:
     - python: 3.8
       dist: xenial
     - python: nightly
-    - python: pypy
+    - python: pypy3
   allow_failures:
     - python: nightly
 
