@@ -653,7 +653,7 @@ def request(
             kwargs = {"timeout": timeout}
             if source_address is not None:
                 raise UrlfetchException(
-                    "source_address requires" "Python 2.7/3.2 or newer versions"
+                    "source_address requires Python 2.7/3.2 or newer versions"
                 )
 
         ssl_context = None
