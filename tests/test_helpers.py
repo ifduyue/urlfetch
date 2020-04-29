@@ -77,16 +77,8 @@ class HelpersTest(unittest.TestCase):
 
         url = 'http://www.example.com/?中国'
         self.assertEqual(not not urlfetch.parse_url(url), True)
-        if urlfetch.py3k:
-            url = 'http://www.example.中国/?中国'
-            self.assertEqual(not not urlfetch.parse_url(url), True)
-        else:
-            url = 'http://www.example.中国/?中国'
-            self.assertRaises(TypeError, lambda: urlfetch.parse_url(url))
-            url = 'http://www.example.com/?中国'.decode('utf-8')
-            self.assertEqual(not not urlfetch.parse_url(url), True)
-            url = 'http://www.example.中国/?中国'.decode('utf-8')
-            self.assertEqual(not not urlfetch.parse_url(url), True)
+        url = 'http://www.example.中国/?中国'
+        self.assertEqual(not not urlfetch.parse_url(url), True)
 
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()

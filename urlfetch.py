@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "1.2.1"
+__version__ = "2.0.0.dev0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -27,32 +27,15 @@ try:
 except ImportError:
     import json
 
-py3k = sys.version_info >= (3, 0)
-support_source_address = (
-    sys.version_info >= (2, 7) and not py3k or sys.version_info >= (3, 2)
-)
-support_ssl_context = sys.version_info >= (2, 7, 9)
+from http.client import HTTPConnection, HTTPSConnection
+from urllib.parse import urlencode
+import urllib.parse as urlparse
+import http.cookies as Cookie
 
-if py3k:
-    from http.client import HTTPConnection, HTTPSConnection
-    from urllib.parse import urlencode
-    import urllib.parse as urlparse
-    import http.cookies as Cookie
-
-    basestring = (str, bytes)
-    unicode = str
-    b = lambda s: s.encode("latin-1")
-    u = lambda s: s
-else:
-    from httplib import HTTPConnection, HTTPSConnection
-    from urllib import urlencode
-    import urlparse
-    import Cookie
-
-    basestring = basestring
-    unicode = unicode
-    b = lambda s: s
-    u = lambda s: unicode(s, "unicode_escape")
+basestring = (str, bytes)
+unicode = str
+b = lambda s: s.encode("latin-1")
+u = lambda s: s
 
 __all__ = (
     "request",
@@ -376,10 +359,7 @@ class Response(object):
             'x-cache-lookup': 'MISS from localhost:8080'
         }
         """
-        if py3k:
-            return dict((k.lower(), v) for k, v in self.getheaders())
-        else:
-            return dict(self.getheaders())
+        return dict((k.lower(), v) for k, v in self.getheaders())
 
     @cached_property
     def cookies(self):
@@ -647,28 +627,16 @@ def request(
 
     def make_connection(conn_type, host, port, timeout, source_address):
         """Return HTTP or HTTPS connection."""
-        if support_source_address:
-            kwargs = {"timeout": timeout, "source_address": source_address}
-        else:
-            kwargs = {"timeout": timeout}
-            if source_address is not None:
-                raise UrlfetchException(
-                    "source_address requires Python 2.7/3.2 or newer versions"
-                )
+        kwargs = {"timeout": timeout, "source_address": source_address}
 
         ssl_context = None
         if validate_certificate is False:
-            if not support_ssl_context:
-                raise UrlfetchException("validate_certificate requires Python 2.7.9 or newer versions")
             ssl_context = ssl._create_unverified_context()
 
         if conn_type == "http":
             conn = HTTPConnection(host, port, **kwargs)
         elif conn_type == "https":
-            if support_ssl_context:
-                conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
-            else:
-                conn = HTTPSConnection(host, port, **kwargs)
+            conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
         else:
             raise URLError("Unknown Connection Type: %s" % conn_type)
         return conn
@@ -894,10 +862,7 @@ def parse_url(url):
     except UnicodeDecodeError:
         pass
 
-    if py3k:
-        make_utf8 = lambda x: x
-    else:
-        make_utf8 = lambda x: isinstance(x, unicode) and x.encode("utf-8") or x
+    make_utf8 = lambda x: x
 
     if "://" in url:
         scheme, url = url.split("://", 1)
@@ -1087,7 +1052,7 @@ def encode_multipart(data, files):
                 body.write(b"Content-Type: text/plain\r\n\r\n")
                 if isinstance(value, int):
                     value = str(value)
-                if py3k and isinstance(value, str):
+                if isinstance(value, str):
                     writer(body).write(value)
                 else:
                     body.write(value)
@@ -1122,7 +1087,7 @@ def encode_multipart(data, files):
             )
             body.write(b"Content-Type: text/plain\r\n\r\n")
 
-        if py3k and isinstance(value, str):
+        if isinstance(value, str):
             writer(body).write(value)
         else:
             body.write(value)
