@@ -31,6 +31,7 @@ py3k = sys.version_info >= (3, 0)
 support_source_address = (
     sys.version_info >= (2, 7) and not py3k or sys.version_info >= (3, 2)
 )
+support_ssl_context = sys.version_info >= (2, 7, 9)
 
 if py3k:
     from http.client import HTTPConnection, HTTPSConnection
@@ -657,12 +658,17 @@ def request(
 
         ssl_context = None
         if validate_certificate is False:
+            if not support_ssl_context:
+                raise UrlfetchException("validate_certificate requires Python 2.7.9 or newer versions")
             ssl_context = ssl._create_unverified_context()
 
         if conn_type == "http":
             conn = HTTPConnection(host, port, **kwargs)
         elif conn_type == "https":
-            conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
+            if support_ssl_context:
+                conn = HTTPSConnection(host, port, ssl_context, **kwargs)
+            else:
+                conn = HTTPSConnection(host, port, **kwargs)
         else:
             raise URLError("Unknown Connection Type: %s" % conn_type)
         return conn
