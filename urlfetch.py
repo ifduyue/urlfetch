@@ -254,7 +254,7 @@ class Response(object):
     def read(self, chunk_size=65536):
         """Read content (for streaming and large files)
 
-        :arg int chunk_size: size of chunk, default is 8192.
+        :arg int chunk_size: size of chunk, default is 65536, i.e. 64KiB.
         """
         return self._r.read(chunk_size)
 
