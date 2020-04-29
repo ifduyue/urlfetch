@@ -3,6 +3,12 @@ Changelog
 
 **Time flies!!**
 
+1.2.0 (2020-04-29)
+++++++++++++++++++++
+
+* (Contributed by @chmoder) Added `validate_certificate` to skip validating
+  certificates.
+
 1.1.3 (2019-10-11)
 ++++++++++++++++++++
 
