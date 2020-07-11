@@ -688,7 +688,7 @@ def request(
             proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
             reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
         conn = make_connection(
-            scheme, parsed_proxy["host"], parsed_proxy["port"], timeout, source_address
+            parsed_proxy["scheme"], parsed_proxy["host"], parsed_proxy["port"], timeout, source_address
         )
     else:
         conn = make_connection(
@@ -778,7 +778,7 @@ def request(
                 proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
                 reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
             conn = make_connection(
-                scheme,
+                parsed_proxy["scheme"],
                 parsed_proxy["host"],
                 parsed_proxy["port"],
                 timeout,
