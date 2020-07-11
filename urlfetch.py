@@ -680,7 +680,7 @@ def request(
     ):
         via_proxy = True
         if "://" not in proxy:
-            proxy = "%s://%s" % (scheme, proxy)
+            proxy = "%s://%s" % ('http', proxy)
         parsed_proxy = parse_url(proxy)
         # Proxy-Authorization
         if parsed_proxy["username"] and parsed_proxy["password"]:
@@ -767,7 +767,7 @@ def request(
         if proxy and parsed_url["host"] not in PROXY_IGNORE_HOSTS:
             via_proxy = True
             if "://" not in proxy:
-                proxy = "%s://%s" % (parsed_url["scheme"], proxy)
+                proxy = "%s://%s" % ('http', proxy)
             parsed_proxy = parse_url(proxy)
             # Proxy-Authorization
             if parsed_proxy["username"] and parsed_proxy["password"]:
