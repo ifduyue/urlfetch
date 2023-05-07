@@ -1,4 +1,4 @@
-urlfetch |travis-badge| |furyio-badge|
+urlfetch |github-actions-badge| |furyio-badge|
 ==========================================================
 
 .. |github-actions-badge| image:: https://github.com/ifduyue/urlfetch/actions/workflows/test.yml/badge.svg
