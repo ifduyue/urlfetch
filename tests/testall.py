@@ -7,6 +7,8 @@ import signal
 import multiprocessing
 
 here = os.path.dirname(os.path.abspath(__file__))
+parent = os.path.dirname(here)
+sys.path.append(parent)
 sys.path.append(here)
 
 import server

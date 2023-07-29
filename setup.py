@@ -31,6 +31,4 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    test_suite='tests.testall',
-    tests_require=['bottle', 'gunicorn==19.10.0'],
 )

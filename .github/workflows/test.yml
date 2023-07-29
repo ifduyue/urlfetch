@@ -23,4 +23,6 @@ jobs:
 
       - name: Run tests
         run: |
-          python setup.py test
+          python -m pip install -i https://pypi.org/simple bottle 'gunicorn==19.10.0'
+          # python -m unittest discover -vv tests
+          python tests/testall.py
