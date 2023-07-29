@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+2.0.0 (2023-07-29)
+++++++++++++++++++++
+
+* Drop support for Python 2.6, 2.7, 3.2, 3.3 and 3.4. urlfetch requires Python >= 3.5 from now on.
+* Unless specified, assume it's http proxy
+* Migrate CI to github actions
+
 1.2.2 (2020-07-11)
 ++++++++++++++++++++
 
