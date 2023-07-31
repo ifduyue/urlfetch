@@ -16,6 +16,7 @@ setup(
     keywords="httpclient urlfetch",
     py_modules=['urlfetch'],
     data_files=[('', ['urlfetch.useragents.list'])],
+    python_requires=">=3.5",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',
