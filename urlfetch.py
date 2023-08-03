@@ -15,6 +15,7 @@ __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
 
+import zlib
 import os, sys, base64, codecs, uuid, stat, time, socket
 import ssl
 from os.path import basename, dirname, abspath, join as pathjoin
@@ -258,8 +259,6 @@ class Response(object):
             ce = self._content_encoding
             if ce in ("gzip", "deflate"):
                 if not self._decoder:
-                    import zlib
-
                     if ce == "gzip":
                         self._decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
                     else:
