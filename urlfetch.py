@@ -665,6 +665,8 @@ def request(
     scheme = parsed_url["scheme"]
     if proxies is None and trust_env:
         proxies = PROXIES
+    if not proxies:
+        proxies = {}
 
     ignore_hosts = PROXY_IGNORE_HOSTS
     if trust_env:
