@@ -224,7 +224,7 @@ class Response(object):
         self._decoder = None
 
         try:
-            self.length_limit = int(kwargs.get("length_limit"))
+            self.length_limit = int(kwargs.get("length_limit", 0)) or None
         except:
             self.length_limit = None
 
