@@ -1079,7 +1079,7 @@ def encode_multipart(data, files):
             body.write(b"Content-Type: application/octet-stream\r\n\r\n")
         else:
             writer(body).write(
-                'Content-Disposition: form-data; name="%s"' "\r\n" % name
+                'Content-Disposition: form-data; name="%s"' "\r\n" % fieldname
             )
             body.write(b"Content-Type: text/plain\r\n\r\n")
 
