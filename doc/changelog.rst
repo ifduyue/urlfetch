@@ -3,6 +3,14 @@ Changelog
 
 **Time flies!!**
 
+2.0.1 (2023-08-04)
+++++++++++++++++++++
+
+* Fixed: formdata fieldname
+* Move import zlib to top level
+* Change urlparse to urlsplit
+* setup.py python_required=">=3.5"
+
 2.0.0 (2023-07-29)
 ++++++++++++++++++++
 
@@ -159,7 +167,7 @@ Fix:
 0.5.4.2 (2013-03-31)
 ++++++++++++++++++++
 
-Feature: 
+Feature:
 
 * :attr:`urlfetch.Response.link`, links parsed from HTTP Link header.
 
@@ -235,7 +243,7 @@ Fix:
 
 * In some platforms ``urlfetch.useragents.list`` located in wrong place.
 * :func:`~urlfetch.random_useragent` will never return the first line.
-* Typo in the description of urlfetch.useragents.list (the first line). 
+* Typo in the description of urlfetch.useragents.list (the first line).
 
 0.5.0 (2012-08-23)
 +++++++++++++++++++
@@ -286,7 +294,7 @@ Fix:
 +++++++++++++++++++
 * Fix bug: file upload: file should always have a filename
 
-0.2.1 (2012-02-22) 
+0.2.1 (2012-02-22)
 +++++++++++++++++++
 
 * More flexible file upload
