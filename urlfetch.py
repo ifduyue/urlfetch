@@ -28,8 +28,7 @@ except ImportError:
     import json
 
 from http.client import HTTPConnection, HTTPSConnection
-from urllib.parse import urlencode
-import urllib.parse as urlparse
+from urllib.parse import parse_qs, urlencode, urlsplit, urljoin
 import http.cookies as Cookie
 
 basestring = (str, bytes)
@@ -755,7 +754,7 @@ def request(
         if location[:2] == "//":
             url = parsed_url["scheme"] + ":" + location
         else:
-            url = urlparse.urljoin(url, location)
+            url = urljoin(url, location)
         parsed_url = parse_url(url)
 
         reqheaders["Host"] = parsed_url["http_host"]
@@ -867,7 +866,7 @@ def parse_url(url):
     else:
         scheme = "http"
     url = "http://" + url
-    parsed = urlparse.urlsplit(url)
+    parsed = urlsplit(url)
     r = ObjectDict()
     r["scheme"] = scheme
     r["netloc"] = parsed.netloc
@@ -994,12 +993,12 @@ def url_concat(url, args, keep_existing=True):
     if keep_existing:
         if url[-1] not in ("?", "&"):
             url += "&" if ("?" in url) else "?"
-        return url + urlencode(args, 1)
+        return url + urlencode(args, True)
     else:
         url, seq, query = url.partition("?")
-        query = urlparse.parse_qs(query, True)
+        query = parse_qs(query, True)
         query.update(args)
-        return url + "?" + urlencode(query, 1)
+        return url + "?" + urlencode(query, True)
 
 
 def choose_boundary():
