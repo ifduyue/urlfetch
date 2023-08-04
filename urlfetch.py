@@ -33,7 +33,6 @@ from urllib.parse import parse_qs, urlencode, urlsplit, urljoin
 import http.cookies as Cookie
 
 basestring = (str, bytes)
-unicode = str
 b = lambda s: s.encode("latin-1")
 u = lambda s: s
 
@@ -320,7 +319,7 @@ class Response(object):
 
     @cached_property
     def text(self):
-        """Response body in unicode."""
+        """Response body in str."""
         return mb_code(self.content)
 
     @cached_property
@@ -858,7 +857,7 @@ def parse_url(url):
     password, host, port and http_host
     """
     try:
-        url = unicode(url)
+        url = str(url)
     except UnicodeDecodeError:
         pass
 
@@ -907,7 +906,7 @@ def get_proxies_from_environ():
 
 def mb_code(s, coding=None, errors="replace"):
     """encoding/decoding helper."""
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s if coding is None else s.encode(coding, errors=errors)
     for c in ("utf-8", "gb2312", "gbk", "gb18030", "big5"):
         try:
@@ -915,7 +914,8 @@ def mb_code(s, coding=None, errors="replace"):
             return s if coding is None else s.encode(coding, errors=errors)
         except:
             pass
-    return unicode(s, errors=errors)
+
+    return str(s, errors=errors)
 
 
 def random_useragent(filename=True):
