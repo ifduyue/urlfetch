@@ -706,7 +706,7 @@ def request(
         content_type, data = encode_multipart(data, files)
         reqheaders["Content-Type"] = content_type
     elif isinstance(data, dict):
-        data = urlencode(data, 1)
+        data = urlencode(data, True)
 
     if isinstance(data, basestring) and not files:
         # httplib will set 'Content-Length', also you can set it by yourself
@@ -1040,7 +1040,7 @@ def encode_multipart(data, files):
     if isinstance(data, dict):
         for name, values in data.items():
             if not isinstance(values, (list, tuple, set)):
-                # behave like urllib.urlencode(dict, 1)
+                # behave like urllib.urlencode(dict, True)
                 values = (values,)
             for value in values:
                 body.write(part_boundary)
