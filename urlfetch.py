@@ -97,7 +97,7 @@ class cached_property(object):
     property.
     """
 
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+    def __init__(self, fget, fset=None, fdel=None, doc=None):
         self.__get = fget
         self.__set = fset
         self.__del = fdel
