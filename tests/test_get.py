@@ -16,7 +16,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
@@ -31,7 +31,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'POST')
 
@@ -41,7 +41,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
@@ -54,7 +54,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertTrue(('%s=%s' % p1) in r.url)
@@ -66,7 +66,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
@@ -79,7 +79,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
@@ -94,7 +94,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
@@ -106,7 +106,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
@@ -116,7 +116,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
 
@@ -129,7 +129,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
@@ -144,7 +144,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(r.links, [])
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(o['query_string'], query_string)
@@ -234,7 +234,7 @@ class GetTest(unittest.TestCase):
         self.assertEqual(o['method'], 'GET')
         self.assertTrue('location' not in r.headers)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
 
     def test_history(self):
         r = urlfetch.get(testlib.url('/redirect/5/0'), max_redirects=10)
