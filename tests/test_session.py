@@ -57,7 +57,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -71,7 +71,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -85,7 +85,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -102,7 +102,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -112,7 +112,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -131,7 +131,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -141,7 +141,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -157,7 +157,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -171,7 +171,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -188,7 +188,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))
@@ -207,7 +207,7 @@ class GetTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'GET')
         self.assertEqual(r.reqheaders[headerpair[0]], headerpair[1])
         self.assertEqual(r.reqheaders['Cookie'], '='.join(cookiepair))

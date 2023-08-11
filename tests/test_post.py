@@ -21,7 +21,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(o['post'], d)
 
@@ -34,7 +34,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(o['post'], d)
 
@@ -50,7 +50,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(o['post'], d)
         self.assertEqual(o['get'], qs)
@@ -77,7 +77,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
 
@@ -111,7 +111,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(o['post'], data)
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
@@ -138,7 +138,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
         for i in files:
@@ -160,7 +160,7 @@ class PostTest(unittest.TestCase):
 
         self.assertEqual(r.status, 200)
         self.assertTrue(isinstance(r.json, dict))
-        self.assertTrue(isinstance(r.text, urlfetch.unicode))
+        self.assertTrue(isinstance(r.text, str))
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(sorted(o['files'].keys()), sorted(files.keys()))
         for i in files:
