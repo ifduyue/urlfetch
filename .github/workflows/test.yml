@@ -23,6 +23,6 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m pip install bottle 'gunicorn==19.9.0'
+          python -m pip install bottle 'gunicorn==21.2.0' importlib-metadata
           # python -m unittest discover -vv tests
           python tests/testall.py
