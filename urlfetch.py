@@ -6,7 +6,7 @@ urlfetch
 
 An easy to use HTTP client based on httplib.
 
-:copyright: (c) 2011-2020 by Yue Du.
+:copyright: (c) 2011-2024 by Yue Du.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
