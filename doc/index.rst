@@ -6,7 +6,7 @@ urlfetch documentation
 ======================
 
 urlfetch is a simple, lightweight and easy to use HTTP client for `Python <http://python.org/>`_.
-It is distributed as a single file module and has no depencencies other than the
+It is distributed as a single file module and has no dependencies other than the
 `Python Standard Library <http://docs.python.org/library/>`_.
 
 

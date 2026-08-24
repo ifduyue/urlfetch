@@ -3,6 +3,12 @@ Changelog
 
 **Time flies!!**
 
+2.4.0 (2026-08-24)
+++++++++++++++++++++
+
+* :attr:`Response.encoding` and :meth:`Response.iter_lines`
+* ``files`` values may be ``(filename, content, content_type)``
+
 2.3.0 (2026-08-24)
 ++++++++++++++++++++
 
