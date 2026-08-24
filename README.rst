@@ -78,34 +78,3 @@ Install them and run::
     $ python tests/testall.py
 
 
-Releasing
----------
-
-Pushing a version tag publishes the package to PyPI with `Trusted Publishing`_
-and creates a GitHub Release. The tag must match ``urlfetch.__version__``
-(for example ``v2.0.1``).
-
-::
-
-    git tag vX.Y.Z
-    git push origin vX.Y.Z
-
-Release notes come from the matching section in ``doc/changelog.rst``, followed
-by GitHub's auto-generated notes. sdist and wheel are attached to the release.
-
-One-time PyPI setup (project owner)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-On https://pypi.org/manage/project/urlfetch/settings/publishing/ add a GitHub
-Trusted Publisher:
-
-* Owner: ``ifduyue``
-* Repository: ``urlfetch``
-* Workflow: ``publish.yml``
-* Environment: ``pypi``
-
-The GitHub environment ``pypi`` is restricted to tags matching ``v*``. No PyPI
-API token is stored in the repository.
-
-.. _Trusted Publishing: https://docs.pypi.org/trusted-publishers/
-
