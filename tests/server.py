@@ -140,12 +140,12 @@ def content_encoding_invalid_header():
 @app.route('/content-encoding/invalid-body')
 def content_encoding_invalid_body():
     response.set_header('Content-Encoding', 'gzip')
-    return os.urandom(256)
+    return b'not a gzip stream'
 
 @app.route('/content-encoding/invalid-body/deflate')
 def content_encoding_invalid_body_deflate():
     response.set_header('Content-Encoding', 'deflate')
-    return os.urandom(256)
+    return b'not a deflate stream'
 
 @app.route('/content-encoding/gzip')
 def content_encoding_gzip():
