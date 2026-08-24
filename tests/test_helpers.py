@@ -94,7 +94,7 @@ class HelpersTest(unittest.TestCase):
 
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
-        self.assertTrue(isinstance(ua, urlfetch.basestring))
+        self.assertTrue(isinstance(ua, (str, bytes)))
         self.assertTrue(len(ua) > 0)
         self.assertNotEqual(ua[0], '#')
 

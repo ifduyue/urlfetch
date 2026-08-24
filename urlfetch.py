@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.4.1"
+__version__ = "3.0.0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -25,10 +25,7 @@ from io import BytesIO
 import re
 import ipaddress
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import json
 
 json_dumps = json.dumps
 json_loads = json.loads
@@ -37,10 +34,6 @@ from http.client import HTTPConnection, HTTPSConnection
 from urllib.parse import parse_qs, urlencode, urlsplit, urljoin
 import http.cookies as Cookie
 import http.cookiejar as cookiejar
-
-basestring = (str, bytes)
-b = lambda s: s.encode("latin-1")
-u = lambda s: s
 
 __all__ = (
     "request",
@@ -109,7 +102,7 @@ class HTTPError(UrlfetchException):
         )
 
 
-class cached_property(object):
+class cached_property:
     """Cached property.
 
     A property that is only computed once per instance and then replaces
@@ -165,7 +158,7 @@ class cached_property(object):
 ##############################################################################
 
 
-class Response(object):
+class Response:
     """A Response object.
 
     >>> import urlfetch
@@ -310,8 +303,6 @@ class Response(object):
                 raise ContentDecodingError("Unknown encoding: %s" % ce)
             return chunk
 
-    next = __next__
-
     def iter_lines(self, delimiter=None):
         """Yield decoded chunks split on ``delimiter`` (default ``\\n``)."""
         pending = b""
@@ -355,7 +346,7 @@ class Response(object):
                     "Content length is more than %d " "bytes" % self.length_limit
                 )
 
-        return b("").join(content)
+        return b"".join(content)
 
     # compatible with requests
     #: An alias of :attr:`body`.
@@ -376,15 +367,14 @@ class Response(object):
     def text(self):
         """Response body in str.
 
-        Uses :attr:`encoding` when present, otherwise :func:`mb_code`.
+        Decoded with :attr:`encoding` if ``Content-Type`` has a charset,
+        otherwise UTF-8. Raises :class:`ContentDecodingError` on failure.
         """
-        content = self.content
-        if self.encoding:
-            try:
-                return content.decode(self.encoding)
-            except (LookupError, UnicodeDecodeError):
-                pass
-        return mb_code(content)
+        enc = self.encoding or "utf-8"
+        try:
+            return self.content.decode(enc)
+        except (LookupError, UnicodeDecodeError) as e:
+            raise ContentDecodingError(e)
 
     @cached_property
     def json(self):
@@ -491,7 +481,7 @@ class Response(object):
             pass
 
 
-class _CookieRequest(object):
+class _CookieRequest:
     """Minimal request object for :mod:`http.cookiejar`."""
 
     def __init__(self, url):
@@ -524,7 +514,7 @@ class _CookieRequest(object):
         self.unredirected_hdrs[key] = val
 
 
-class _CookieResponse(object):
+class _CookieResponse:
     def __init__(self, msg):
         self._msg = msg
 
@@ -532,17 +522,37 @@ class _CookieResponse(object):
         return self._msg
 
 
-class Session(object):
+def _make_cookie(name, value, domain, path="/"):
+    return cookiejar.Cookie(
+        0,
+        name,
+        str(value),
+        None,
+        False,
+        domain,
+        True,
+        domain.startswith("."),
+        path or "/",
+        True,
+        False,
+        None,
+        True,
+        None,
+        None,
+        {},
+    )
+
+
+class Session:
     """A session object.
 
-    :class:`urlfetch.Session` can hold common headers and cookies.
-    Cookies received from a response are stored in a cookiejar and only sent
-    back to matching hosts. Cookies set via :meth:`putcookie` or the
-    ``cookies`` argument are treated as host-independent, matching the
-    historical API.
+    :class:`urlfetch.Session` holds common headers and a cookiejar.
+    Cookies from responses, :meth:`putcookie`, and the ``cookies`` argument
+    are only sent back to matching hosts. A cookie without an explicit
+    ``domain`` is bound to the host of the next request.
 
     :arg dict headers: Init headers.
-    :arg dict cookies: Init cookies (sent to every host).
+    :arg dict cookies: Init cookies (bound to the first request host).
     :arg tuple auth: (username, password) for basic authentication.
     """
 
@@ -551,7 +561,7 @@ class Session(object):
         #: headers
         self.headers = {} if headers is None else headers.copy()
         self._jar = cookiejar.CookieJar()
-        self._manual_cookies = {} if cookies is None else cookies.copy()
+        self._pending = {} if cookies is None else dict(cookies)
 
         if auth and isinstance(auth, (list, tuple)):
             auth = "%s:%s" % tuple(auth)
@@ -566,14 +576,22 @@ class Session(object):
         """Remove an header from default headers."""
         return self.headers.pop(header)
 
-    def putcookie(self, key, value=""):
-        """Add an cookie to default cookies."""
-        self._manual_cookies[key] = value
+    def putcookie(self, key, value="", domain=None, path="/"):
+        """Add a cookie.
+
+        If *domain* is omitted, the cookie is bound to the host of the
+        next request.
+        """
+        if domain:
+            self._jar.set_cookie(_make_cookie(key, value, domain, path))
+            self._pending.pop(key, None)
+        else:
+            self._pending[key] = value
 
     def popcookie(self, key):
-        """Remove an cookie from default cookies."""
-        if key in self._manual_cookies:
-            return self._manual_cookies.pop(key)
+        """Remove a cookie from pending cookies and the cookiejar."""
+        if key in self._pending:
+            return self._pending.pop(key)
         for c in list(self._jar):
             if c.name == key:
                 self._jar.clear(c.domain, c.path, c.name)
@@ -582,15 +600,15 @@ class Session(object):
 
     @property
     def cookies(self):
-        """Cookies in dict (manual cookies plus those from the cookiejar)."""
-        d = dict(self._manual_cookies)
+        """Cookies in dict (pending cookies plus those from the cookiejar)."""
+        d = dict(self._pending)
         for c in self._jar:
             d[c.name] = c.value
         return d
 
     @cookies.setter
     def cookies(self, value):
-        self._manual_cookies = {} if value is None else dict(value)
+        self._pending = {} if value is None else dict(value)
         self._jar = cookiejar.CookieJar()
 
     @property
@@ -617,19 +635,20 @@ class Session(object):
         session = {"headers": self.headers.copy(), "cookies": self.cookies.copy()}
         return session
 
+    def _bind_pending(self, url):
+        if not self._pending or not url:
+            return
+        host = parse_url(url)["host"]
+        for name, value in self._pending.items():
+            self._jar.set_cookie(_make_cookie(name, value, host))
+        self._pending = {}
+
     def _cookie_header(self, url):
-        parts = []
-        if self._manual_cookies:
-            parts.append(
-                "; ".join("%s=%s" % (k, v) for k, v in self._manual_cookies.items())
-            )
-        if url:
-            creq = _CookieRequest(url)
-            self._jar.add_cookie_header(creq)
-            jar_cookie = creq.unredirected_hdrs.get("Cookie")
-            if jar_cookie:
-                parts.append(jar_cookie)
-        return "; ".join(p for p in parts if p)
+        if not url:
+            return ""
+        creq = _CookieRequest(url)
+        self._jar.add_cookie_header(creq)
+        return creq.unredirected_hdrs.get("Cookie") or ""
 
     def _store_cookies(self, r):
         url = getattr(r, "url", None)
@@ -642,6 +661,7 @@ class Session(object):
         """Issue a request."""
         headers = self.headers.copy()
         url = kwargs.get("url", args[0] if args else None)
+        self._bind_pending(url)
         cookie_header = self._cookie_header(url)
         if cookie_header:
             headers["Cookie"] = cookie_header
@@ -659,7 +679,7 @@ class Session(object):
 
         if (
             kwargs.get("json") is not None
-            or (data and isinstance(data, (basestring, dict)))
+            or (data and isinstance(data, (str, bytes, dict)))
             or files
         ):
             return self.post(*args, **kwargs)
@@ -718,7 +738,7 @@ def fetch(*args, **kwargs):
 
     if (
         kwargs.get("json") is not None
-        or (data and isinstance(data, (basestring, dict)))
+        or (data and isinstance(data, (str, bytes, dict)))
         or files
     ):
         return post(*args, **kwargs)
@@ -956,7 +976,7 @@ def request(
     if params:
         if isinstance(params, dict):
             url = url_concat(url, params)
-        elif isinstance(params, basestring):
+        elif isinstance(params, (str, bytes)):
             if url[-1] not in ("?", "&"):
                 url += "&" if ("?" in url) else "?"
             url += params
@@ -998,7 +1018,7 @@ def request(
     elif isinstance(data, dict):
         data = urlencode(data, True)
 
-    if isinstance(data, basestring) and not files and "Content-Type" not in reqheaders:
+    if isinstance(data, (str, bytes)) and not files and "Content-Type" not in reqheaders:
         # httplib will set 'Content-Length', also you can set it by yourself
         reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
         # what if the method is GET, HEAD or DELETE
@@ -1190,7 +1210,7 @@ def random_useragent(filename=True):
 
     default_ua = "urlfetch/%s" % __version__
 
-    if isinstance(filename, basestring):
+    if isinstance(filename, (str, bytes)):
         filenames = [filename]
     else:
         filenames = []
@@ -1301,7 +1321,7 @@ def encode_multipart(data, files):
     """
     body = BytesIO()
     boundary = choose_boundary()
-    part_boundary = b("--%s\r\n" % boundary)
+    part_boundary = ("--%s\r\n" % boundary).encode("ascii")
     writer = codecs.lookup("utf-8")[3]
 
     if isinstance(data, dict):
@@ -1341,7 +1361,7 @@ def encode_multipart(data, files):
 
         if hasattr(f, "read"):
             value = f.read()
-        elif isinstance(f, basestring):
+        elif isinstance(f, (str, bytes)):
             value = f
         else:
             value = str(f)
@@ -1374,7 +1394,7 @@ def encode_multipart(data, files):
             body.write(value)
         body.write(b"\r\n")
 
-    body.write(b("--" + boundary + "--\r\n"))
+    body.write(("--%s--\r\n" % boundary).encode("ascii"))
 
     content_type = "multipart/form-data; boundary=%s" % boundary
 

@@ -3,6 +3,19 @@ Changelog
 
 **Time flies!!**
 
+3.0.0 (2026-08-24)
+++++++++++++++++++++
+
+Backwards-incompatible:
+
+* :meth:`Session.putcookie` and init ``cookies`` are host-scoped. A cookie
+  without ``domain`` is bound to the host of the next request and is not
+  sent to other hosts.
+* :attr:`Response.text` decodes with ``Content-Type`` charset or UTF-8.
+  It no longer guesses gbk/big5 via :func:`mb_code`.
+* Dropped Python 2 shims: ``basestring``, ``b``, ``u``, and
+  ``Response.next``.
+
 2.4.1 (2026-08-24)
 ++++++++++++++++++++
 
