@@ -84,7 +84,6 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          TITLE="urlfetch ${VERSION}"
           PRE_FLAG=()
           if [[ "$VERSION" =~ [0-9](a|b|rc|dev|alpha|beta) ]]; then
             PRE_FLAG+=(--prerelease)
@@ -92,13 +91,13 @@ jobs:
 
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release edit "$GITHUB_REF_NAME" \
-              --title "$TITLE" \
+              --title "$GITHUB_REF_NAME" \
               --notes-file release-notes.md \
               ${PRE_FLAG[@]+"${PRE_FLAG[@]}"}
             gh release upload "$GITHUB_REF_NAME" dist/* --clobber
           else
             gh release create "$GITHUB_REF_NAME" dist/* \
-              --title "$TITLE" \
+              --title "$GITHUB_REF_NAME" \
               --notes-file release-notes.md \
               --generate-notes \
               ${PRE_FLAG[@]+"${PRE_FLAG[@]}"}
