@@ -16,7 +16,7 @@ Highlights
 
 * Distributed as a single file module, has no depencencies other than the Python Standard Library.
 * Pure Python, works fine with gevent_.
-* Small codebase, about 1000 lines and 30% are comments and blank lines. Only 10 minutes you can know every detail.
+* Small codebase, about 1300 lines, much of it comments and blank lines. Only 10 minutes you can know every detail.
 * Random user-agent.
 * Support streaming.
 
