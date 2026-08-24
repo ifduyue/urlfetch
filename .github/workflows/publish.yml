@@ -1,0 +1,124 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Check tag matches package version
+        run: |
+          python3 - <<'PY'
+          import os
+          import sys
+
+          import urlfetch
+
+          tag = os.environ["GITHUB_REF_NAME"]
+          version = tag[1:] if tag.startswith("v") else tag
+          if urlfetch.__version__ != version:
+              sys.stderr.write(
+                  "tag %s does not match urlfetch.__version__ %s\n"
+                  % (tag, urlfetch.__version__)
+              )
+              sys.exit(1)
+          print("version", version, "ok")
+          PY
+
+      - name: Install pypa/build
+        run: python3 -m pip install -U pip build
+
+      - name: Build wheel and sdist
+        run: python3 -m build
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  github-release:
+    name: GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Download distributions
+        uses: actions/download-artifact@v6
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Extract changelog notes
+        run: python3 .github/scripts/extract_release_notes.py "${GITHUB_REF_NAME}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          TITLE="urlfetch ${VERSION}"
+          PRE_FLAG=()
+          if [[ "$VERSION" =~ [0-9](a|b|rc|dev|alpha|beta) ]]; then
+            PRE_FLAG+=(--prerelease)
+          fi
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "$TITLE" \
+              --notes-file release-notes.md \
+              ${PRE_FLAG[@]+"${PRE_FLAG[@]}"}
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* \
+              --title "$TITLE" \
+              --notes-file release-notes.md \
+              --generate-notes \
+              ${PRE_FLAG[@]+"${PRE_FLAG[@]}"}
+          fi
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/urlfetch
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v6
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
