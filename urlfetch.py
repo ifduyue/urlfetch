@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.2.1"
+__version__ = "2.3.0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -18,6 +18,7 @@ __license__ = "BSD 2-Clause License"
 import zlib
 import os, sys, base64, codecs, uuid, stat, time, socket
 import ssl
+import mimetypes
 from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
@@ -350,8 +351,21 @@ class Response(object):
 
     @cached_property
     def text(self):
-        """Response body in str."""
-        return mb_code(self.content)
+        """Response body in str.
+
+        Uses the charset from ``Content-Type`` when present, otherwise
+        :func:`mb_code`.
+        """
+        content = self.content
+        header = self.getheader("content-type") or ""
+        match = re.search(r"charset=([^\s;]+)", header, re.I)
+        if match:
+            charset = match.group(1).strip("\"'")
+            try:
+                return content.decode(charset)
+            except (LookupError, UnicodeDecodeError):
+                pass
+        return mb_code(content)
 
     @cached_property
     def json(self):
@@ -1192,6 +1206,13 @@ def url_concat(url, args, keep_existing=True):
         return url + "?" + urlencode(query, True)
 
 
+def _multipart_param(name, value):
+    value = (
+        str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\r", " ").replace("\n", " ")
+    )
+    return '%s="%s"' % (name, value)
+
+
 def choose_boundary():
     """Generate a multipart boundry.
 
@@ -1235,7 +1256,8 @@ def encode_multipart(data, files):
             for value in values:
                 body.write(part_boundary)
                 writer(body).write(
-                    "Content-Disposition: form-data; " 'name="%s"\r\n' % name
+                    "Content-Disposition: form-data; %s\r\n"
+                    % _multipart_param("name", name)
                 )
                 body.write(b"Content-Type: text/plain\r\n\r\n")
                 if isinstance(value, int):
@@ -1265,13 +1287,18 @@ def encode_multipart(data, files):
         body.write(part_boundary)
         if filename:
             writer(body).write(
-                'Content-Disposition: form-data; name="%s"; '
-                'filename="%s"\r\n' % (fieldname, filename)
+                "Content-Disposition: form-data; %s; %s\r\n"
+                % (
+                    _multipart_param("name", fieldname),
+                    _multipart_param("filename", filename),
+                )
             )
-            body.write(b"Content-Type: application/octet-stream\r\n\r\n")
+            ctype = mimetypes.guess_type(str(filename))[0] or "application/octet-stream"
+            body.write(b"Content-Type: %s\r\n\r\n" % ctype.encode("ascii", "replace"))
         else:
             writer(body).write(
-                'Content-Disposition: form-data; name="%s"' "\r\n" % fieldname
+                "Content-Disposition: form-data; %s\r\n"
+                % _multipart_param("name", fieldname)
             )
             body.write(b"Content-Type: text/plain\r\n\r\n")
 

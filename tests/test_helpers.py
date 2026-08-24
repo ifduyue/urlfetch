@@ -100,6 +100,15 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(urlfetch.url_concat('a', dict(b=[1,2,3])), 'a?b=1&b=2&b=3')
         self.assertEqual(urlfetch.url_concat('a?a=1&b=x', dict(b=[1,2,3])), 'a?a=1&b=x&b=1&b=2&b=3')
 
+    def test_multipart_quotes_special_names(self):
+        content_type, body = urlfetch.encode_multipart(
+            {'say "hi"': 'ok'},
+            {'file': ('weird"name.txt', b'data')},
+        )
+        self.assertIn(b'name="say \\"hi\\""', body)
+        self.assertIn(b'filename="weird\\"name.txt"', body)
+        self.assertIn(b'Content-Type: text/plain', body)
+
 
 if __name__ == '__main__':
     unittest.main()
