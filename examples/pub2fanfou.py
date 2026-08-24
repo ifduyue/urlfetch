@@ -25,7 +25,7 @@ def pub2fanfou(username, password, status):
 
     #cookies
     cookiestring = response.cookiestring
-    print cookiestring
+    print(cookiestring)
 
     #获取表单token
     response = urlfetch.fetch(

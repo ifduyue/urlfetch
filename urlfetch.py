@@ -6,11 +6,11 @@ urlfetch
 
 An easy to use HTTP client based on httplib.
 
-:copyright: (c) 2011-2024 by Yue Du.
+:copyright: (c) 2011-2026 by Yue Du.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -53,6 +53,7 @@ __all__ = (
     "URLError",
     "ContentDecodingError",
     "TooManyRedirects",
+    "Timeout",
 )
 
 GET = "GET"
@@ -193,6 +194,7 @@ class Response(object):
     """
 
     def __init__(self, r, **kwargs):
+        self._conn = kwargs.pop("connection", None)
 
         for k in kwargs:
             setattr(self, k, kwargs[k])
@@ -223,12 +225,15 @@ class Response(object):
         self._decoder = None
 
         try:
-            self.length_limit = int(kwargs.get("length_limit", 0)) or None
-        except:
+            self.length_limit = int(kwargs.get("length_limit") or 0) or None
+        except (TypeError, ValueError):
             self.length_limit = None
 
         # if content (length) size is more than length_limit, skip
-        content_length = int(self.getheader("Content-Length", 0))
+        try:
+            content_length = int(self.getheader("Content-Length", 0) or 0)
+        except (TypeError, ValueError):
+            content_length = 0
         if self.length_limit and content_length > self.length_limit:
             self.close()
             raise ContentLimitExceeded(
@@ -287,10 +292,10 @@ class Response(object):
         return False
 
     @classmethod
-    def from_httplib(cls, connection, **kwargs):
+    def from_httplib(cls, r, **kwargs):
         """Make an :class:`~urlfetch.Response` object from a httplib response
         object."""
-        return cls(connection, **kwargs)
+        return cls(r, **kwargs)
 
     @cached_property
     def body(self):
@@ -361,8 +366,22 @@ class Response(object):
     @cached_property
     def cookies(self):
         """Cookies in dict"""
-        c = Cookie.SimpleCookie(self.getheader("set-cookie"))
-        return dict((i.key, i.value) for i in c.values())
+        values = []
+        if hasattr(self.msg, "get_all"):
+            values = self.msg.get_all("set-cookie") or []
+        else:
+            header = self.getheader("set-cookie")
+            if header:
+                values = [header]
+        cookies = {}
+        for header in values:
+            c = Cookie.SimpleCookie()
+            try:
+                c.load(header)
+            except Cookie.CookieError:
+                continue
+            cookies.update((i.key, i.value) for i in c.values())
+        return cookies
 
     @cached_property
     def cookiestring(self):
@@ -394,10 +413,23 @@ class Response(object):
 
     def close(self):
         """Close the connection."""
-        self._r.close()
+        try:
+            if self._r is not None:
+                self._r.close()
+        finally:
+            conn = getattr(self, "_conn", None)
+            self._conn = None
+            if conn is not None:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
     def __del__(self):
-        self.close()
+        try:
+            self.close()
+        except Exception:
+            pass
 
 
 class Session(object):
@@ -415,12 +447,12 @@ class Session(object):
     :arg tuple auth: (username, password) for basic authentication.
     """
 
-    def __init__(self, headers={}, cookies={}, auth=None):
+    def __init__(self, headers=None, cookies=None, auth=None):
         """Init a :class:`~urlfetch.Session` object"""
         #: headers
-        self.headers = headers.copy()
+        self.headers = {} if headers is None else headers.copy()
         #: cookies
-        self.cookies = cookies.copy()
+        self.cookies = {} if cookies is None else cookies.copy()
 
         if auth and isinstance(auth, (list, tuple)):
             auth = "%s:%s" % tuple(auth)
@@ -484,9 +516,9 @@ class Session(object):
     def fetch(self, *args, **kwargs):
         """Fetch an URL"""
         data = kwargs.get("data", None)
-        files = kwargs.get("files", {})
+        files = kwargs.get("files") or {}
 
-        if data and isinstance(data, (basestring, dict)) or files:
+        if (data and isinstance(data, (basestring, dict))) or files:
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
 
@@ -539,11 +571,40 @@ def fetch(*args, **kwargs):
     or parameter ``files`` is supplied, :func:`~urlfetch.post` is called.
     """
     data = kwargs.get("data", None)
-    files = kwargs.get("files", {})
+    files = kwargs.get("files") or {}
 
-    if data and isinstance(data, (basestring, dict)) or files:
+    if (data and isinstance(data, (basestring, dict))) or files:
         return post(*args, **kwargs)
     return get(*args, **kwargs)
+
+
+REDIRECT_STATUSES = (301, 302, 303, 307, 308)
+PRESERVE_METHOD_REDIRECTS = (307, 308)
+
+
+def _origin(parsed):
+    port = parsed["port"]
+    if port is None:
+        port = 443 if parsed["scheme"] == "https" else 80
+    return parsed["scheme"], parsed["host"], port
+
+
+def _no_proxy_hosts(trust_env):
+    ignore_hosts = list(PROXY_IGNORE_HOSTS)
+    if trust_env:
+        no_proxy = os.getenv("no_proxy") or os.getenv("NO_PROXY")
+        if no_proxy:
+            ignore_hosts = [h.strip() for h in no_proxy.split(",") if h.strip()]
+    return ignore_hosts
+
+
+def _close_conn(conn):
+    if conn is None:
+        return
+    try:
+        conn.close()
+    except Exception:
+        pass
 
 
 def match_no_proxy(host, no_proxy):
@@ -573,9 +634,9 @@ def request(
     method="GET",
     params=None,
     data=None,
-    headers={},
+    headers=None,
     timeout=None,
-    files={},
+    files=None,
     randua=False,
     auth=None,
     length_limit=None,
@@ -612,9 +673,7 @@ def request(
                             request. Default is 0, which means redirects are
                             not allowed.
     :arg tuple source_address: (optional) A tuple of (host, port) to
-                               specify the source_address to bind to. This
-                               argument is ignored if you're using Python prior
-                               to 2.7/3.2.
+                               specify the source_address to bind to.
     :arg bool validate_certificate: (optional) If ``False``, urlfetch skips
                                 all the necessary certificate and hostname checks
     :returns: A :class:`~urlfetch.Response` object
@@ -638,7 +697,56 @@ def request(
             raise URLError("Unknown Connection Type: %s" % conn_type)
         return conn
 
-    via_proxy = False
+    def apply_proxy_auth(reqheaders, parsed_proxy):
+        if parsed_proxy and parsed_proxy["username"] and parsed_proxy["password"]:
+            proxyauth = "%s:%s" % (parsed_proxy["username"], parsed_proxy["password"])
+            proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
+            reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
+        else:
+            reqheaders.pop("Proxy-Authorization", None)
+
+    def open_connection(parsed_url):
+        scheme = parsed_url["scheme"]
+        proxy = proxies.get(scheme)
+        if proxy and not any(
+            match_no_proxy(parsed_url["host"], host) for host in ignore_hosts
+        ):
+            if "://" not in proxy:
+                proxy = "%s://%s" % ("http", proxy)
+            parsed_proxy = parse_url(proxy)
+            conn = make_connection(
+                parsed_proxy["scheme"],
+                parsed_proxy["host"],
+                parsed_proxy["port"],
+                timeout,
+                source_address,
+            )
+            return conn, True, parsed_proxy
+        conn = make_connection(
+            scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
+        )
+        return conn, False, None
+
+    def perform(url, method, data, reqheaders, parsed_url):
+        conn = None
+        try:
+            conn, via_proxy, parsed_proxy = open_connection(parsed_url)
+            apply_proxy_auth(reqheaders, parsed_proxy if via_proxy else None)
+            request_url = url if via_proxy else parsed_url["uri"]
+            conn.request(method, request_url, data, reqheaders)
+            resp = conn.getresponse()
+            return conn, resp
+        except socket.timeout as e:
+            _close_conn(conn)
+            raise Timeout(e)
+        except Exception as e:
+            _close_conn(conn)
+            if isinstance(e, (Timeout, UrlfetchException)):
+                raise
+            raise UrlfetchException(e)
+
+    headers = {} if headers is None else headers
+    files = {} if files is None else files
 
     method = method.upper()
     if method not in ALLOWED_METHODS:
@@ -655,44 +763,18 @@ def request(
 
     reqheaders = {
         "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, compress, identity, *",
+        "Accept-Encoding": "gzip, deflate, identity, *",
         "User-Agent": random_useragent(randua),
         "Host": parsed_url["http_host"],
     }
 
     # Proxy support
-    scheme = parsed_url["scheme"]
     if proxies is None and trust_env:
         proxies = PROXIES
     if not proxies:
         proxies = {}
 
-    ignore_hosts = PROXY_IGNORE_HOSTS
-    if trust_env:
-        no_proxy = os.getenv("no_proxy") or os.getenv("NO_PROXY")
-        if no_proxy:
-            ignore_hosts = no_proxy.split(",")
-
-    proxy = proxies.get(scheme)
-    if proxy and not any(
-        match_no_proxy(parsed_url["host"], host) for host in ignore_hosts
-    ):
-        via_proxy = True
-        if "://" not in proxy:
-            proxy = "%s://%s" % ('http', proxy)
-        parsed_proxy = parse_url(proxy)
-        # Proxy-Authorization
-        if parsed_proxy["username"] and parsed_proxy["password"]:
-            proxyauth = "%s:%s" % (parsed_proxy["username"], parsed_proxy["password"])
-            proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
-            reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
-        conn = make_connection(
-            parsed_proxy["scheme"], parsed_proxy["host"], parsed_proxy["port"], timeout, source_address
-        )
-    else:
-        conn = make_connection(
-            scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
-        )
+    ignore_hosts = _no_proxy_hosts(trust_env)
 
     if not auth and parsed_url["username"] and parsed_url["password"]:
         auth = (parsed_url["username"], parsed_url["password"])
@@ -717,21 +799,15 @@ def request(
     reqheaders.update(headers)
 
     start_time = time.time()
-    try:
-        request_url = url if via_proxy else parsed_url["uri"]
-        conn.request(method, request_url, data, reqheaders)
-        resp = conn.getresponse()
-    except socket.timeout as e:
-        raise Timeout(e)
-    except Exception as e:
-        raise UrlfetchException(e)
+    conn, resp = perform(url, method, data, reqheaders, parsed_url)
 
     end_time = time.time()
     total_time = end_time - start_time
     history = []
     response = Response.from_httplib(
         resp,
-        reqheaders=reqheaders,
+        connection=conn,
+        reqheaders=dict(reqheaders),
         length_limit=length_limit,
         history=history[:],
         url=url,
@@ -740,7 +816,7 @@ def request(
     )
 
     while (
-        response.status in (301, 302, 303, 307)
+        response.status in REDIRECT_STATUSES
         and "location" in response.headers
         and max_redirects
     ):
@@ -749,8 +825,14 @@ def request(
         if len(history) > max_redirects:
             raise TooManyRedirects("max_redirects exceeded")
 
-        method = method if response.status == 307 else "GET"
+        if response.status not in PRESERVE_METHOD_REDIRECTS:
+            method = "GET"
+            data = None
+            reqheaders.pop("Content-Type", None)
+            reqheaders.pop("Content-Length", None)
+
         location = response.headers["location"]
+        prev_origin = _origin(parsed_url)
         if location[:2] == "//":
             url = parsed_url["scheme"] + ":" + location
         else:
@@ -759,49 +841,15 @@ def request(
 
         reqheaders["Host"] = parsed_url["http_host"]
         reqheaders["Referer"] = response.url
+        if prev_origin != _origin(parsed_url):
+            reqheaders.pop("Authorization", None)
+            reqheaders.pop("Cookie", None)
 
-        # Proxy
-        scheme = parsed_url["scheme"]
-        proxy = proxies.get(scheme)
-        if proxy and parsed_url["host"] not in PROXY_IGNORE_HOSTS:
-            via_proxy = True
-            if "://" not in proxy:
-                proxy = "%s://%s" % ('http', proxy)
-            parsed_proxy = parse_url(proxy)
-            # Proxy-Authorization
-            if parsed_proxy["username"] and parsed_proxy["password"]:
-                proxyauth = "%s:%s" % (
-                    parsed_proxy["username"],
-                    parsed_proxy["username"],
-                )
-                proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
-                reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
-            conn = make_connection(
-                parsed_proxy["scheme"],
-                parsed_proxy["host"],
-                parsed_proxy["port"],
-                timeout,
-                source_address,
-            )
-        else:
-            via_proxy = False
-            reqheaders.pop("Proxy-Authorization", None)
-            conn = make_connection(
-                scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
-            )
-
-        try:
-            request_url = url if via_proxy else parsed_url["uri"]
-            conn.request(method, request_url, data, reqheaders)
-            resp = conn.getresponse()
-        except socket.timeout as e:
-            raise Timeout(e)
-        except Exception as e:
-            raise UrlfetchException(e)
-
+        conn, resp = perform(url, method, data, reqheaders, parsed_url)
         response = Response.from_httplib(
             resp,
-            reqheaders=reqheaders,
+            connection=conn,
+            reqheaders=dict(reqheaders),
             length_limit=length_limit,
             history=history[:],
             url=url,

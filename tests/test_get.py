@@ -154,7 +154,21 @@ class GetTest(unittest.TestCase):
         self.assertRaises(urlfetch.Timeout, lambda: urlfetch.get(testlib.url('sleep/1'), timeout=0.5))
 
     def test_length_limit(self):
-        self.assertRaises(urlfetch.UrlfetchException, lambda: urlfetch.get(testlib.url(), length_limit=1))
+        self.assertRaises(
+            urlfetch.ContentLimitExceeded,
+            lambda: urlfetch.get(testlib.url(), length_limit=1),
+        )
+        url = testlib.url('/bytes/64')
+        self.assertRaises(
+            urlfetch.ContentLimitExceeded,
+            lambda: urlfetch.get(url, length_limit=1),
+        )
+        self.assertRaises(
+            urlfetch.ContentLimitExceeded,
+            lambda: urlfetch.get(url, length_limit=63),
+        )
+        r = urlfetch.get(url, length_limit=64)
+        self.assertEqual(len(r.body), 64)
 
     def test_streaming(self):
         with tempfile.TemporaryFile() as f:
@@ -172,44 +186,21 @@ class GetTest(unittest.TestCase):
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file.gbk'), 'rb').read())
 
     def test_compressed_streaming(self):
-        sina = urlfetch.b('sina')
+        expected = b'urlfetch-compression-fixture'
 
-        with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/', max_redirects=3) as r:
-                for chunk in r:
-                    f.write(chunk)
-            f.seek(0)
-            html = f.read()
-            self.assertTrue(sina in html)
-
-        with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/',
-                              headers={'Accept-Encoding': 'deflate'},
-                              max_redirects=3) as r:
-                for chunk in r:
-                    f.write(chunk)
-            f.seek(0)
-            html = f.read()
-            self.assertTrue(sina in html)
-
-        with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/',
-                              headers={'Accept-Encoding': 'gzip'},
-                              max_redirects=3) as r:
-                for chunk in r:
-                    f.write(chunk)
-            f.seek(0)
-            html = f.read()
-            self.assertTrue(sina in html)
-
-        with tempfile.TemporaryFile() as f:
-            with urlfetch.get('http://news.sina.com.cn/', headers={'Accept-Encoding': '*'},
-                              max_redirects=3) as r:
-                for chunk in r:
-                    f.write(chunk)
-            f.seek(0)
-            html = f.read()
-            self.assertTrue(sina in html)
+        for path, accept in (
+            ('/content-encoding/gzip', 'gzip'),
+            ('/content-encoding/deflate', 'deflate'),
+            ('/content-encoding/gzip', '*'),
+        ):
+            with tempfile.TemporaryFile() as f:
+                with urlfetch.get(
+                    testlib.url(path), headers={'Accept-Encoding': accept}
+                ) as r:
+                    for chunk in r:
+                        f.write(chunk)
+                f.seek(0)
+                self.assertEqual(f.read(), expected)
 
     def test_cookie(self):
         cookie = (randstr(), randstr())
@@ -217,6 +208,10 @@ class GetTest(unittest.TestCase):
         self.assertEqual(r.links, [])
         self.assertEqual(r.cookies[cookie[0]], cookie[1])
         self.assertTrue(('%s=%s' % cookie) in r.cookiestring)
+
+        r = urlfetch.get(testlib.url('setcookies'))
+        self.assertEqual(r.cookies.get('one'), '1')
+        self.assertEqual(r.cookies.get('two'), '2')
 
     def test_redirect(self):
         r = urlfetch.get(testlib.url('/redirect/3/0'))
@@ -259,13 +254,6 @@ class GetTest(unittest.TestCase):
         url = testlib.url('/content-encoding/invalid-body/deflate')
         call_invalid_header_deflate = lambda: urlfetch.get(url).body
         self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header_deflate)
-
-    def length_limit(self):
-        url = testlib.url('/bytes/64')
-        call = lambda: urlfetch.get(url, length_limit=1)
-        self.assertRaises(urlfetch.ContentLimitExceeded, call)
-        call = lambda: urlfetch.get(url, length_limit=63)
-        self.assertRaises(urlfetch.ContentLimitExceeded, call)
 
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))

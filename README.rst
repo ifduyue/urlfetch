@@ -37,8 +37,8 @@ Hello, world
     import urlfetch
 
     response = urlfetch.get('http://python.org/')
-    print response.status, response.reason
-    print len(response.content)
+    print(response.status, response.reason)
+    print(len(response.content))
 
 Uploading files
 ----------------
@@ -63,7 +63,7 @@ Uploading files
         },
     )
 
-    print response.status, response.content
+    print(response.status, response.content)
 
 
 Testing
@@ -73,11 +73,9 @@ Testing
 .. __: http://gunicorn.org/
 
 To run the tests, urlfetch relies on `bottle`__ and `gunicorn`__.
-If the tests are run by calling ``python setup.py test``,  the
-dependencies will be handled automatically (via ``tests_require``).
-So, if you want to run the tests directly, that is,
-``python tests/testall.py``, make sure bottle and gunicorn are installed
-under the PYTHONPATH.
+Install them and run::
+
+    $ python tests/testall.py
 
 
 Releasing

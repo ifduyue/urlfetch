@@ -11,6 +11,10 @@ class OthersTest(unittest.TestCase):
             self.assertTrue(hasattr(urlfetch, method))
             self.assertTrue(callable(getattr(urlfetch, method)))
 
+    def test_timeout_is_public(self):
+        self.assertIn('Timeout', urlfetch.__all__)
+        self.assertTrue(issubclass(urlfetch.Timeout, urlfetch.UrlfetchException))
+
 
 if __name__ == '__main__':
     unittest.main()
