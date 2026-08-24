@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -23,6 +23,7 @@ from os.path import basename, dirname, abspath, join as pathjoin
 from functools import partial
 from io import BytesIO
 import re
+import ipaddress
 
 try:
     import simplejson as json
@@ -740,7 +741,11 @@ def _no_proxy_hosts(trust_env):
     if trust_env:
         no_proxy = os.getenv("no_proxy") or os.getenv("NO_PROXY")
         if no_proxy:
-            ignore_hosts = [h.strip() for h in no_proxy.split(",") if h.strip()]
+            ignore_hosts = [
+                h.strip()
+                for h in no_proxy.replace(" ", ",").split(",")
+                if h.strip()
+            ]
     return ignore_hosts
 
 
@@ -753,26 +758,55 @@ def _close_conn(conn):
         pass
 
 
+def _strip_host_port(value):
+    value = value.strip()
+    if value.startswith("["):
+        end = value.find("]")
+        if end != -1:
+            return value[1:end]
+        return value.strip("[]")
+    if value.count(":") == 1:
+        name, port = value.rsplit(":", 1)
+        if port.isdigit():
+            return name
+    return value
+
+
 def match_no_proxy(host, no_proxy):
-    ip_regex = r"(\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})"
-    no_proxy_ip_regex = r"(\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})(?=/(\d+))?"
-    ip_match = re.match(ip_regex, host)
-    no_proxy_ip_match = re.match(no_proxy_ip_regex, no_proxy)
-    if no_proxy_ip_match and ip_match:
-        host_bits = "".join(
-            "{:08b}".format(int(section)) for section in ip_match.group(1, 2, 3, 4)
-        )
-        no_proxy_bits = "".join(
-            "{:08b}".format(int(section))
-            for section in no_proxy_ip_match.group(1, 2, 3, 4)
-        )
-        if no_proxy_ip_match.group(5) is not None:
-            bit_match_count = int(no_proxy_ip_match.group(5))
-            return host_bits[:bit_match_count] == no_proxy_bits[:bit_match_count]
-        else:
-            return host_bits == no_proxy_bits
-    else:
-        return host.endswith(no_proxy)
+    """Return True if *host* should bypass the proxy for a no_proxy rule."""
+    if not host or not no_proxy:
+        return False
+    host = _strip_host_port(host)
+    if "%" in host and ":" in host:
+        host = host.split("%", 1)[0]
+    rule = no_proxy.strip()
+    if rule == "*":
+        return True
+    rule = _strip_host_port(rule)
+
+    try:
+        host_ip = ipaddress.ip_address(host)
+    except ValueError:
+        host_ip = None
+
+    if "/" in rule:
+        try:
+            network = ipaddress.ip_network(rule, strict=False)
+        except ValueError:
+            return False
+        return host_ip is not None and host_ip in network
+
+    if host_ip is not None:
+        try:
+            return host_ip == ipaddress.ip_address(rule)
+        except ValueError:
+            return False
+
+    host_l = host.lower().rstrip(".")
+    rule_l = rule.lower().lstrip(".").rstrip(".")
+    if not rule_l:
+        return False
+    return host_l == rule_l or host_l.endswith("." + rule_l)
 
 
 def request(
@@ -1106,10 +1140,14 @@ def parse_url(url):
         r["port"] = parsed.port
     except ValueError:
         r["port"] = None
-    if r["port"]:
-        r["http_host"] = "%s:%d" % (r["host"], r["port"])
+    if ":" in r["host"]:
+        http_host = "[%s]" % r["host"]
     else:
-        r["http_host"] = r["host"]
+        http_host = r["host"]
+    if r["port"]:
+        r["http_host"] = "%s:%d" % (http_host, r["port"])
+    else:
+        r["http_host"] = http_host
 
     return r
 

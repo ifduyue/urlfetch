@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+2.4.1 (2026-08-24)
+++++++++++++++++++++
+
+* ``no_proxy`` matches IPv6 addresses and CIDR, ``*``, and domain suffixes
+  without treating ``notexample.com`` as ``example.com``
+* IPv6 ``Host`` headers use RFC 3986 brackets (``[::1]:8080``)
+
 2.4.0 (2026-08-24)
 ++++++++++++++++++++
 
