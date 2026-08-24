@@ -231,6 +231,22 @@ class GetTest(unittest.TestCase):
         s1.cookiestring = ''
         self.assertEqual(s1.cookies, {})
 
+    def test_cookies_are_host_scoped(self):
+        s = urlfetch.Session()
+        name, value = testlib.randstr(), testlib.randstr()
+        s.get(testlib.url('setcookie/%s/%s' % (name, value)))
+
+        same = s.get(testlib.url())
+        self.assertTrue(
+            ('%s=%s' % (name, value)) in same.reqheaders.get('Cookie', '')
+        )
+
+        other = s.get('http://localhost:8800/')
+        self.assertFalse(
+            ('%s=%s' % (name, value)) in other.reqheaders.get('Cookie', '')
+        )
+        self.assertEqual(s.cookies.get(name), value)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -73,13 +73,13 @@ def sleep(seconds):
 
 @app.route('/setcookie/<name>/<value>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def setcookie(name, value):
-    response.set_cookie(name, value)
+    response.set_cookie(name, value, path='/')
     return normal_formsdict()
 
 @app.route('/setcookies', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def setcookies():
-    response.set_cookie('one', '1')
-    response.set_cookie('two', '2')
+    response.set_cookie('one', '1', path='/')
+    response.set_cookie('two', '2', path='/')
     return normal_formsdict()
 
 
@@ -173,6 +173,17 @@ def links(n):
 @app.route('/bytes/<n:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def sleep(n):
     return os.urandom(int(n))
+
+@app.route('/echo-body', method=['POST', 'PUT', 'PATCH'])
+def echo_body():
+    body = request.body.read()
+    if isinstance(body, bytes):
+        body = body.decode('utf-8', 'replace')
+    return json.dumps({
+        'method': request.method,
+        'content_type': request.content_type,
+        'body': body,
+    })
 
 def run():
     import sys

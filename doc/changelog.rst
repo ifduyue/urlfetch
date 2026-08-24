@@ -3,6 +3,15 @@ Changelog
 
 **Time flies!!**
 
+2.1.0 (2026-08-24)
+++++++++++++++++++++
+
+* Session cookies from responses are stored in a cookiejar and only sent
+  back to matching hosts. Cookies set with :meth:`Session.putcookie` or
+  the ``cookies`` argument are still sent to every host.
+* Add ``json=`` to :func:`request` / :func:`post` / :func:`fetch`
+* Replace the 6000-line user-agent list with a small set of current browsers
+
 2.0.3 (2026-08-24)
 ++++++++++++++++++++
 
