@@ -257,9 +257,18 @@ class GetTest(unittest.TestCase):
 
     def test_text_uses_content_type_charset(self):
         r = urlfetch.get(testlib.url('charset/utf8'))
+        self.assertEqual(r.encoding, 'utf-8')
         self.assertEqual(r.text, '你好')
         r = urlfetch.get(testlib.url('charset/gbk'))
+        self.assertEqual(r.encoding, 'gbk')
         self.assertEqual(r.text, '你好')
+
+    def test_iter_lines(self):
+        lines = list(urlfetch.get(testlib.url('utf8.txt')).iter_lines())
+        self.assertTrue(lines)
+        joined = b'\n'.join(lines)
+        expected = open(os.path.join(os.path.dirname(__file__), 'test.file'), 'rb').read()
+        self.assertEqual(joined, expected.rstrip(b'\n'))
 
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))

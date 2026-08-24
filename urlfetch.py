@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -311,6 +311,19 @@ class Response(object):
 
     next = __next__
 
+    def iter_lines(self, delimiter=None):
+        """Yield decoded chunks split on ``delimiter`` (default ``\\n``)."""
+        pending = b""
+        sep = delimiter if delimiter is not None else b"\n"
+        for chunk in self:
+            pending += chunk
+            lines = pending.split(sep)
+            pending = lines.pop()
+            for line in lines:
+                yield line
+        if pending:
+            yield pending
+
     def __enter__(self):
         return self
 
@@ -350,19 +363,24 @@ class Response(object):
         return self.body
 
     @cached_property
-    def text(self):
-        """Response body in str.
-
-        Uses the charset from ``Content-Type`` when present, otherwise
-        :func:`mb_code`.
-        """
-        content = self.content
+    def encoding(self):
+        """Charset from ``Content-Type``, or ``None``."""
         header = self.getheader("content-type") or ""
         match = re.search(r"charset=([^\s;]+)", header, re.I)
         if match:
-            charset = match.group(1).strip("\"'")
+            return match.group(1).strip("\"'")
+        return None
+
+    @cached_property
+    def text(self):
+        """Response body in str.
+
+        Uses :attr:`encoding` when present, otherwise :func:`mb_code`.
+        """
+        content = self.content
+        if self.encoding:
             try:
-                return content.decode(charset)
+                return content.decode(self.encoding)
             except (LookupError, UnicodeDecodeError):
                 pass
         return mb_code(content)
@@ -1116,7 +1134,7 @@ def mb_code(s, coding=None, errors="replace"):
         try:
             s = s.decode(c)
             return s if coding is None else s.encode(coding, errors=errors)
-        except:
+        except (UnicodeDecodeError, LookupError):
             pass
 
     return str(s, errors=errors)
@@ -1147,7 +1165,7 @@ def random_useragent(filename=True):
             st = os.stat(filename)
             if stat.S_ISREG(st.st_mode) and os.access(filename, os.R_OK):
                 break
-        except:
+        except (OSError, AttributeError):
             pass
     else:
         return default_ua
@@ -1269,8 +1287,14 @@ def encode_multipart(data, files):
                 body.write(b"\r\n")
 
     for fieldname, f in files.items():
+        ctype = None
         if isinstance(f, tuple):
-            filename, f = f
+            if len(f) == 2:
+                filename, f = f
+            elif len(f) >= 3:
+                filename, f, ctype = f[0], f[1], f[2]
+            else:
+                raise UrlfetchException("file must has filename")
         elif hasattr(f, "name"):
             filename = basename(f.name)
         else:
@@ -1293,7 +1317,11 @@ def encode_multipart(data, files):
                     _multipart_param("filename", filename),
                 )
             )
-            ctype = mimetypes.guess_type(str(filename))[0] or "application/octet-stream"
+            ctype = (
+                ctype
+                or mimetypes.guess_type(str(filename))[0]
+                or "application/octet-stream"
+            )
             body.write(b"Content-Type: %s\r\n\r\n" % ctype.encode("ascii", "replace"))
         else:
             writer(body).write(

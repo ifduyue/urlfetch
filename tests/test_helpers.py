@@ -109,6 +109,12 @@ class HelpersTest(unittest.TestCase):
         self.assertIn(b'filename="weird\\"name.txt"', body)
         self.assertIn(b'Content-Type: text/plain', body)
 
+        content_type, body = urlfetch.encode_multipart(
+            {},
+            {'pic': ('x.png', b'data', 'image/png')},
+        )
+        self.assertIn(b'Content-Type: image/png', body)
+
 
 if __name__ == '__main__':
     unittest.main()
