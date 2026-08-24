@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.0.3"
+__version__ = "2.1.0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -28,9 +28,13 @@ try:
 except ImportError:
     import json
 
+json_dumps = json.dumps
+json_loads = json.loads
+
 from http.client import HTTPConnection, HTTPSConnection
 from urllib.parse import parse_qs, urlencode, urlsplit, urljoin
 import http.cookies as Cookie
+import http.cookiejar as cookiejar
 
 basestring = (str, bytes)
 b = lambda s: s.encode("latin-1")
@@ -334,7 +338,7 @@ class Response(object):
         :raises: :class:`ContentDecodingError`
         """
         try:
-            return json.loads(self.text)
+            return json_loads(self.text)
         except Exception as e:
             raise ContentDecodingError(e)
 
@@ -432,18 +436,58 @@ class Response(object):
             pass
 
 
+class _CookieRequest(object):
+    """Minimal request object for :mod:`http.cookiejar`."""
+
+    def __init__(self, url):
+        parsed = parse_url(url)
+        path = parsed["uri"] or "/"
+        self.full_url = "%s://%s%s" % (parsed["scheme"], parsed["http_host"], path)
+        self.type = parsed["scheme"]
+        self.host = parsed["http_host"]
+        self.origin_req_host = parsed["host"]
+        self.unverifiable = False
+        self.headers = {}
+        self.unredirected_hdrs = {}
+
+    def get_full_url(self):
+        return self.full_url
+
+    def get_origin_req_host(self):
+        return self.origin_req_host
+
+    def get_header(self, name, default=None):
+        return self.headers.get(name, default)
+
+    def has_header(self, name):
+        lname = name.lower()
+        return any(k.lower() == lname for k in self.headers) or any(
+            k.lower() == lname for k in self.unredirected_hdrs
+        )
+
+    def add_unredirected_header(self, key, val):
+        self.unredirected_hdrs[key] = val
+
+
+class _CookieResponse(object):
+    def __init__(self, msg):
+        self._msg = msg
+
+    def info(self):
+        return self._msg
+
+
 class Session(object):
     """A session object.
 
     :class:`urlfetch.Session` can hold common headers and cookies.
-    Every request issued by a :class:`urlfetch.Session` object will bring u
-    these headers and cookies.
-
-    :class:`urlfetch.Session` plays a role in handling cookies, just like a
-    cookiejar.
+    Cookies received from a response are stored in a cookiejar and only sent
+    back to matching hosts. Cookies set via :meth:`putcookie` or the
+    ``cookies`` argument are treated as host-independent, matching the
+    historical API.
 
     :arg dict headers: Init headers.
-    :arg dict cookies: Init cookies.
+    :arg dict cookies: Init cookies (sent to every host).
     :arg tuple auth: (username, password) for basic authentication.
     """
 
@@ -451,8 +495,8 @@ class Session(object):
         """Init a :class:`~urlfetch.Session` object"""
         #: headers
         self.headers = {} if headers is None else headers.copy()
-        #: cookies
-        self.cookies = {} if cookies is None else cookies.copy()
+        self._jar = cookiejar.CookieJar()
+        self._manual_cookies = {} if cookies is None else cookies.copy()
 
         if auth and isinstance(auth, (list, tuple)):
             auth = "%s:%s" % tuple(auth)
@@ -469,11 +513,30 @@ class Session(object):
 
     def putcookie(self, key, value=""):
         """Add an cookie to default cookies."""
-        self.cookies[key] = value
+        self._manual_cookies[key] = value
 
     def popcookie(self, key):
         """Remove an cookie from default cookies."""
-        return self.cookies.pop(key)
+        if key in self._manual_cookies:
+            return self._manual_cookies.pop(key)
+        for c in list(self._jar):
+            if c.name == key:
+                self._jar.clear(c.domain, c.path, c.name)
+                return c.value
+        raise KeyError(key)
+
+    @property
+    def cookies(self):
+        """Cookies in dict (manual cookies plus those from the cookiejar)."""
+        d = dict(self._manual_cookies)
+        for c in self._jar:
+            d[c.name] = c.value
+        return d
+
+    @cookies.setter
+    def cookies(self, value):
+        self._manual_cookies = {} if value is None else dict(value)
+        self._jar = cookiejar.CookieJar()
 
     @property
     def cookiestring(self):
@@ -493,24 +556,45 @@ class Session(object):
     def cookiestring(self, value):
         """"Cookie string setter"""
         c = Cookie.SimpleCookie(value)
-        sc = [(i.key, i.value) for i in c.values()]
-        self.cookies = dict(sc)
+        self.cookies = dict((i.key, i.value) for i in c.values())
 
     def snapshot(self):
         session = {"headers": self.headers.copy(), "cookies": self.cookies.copy()}
         return session
 
+    def _cookie_header(self, url):
+        parts = []
+        if self._manual_cookies:
+            parts.append(
+                "; ".join("%s=%s" % (k, v) for k, v in self._manual_cookies.items())
+            )
+        if url:
+            creq = _CookieRequest(url)
+            self._jar.add_cookie_header(creq)
+            jar_cookie = creq.unredirected_hdrs.get("Cookie")
+            if jar_cookie:
+                parts.append(jar_cookie)
+        return "; ".join(p for p in parts if p)
+
+    def _store_cookies(self, r):
+        url = getattr(r, "url", None)
+        msg = getattr(r, "msg", None)
+        if not url or msg is None:
+            return
+        self._jar.extract_cookies(_CookieResponse(msg), _CookieRequest(url))
+
     def request(self, *args, **kwargs):
         """Issue a request."""
         headers = self.headers.copy()
-        if self.cookiestring:
-            headers["Cookie"] = self.cookiestring
-        headers.update(kwargs.get("headers", {}))
+        url = kwargs.get("url", args[0] if args else None)
+        cookie_header = self._cookie_header(url)
+        if cookie_header:
+            headers["Cookie"] = cookie_header
+        headers.update(kwargs.get("headers") or {})
         kwargs["headers"] = headers
 
         r = request(*args, **kwargs)
-        self.cookies.update(r.cookies)
-
+        self._store_cookies(r)
         return r
 
     def fetch(self, *args, **kwargs):
@@ -518,7 +602,11 @@ class Session(object):
         data = kwargs.get("data", None)
         files = kwargs.get("files") or {}
 
-        if (data and isinstance(data, (basestring, dict))) or files:
+        if (
+            kwargs.get("json") is not None
+            or (data and isinstance(data, (basestring, dict)))
+            or files
+        ):
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
 
@@ -573,7 +661,11 @@ def fetch(*args, **kwargs):
     data = kwargs.get("data", None)
     files = kwargs.get("files") or {}
 
-    if (data and isinstance(data, (basestring, dict))) or files:
+    if (
+        kwargs.get("json") is not None
+        or (data and isinstance(data, (basestring, dict)))
+        or files
+    ):
         return post(*args, **kwargs)
     return get(*args, **kwargs)
 
@@ -645,6 +737,7 @@ def request(
     max_redirects=0,
     source_address=None,
     validate_certificate=None,
+    json=None,
     **kwargs
 ):
     """request an URL
@@ -674,6 +767,9 @@ def request(
                             not allowed.
     :arg tuple source_address: (optional) A tuple of (host, port) to
                                specify the source_address to bind to.
+    :arg json: (optional) JSON-serializable object sent as the request body
+               with ``Content-Type: application/json``. Cannot be combined
+               with ``data`` or ``files``.
     :arg bool validate_certificate: (optional) If ``False``, urlfetch skips
                                 all the necessary certificate and hostname checks
     :returns: A :class:`~urlfetch.Response` object
@@ -784,13 +880,19 @@ def request(
         auth = base64.b64encode(auth.encode("utf-8"))
         reqheaders["Authorization"] = "Basic " + auth.decode("utf-8")
 
+    if json is not None and (data is not None or files):
+        raise UrlfetchException("json cannot be combined with data or files")
+
     if files:
         content_type, data = encode_multipart(data, files)
         reqheaders["Content-Type"] = content_type
+    elif json is not None:
+        data = json_dumps(json)
+        reqheaders["Content-Type"] = "application/json"
     elif isinstance(data, dict):
         data = urlencode(data, True)
 
-    if isinstance(data, basestring) and not files:
+    if isinstance(data, basestring) and not files and "Content-Type" not in reqheaders:
         # httplib will set 'Content-Length', also you can set it by yourself
         reqheaders["Content-Type"] = "application/x-www-form-urlencoded"
         # what if the method is GET, HEAD or DELETE

@@ -38,6 +38,26 @@ class PostTest(unittest.TestCase):
         self.assertEqual(o['method'], 'POST')
         self.assertEqual(o['post'], d)
 
+    def test_json(self):
+        payload = {'hello': 'world', 'n': 1, 'ok': True}
+        r = urlfetch.post(testlib.url('echo-body'), json=payload)
+        o = r.json
+        self.assertEqual(r.status, 200)
+        self.assertEqual(o['method'], 'POST')
+        self.assertTrue(o['content_type'].startswith('application/json'))
+        self.assertEqual(json.loads(o['body']), payload)
+
+        r = urlfetch.fetch(testlib.url('echo-body'), json=payload)
+        self.assertEqual(r.json['method'], 'POST')
+        self.assertEqual(json.loads(r.json['body']), payload)
+
+        self.assertRaises(
+            urlfetch.UrlfetchException,
+            lambda: urlfetch.post(
+                testlib.url('echo-body'), json=payload, data={'x': 'y'}
+            ),
+        )
+
     def test_post_query_string(self):
         d = testlib.randdict()
         data = urlfetch.urlencode(d)
