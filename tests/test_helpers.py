@@ -80,6 +80,18 @@ class HelpersTest(unittest.TestCase):
         url = 'http://www.example.中国/?中国'
         self.assertEqual(not not urlfetch.parse_url(url), True)
 
+        url = 'http://[::1]:8080/path'
+        parsed_url = urlfetch.parse_url(url)
+        self.assertEqual(parsed_url['host'], '::1')
+        self.assertEqual(parsed_url['port'], 8080)
+        self.assertEqual(parsed_url['http_host'], '[::1]:8080')
+        self.assertEqual(parsed_url['path'], '/path')
+
+        url = 'http://[2001:db8::1]/'
+        parsed_url = urlfetch.parse_url(url)
+        self.assertEqual(parsed_url['host'], '2001:db8::1')
+        self.assertEqual(parsed_url['http_host'], '[2001:db8::1]')
+
     def test_random_useragent(self):
         ua = urlfetch.random_useragent()
         self.assertTrue(isinstance(ua, urlfetch.basestring))
@@ -114,6 +126,28 @@ class HelpersTest(unittest.TestCase):
             {'pic': ('x.png', b'data', 'image/png')},
         )
         self.assertIn(b'Content-Type: image/png', body)
+
+    def test_match_no_proxy(self):
+        m = urlfetch.match_no_proxy
+        self.assertTrue(m('example.com', 'example.com'))
+        self.assertTrue(m('foo.example.com', 'example.com'))
+        self.assertTrue(m('foo.example.com', '.example.com'))
+        self.assertFalse(m('notexample.com', 'example.com'))
+        self.assertFalse(m('example.com.org', 'example.com'))
+        self.assertTrue(m('localhost', 'localhost'))
+        self.assertTrue(m('anything.test', '*'))
+
+        self.assertTrue(m('192.168.1.1', '192.168.1.1'))
+        self.assertTrue(m('192.168.1.50', '192.168.1.0/24'))
+        self.assertFalse(m('10.0.0.1', '192.168.0.0/16'))
+        self.assertTrue(m('192.168.1.1', '192.168.1.1:8080'))
+
+        self.assertTrue(m('::1', '::1'))
+        self.assertTrue(m('[::1]', '::1'))
+        self.assertTrue(m('::1', '[::1]'))
+        self.assertTrue(m('2001:db8::1', '2001:db8::/32'))
+        self.assertFalse(m('fe80::1', '::1'))
+        self.assertTrue(m('::1', '[::1]:8080'))
 
 
 if __name__ == '__main__':
