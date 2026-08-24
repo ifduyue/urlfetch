@@ -255,6 +255,12 @@ class GetTest(unittest.TestCase):
         call_invalid_header_deflate = lambda: urlfetch.get(url).body
         self.assertRaises(urlfetch.ContentDecodingError, call_invalid_header_deflate)
 
+    def test_text_uses_content_type_charset(self):
+        r = urlfetch.get(testlib.url('charset/utf8'))
+        self.assertEqual(r.text, '你好')
+        r = urlfetch.get(testlib.url('charset/gbk'))
+        self.assertEqual(r.text, '你好')
+
     def test_links(self):
         r = urlfetch.get(testlib.url('/links/0'))
         self.assertTrue(r.links)

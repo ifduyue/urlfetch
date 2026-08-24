@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+2.3.0 (2026-08-24)
+++++++++++++++++++++
+
+* :attr:`Response.text` uses the charset from ``Content-Type`` when present
+* Multipart field names and filenames are quoted; file parts use
+  ``mimetypes`` for ``Content-Type``
+
 2.2.1 (2026-08-24)
 ++++++++++++++++++++
 

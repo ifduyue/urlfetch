@@ -8,13 +8,13 @@ urlfetch |github-actions-badge| |furyio-badge|
     :target: https://badge.fury.io/gh/ifduyue%2Furlfetch
 
 urlfetch is a simple, lightweight and easy to use HTTP client for Python.
-It is distributed as a single file module and has no depencencies other than the Python Standard Library.
+It is distributed as a single file module and has no dependencies other than the Python Standard Library.
 
 
 Highlights
 -------------
 
-* Distributed as a single file module, has no depencencies other than the Python Standard Library.
+* Distributed as a single file module, has no dependencies other than the Python Standard Library.
 * Pure Python, works fine with gevent_.
 * Small codebase, about 1300 lines, much of it comments and blank lines. Only 10 minutes you can know every detail.
 * Random user-agent.

@@ -95,6 +95,16 @@ def utf8_file():
 def gbk_file():
     return static_file('test.file.gbk', root=os.path.dirname(__file__))
 
+@app.route('/charset/utf8')
+def charset_utf8():
+    response.content_type = 'text/plain; charset=utf-8'
+    return '你好'.encode('utf-8')
+
+@app.route('/charset/gbk')
+def charset_gbk():
+    response.content_type = 'text/plain; charset=gbk'
+    return '你好'.encode('gbk')
+
 @app.route('/redirect/<max>/<now>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def redirect(max, now):
     max = int(max)
