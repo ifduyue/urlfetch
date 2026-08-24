@@ -3,6 +3,20 @@ Changelog
 
 **Time flies!!**
 
+2.0.3 (2026-08-24)
+++++++++++++++++++++
+
+* Require Python >= 3.8 (CI can no longer install 3.5–3.7)
+* Follow 308 redirects; 307/308 keep the original method and body
+* 301/302/303 redirects no longer resend the request body
+* Strip ``Authorization`` and ``Cookie`` on cross-origin redirects
+* Fix Proxy-Authorization password on redirects
+* Honor ``NO_PROXY`` when following redirects
+* Close HTTP connections on the response and on errors
+* Parse multiple ``Set-Cookie`` headers
+* Export :class:`Timeout`; reject mutable default arguments
+* Replace the Sina network compression tests with local fixtures
+
 2.0.2 (2026-08-24)
 ++++++++++++++++++++
 

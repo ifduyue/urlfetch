@@ -1,8 +1,13 @@
 import os
 import json
 import hashlib
+import gzip
+import zlib
+from io import BytesIO
 import bottle
 from bottle import request, response, static_file, abort
+
+COMPRESSION_PAYLOAD = b"urlfetch-compression-fixture"
 
 def md5sum(b):
     return hashlib.md5(b).hexdigest()
@@ -71,6 +76,12 @@ def setcookie(name, value):
     response.set_cookie(name, value)
     return normal_formsdict()
 
+@app.route('/setcookies', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def setcookies():
+    response.set_cookie('one', '1')
+    response.set_cookie('two', '2')
+    return normal_formsdict()
+
 
 @app.route('http://www.example.com', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
 def proxy():
@@ -95,6 +106,22 @@ def redirect(max, now):
     else:
         abort(400)
 
+@app.route('/redirect-status/<code:int>', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def redirect_status(code):
+    response.status = int(code)
+    response.set_header('Location', '/')
+    return ''
+
+@app.route('/redirect-cross-host', method=['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'PATCH'])
+def redirect_cross_host():
+    host = request.get_header('Host') or '127.0.0.1:8800'
+    port = host.rsplit(':', 1)[-1] if ':' in host else '8800'
+    if host.startswith('127.0.0.1'):
+        target = 'http://localhost:%s/' % port
+    else:
+        target = 'http://127.0.0.1:%s/' % port
+    return bottle.redirect(target)
+
 @app.route('/content-encoding/invalid-header')
 def content_encoding_invalid_header():
     response.set_header('Content-Encoding', 'invalid')
@@ -106,9 +133,24 @@ def content_encoding_invalid_body():
     return os.urandom(256)
 
 @app.route('/content-encoding/invalid-body/deflate')
-def content_encoding_invalid_body():
+def content_encoding_invalid_body_deflate():
     response.set_header('Content-Encoding', 'deflate')
     return os.urandom(256)
+
+@app.route('/content-encoding/gzip')
+def content_encoding_gzip():
+    buf = BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode='wb') as gz:
+        gz.write(COMPRESSION_PAYLOAD)
+    response.set_header('Content-Encoding', 'gzip')
+    response.set_header('Content-Type', 'application/octet-stream')
+    return buf.getvalue()
+
+@app.route('/content-encoding/deflate')
+def content_encoding_deflate():
+    response.set_header('Content-Encoding', 'deflate')
+    response.set_header('Content-Type', 'application/octet-stream')
+    return zlib.compress(COMPRESSION_PAYLOAD)
     
 @app.route('/links/<n>')
 def links(n):
