@@ -3,6 +3,13 @@ Changelog
 
 **Time flies!!**
 
+2.2.0 (2026-08-24)
+++++++++++++++++++++
+
+* HTTPS through an HTTP proxy uses CONNECT (``HTTPSConnection.set_tunnel``)
+* Optional ``ssl_context`` for HTTPS
+* :attr:`Response.ok` and :meth:`Response.raise_for_status`
+
 2.1.0 (2026-08-24)
 ++++++++++++++++++++
 

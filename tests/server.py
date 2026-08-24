@@ -174,6 +174,10 @@ def links(n):
 def sleep(n):
     return os.urandom(int(n))
 
+@app.route('/status/<code:int>')
+def status_code(code):
+    abort(int(code), 'error')
+
 @app.route('/echo-body', method=['POST', 'PUT', 'PATCH'])
 def echo_body():
     body = request.body.read()

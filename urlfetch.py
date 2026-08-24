@@ -10,7 +10,7 @@ An easy to use HTTP client based on httplib.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 __author__ = "Yue Du <ifduyue@gmail.com>"
 __url__ = "https://github.com/ifduyue/urlfetch"
 __license__ = "BSD 2-Clause License"
@@ -58,6 +58,7 @@ __all__ = (
     "ContentDecodingError",
     "TooManyRedirects",
     "Timeout",
+    "HTTPError",
 )
 
 GET = "GET"
@@ -92,6 +93,18 @@ class TooManyRedirects(UrlfetchException):
 
 class Timeout(UrlfetchException):
     """Request timed out."""
+
+
+class HTTPError(UrlfetchException):
+    """HTTP status code is 400 or higher."""
+
+    def __init__(self, response):
+        self.response = response
+        self.status = self.status_code = response.status
+        self.reason = response.reason
+        UrlfetchException.__init__(
+            self, "%s %s" % (response.status, response.reason)
+        )
 
 
 class cached_property(object):
@@ -208,7 +221,6 @@ class Response(object):
 
         #: Status code returned by server.
         self.status = r.status
-        # compatible with requests
         #: An alias of :attr:`status`.
         self.status_code = r.status
 
@@ -243,6 +255,16 @@ class Response(object):
             raise ContentLimitExceeded(
                 "Content length is more than %d bytes" % self.length_limit
             )
+
+    @property
+    def ok(self):
+        """``True`` if :attr:`status` is less than 400."""
+        return self.status < 400
+
+    def raise_for_status(self):
+        """Raise :class:`HTTPError` if :attr:`status` is 400 or higher."""
+        if self.status >= 400:
+            raise HTTPError(self)
 
     def read(self, chunk_size=65536):
         """Read content (for streaming and large files)
@@ -737,6 +759,7 @@ def request(
     max_redirects=0,
     source_address=None,
     validate_certificate=None,
+    ssl_context=None,
     json=None,
     **kwargs
 ):
@@ -770,6 +793,8 @@ def request(
     :arg json: (optional) JSON-serializable object sent as the request body
                with ``Content-Type: application/json``. Cannot be combined
                with ``data`` or ``files``.
+    :arg ssl.SSLContext ssl_context: (optional) SSL context for HTTPS
+                                connections. Overrides ``validate_certificate``.
     :arg bool validate_certificate: (optional) If ``False``, urlfetch skips
                                 all the necessary certificate and hostname checks
     :returns: A :class:`~urlfetch.Response` object
@@ -777,29 +802,24 @@ def request(
              :class:`TooManyRedirects`,
     """
 
+    def _proxy_auth_header(parsed_proxy):
+        if not (parsed_proxy and parsed_proxy["username"] and parsed_proxy["password"]):
+            return None
+        token = "%s:%s" % (parsed_proxy["username"], parsed_proxy["password"])
+        token = base64.b64encode(token.encode("utf-8")).decode("utf-8")
+        return "Basic " + token
+
     def make_connection(conn_type, host, port, timeout, source_address):
         """Return HTTP or HTTPS connection."""
-        kwargs = {"timeout": timeout, "source_address": source_address}
-
-        ssl_context = None
-        if validate_certificate is False:
-            ssl_context = ssl._create_unverified_context()
-
+        conn_kw = {"timeout": timeout, "source_address": source_address}
+        ctx = ssl_context
+        if ctx is None and validate_certificate is False:
+            ctx = ssl._create_unverified_context()
         if conn_type == "http":
-            conn = HTTPConnection(host, port, **kwargs)
-        elif conn_type == "https":
-            conn = HTTPSConnection(host, port, context=ssl_context, **kwargs)
-        else:
-            raise URLError("Unknown Connection Type: %s" % conn_type)
-        return conn
-
-    def apply_proxy_auth(reqheaders, parsed_proxy):
-        if parsed_proxy and parsed_proxy["username"] and parsed_proxy["password"]:
-            proxyauth = "%s:%s" % (parsed_proxy["username"], parsed_proxy["password"])
-            proxyauth = base64.b64encode(proxyauth.encode("utf-8"))
-            reqheaders["Proxy-Authorization"] = "Basic " + proxyauth.decode("utf-8")
-        else:
-            reqheaders.pop("Proxy-Authorization", None)
+            return HTTPConnection(host, port, **conn_kw)
+        if conn_type == "https":
+            return HTTPSConnection(host, port, context=ctx, **conn_kw)
+        raise URLError("Unknown Connection Type: %s" % conn_type)
 
     def open_connection(parsed_url):
         scheme = parsed_url["scheme"]
@@ -808,8 +828,24 @@ def request(
             match_no_proxy(parsed_url["host"], host) for host in ignore_hosts
         ):
             if "://" not in proxy:
-                proxy = "%s://%s" % ("http", proxy)
+                proxy = "http://%s" % proxy
             parsed_proxy = parse_url(proxy)
+            if scheme == "https":
+                conn = make_connection(
+                    "https",
+                    parsed_proxy["host"],
+                    parsed_proxy["port"],
+                    timeout,
+                    source_address,
+                )
+                tunnel_headers = {}
+                auth = _proxy_auth_header(parsed_proxy)
+                if auth:
+                    tunnel_headers["Proxy-Authorization"] = auth
+                conn.set_tunnel(
+                    parsed_url["host"], parsed_url["port"] or 443, tunnel_headers
+                )
+                return conn, True, True, None
             conn = make_connection(
                 parsed_proxy["scheme"],
                 parsed_proxy["host"],
@@ -817,18 +853,22 @@ def request(
                 timeout,
                 source_address,
             )
-            return conn, True, parsed_proxy
+            auth = _proxy_auth_header(parsed_proxy)
+            return conn, True, False, auth
         conn = make_connection(
             scheme, parsed_url["host"], parsed_url["port"], timeout, source_address
         )
-        return conn, False, None
+        return conn, False, False, None
 
     def perform(url, method, data, reqheaders, parsed_url):
         conn = None
         try:
-            conn, via_proxy, parsed_proxy = open_connection(parsed_url)
-            apply_proxy_auth(reqheaders, parsed_proxy if via_proxy else None)
-            request_url = url if via_proxy else parsed_url["uri"]
+            conn, via_proxy, tunneled, proxy_auth = open_connection(parsed_url)
+            if via_proxy and not tunneled and proxy_auth:
+                reqheaders["Proxy-Authorization"] = proxy_auth
+            else:
+                reqheaders.pop("Proxy-Authorization", None)
+            request_url = url if (via_proxy and not tunneled) else parsed_url["uri"]
             conn.request(method, request_url, data, reqheaders)
             resp = conn.getresponse()
             return conn, resp

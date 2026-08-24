@@ -38,6 +38,7 @@ Exceptions
 .. autoclass:: ContentDecodingError
 .. autoclass:: TooManyRedirects
 .. autoclass:: Timeout
+.. autoclass:: HTTPError
 
 helpers
 ~~~~~~~~~~~
