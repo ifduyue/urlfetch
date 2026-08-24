@@ -3,6 +3,12 @@ Changelog
 
 **Time flies!!**
 
+2.0.2 (2026-08-24)
+++++++++++++++++++++
+
+* Publish to PyPI via GitHub Actions Trusted Publishing
+* Automatically create GitHub Releases with changelog and generated notes
+
 2.0.1 (2023-08-04)
 ++++++++++++++++++++
 

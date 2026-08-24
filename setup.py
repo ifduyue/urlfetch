@@ -1,8 +1,10 @@
 from setuptools import setup
-import urlfetch
-import re
 import os
+import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import urlfetch
 
 setup(
     name="urlfetch",
@@ -11,7 +13,8 @@ setup(
     author_email=re.sub(r'(^.*<)|(>.*$)', r'', urlfetch.__author__),
     url=urlfetch.__url__,
     description="An easy to use HTTP client",
-    long_description=open('README.rst').read(),
+    long_description=open('README.rst', encoding='utf-8').read(),
+    long_description_content_type="text/x-rst",
     license="BSD",
     keywords="httpclient urlfetch",
     py_modules=['urlfetch'],
