@@ -16,16 +16,18 @@ Getting Started
 Install
 ------------
 
-::
-    
+.. code-block:: console
+
     $ pip install urlfetch
-    
+
 OR grab the latest source from github
-`ifduyue/urlfetch <https://github.com/ifduyue/urlfetch>`_::
-    
-    $ git clone git://github.com/ifduyue/urlfetch.git
+`ifduyue/urlfetch <https://github.com/ifduyue/urlfetch>`_:
+
+.. code-block:: console
+
+    $ git clone https://github.com/ifduyue/urlfetch.git
     $ cd urlfetch
-    $ python setup.py install
+    $ pip install .
     
 
 Usage
