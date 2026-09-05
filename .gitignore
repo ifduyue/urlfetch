@@ -5,6 +5,8 @@ build
 dist
 __pycache__
 *.egg-info
+_build
+doc/_build
 .venv
 venv
 release-notes.md

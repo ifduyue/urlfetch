@@ -1,11 +1,14 @@
-urlfetch |github-actions-badge| |furyio-badge|
-==========================================================
+urlfetch |github-actions-badge| |furyio-badge| |docs-badge|
+============================================================
 
 .. |github-actions-badge| image:: https://github.com/ifduyue/urlfetch/actions/workflows/test.yml/badge.svg
     :target: https://github.com/ifduyue/urlfetch/actions/workflows/test.yml
 
 .. |furyio-badge| image:: https://badge.fury.io/gh/ifduyue%2Furlfetch.svg
     :target: https://badge.fury.io/gh/ifduyue%2Furlfetch
+
+.. |docs-badge| image:: https://img.shields.io/badge/docs-GitHub%20Pages-blue
+    :target: https://ifduyue.github.io/urlfetch/
 
 urlfetch is a simple, lightweight and easy to use HTTP client for Python.
 It is distributed as a single file module and has no dependencies other than the Python Standard Library.
@@ -21,6 +24,12 @@ Highlights
 * Support streaming.
 
 .. _gevent: http://www.gevent.org/
+
+Documentation
+-------------
+
+https://ifduyue.github.io/urlfetch/
+
 
 Installation
 -------------
