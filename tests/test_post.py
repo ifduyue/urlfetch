@@ -58,6 +58,14 @@ class PostTest(unittest.TestCase):
             ),
         )
 
+    def test_json_utf8(self):
+        payload = {'hello': '世界', 'n': 1, 'ok': True}
+        r = urlfetch.post(testlib.url('echo-body'), json=payload)
+        o = r.json
+        self.assertEqual(r.status, 200)
+        self.assertTrue(o['content_type'].startswith('application/json'))
+        self.assertEqual(json.loads(o['body']), payload)
+
     def test_post_query_string(self):
         d = testlib.randdict()
         data = urlfetch.urlencode(d)
@@ -87,9 +95,9 @@ class PostTest(unittest.TestCase):
         r = urlfetch.post(
                 testlib.test_server_host,
                 files = {
-                    'test.file1' : open(path('test.file')),
+                    'test.file1' : open(path('test.file'), encoding='utf-8'),
                     #'test.file2' : content,
-                    'test.file3' : ('wangxiaobo', open(path('test.file'))),
+                    'test.file3' : ('wangxiaobo', open(path('test.file'), encoding='utf-8')),
                     'test.file4' : ('wangtwo', content)
                 },
             )
@@ -121,9 +129,9 @@ class PostTest(unittest.TestCase):
                 data = data,
                 params = params,
                 files = {
-                    'test.file1' : open(path('test.file')),
+                    'test.file1' : open(path('test.file'), encoding='utf-8'),
                     #'test.file2' : content,
-                    'test.file3' : ('wangxiaobo', open(path('test.file'))),
+                    'test.file3' : ('wangxiaobo', open(path('test.file'), encoding='utf-8')),
                     'test.file4' : ('wangtwo', content)
                 },
             )

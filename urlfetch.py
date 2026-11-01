@@ -894,9 +894,9 @@ def request(
                             not allowed.
     :arg tuple source_address: (optional) A tuple of (host, port) to
                                specify the source_address to bind to.
-    :arg json: (optional) JSON-serializable object sent as the request body
-               with ``Content-Type: application/json``. Cannot be combined
-               with ``data`` or ``files``.
+    :arg json: (optional) JSON-serializable object sent as a UTF-8 request
+               body with ``Content-Type: application/json``. Cannot be
+               combined with ``data`` or ``files``.
     :arg ssl.SSLContext ssl_context: (optional) SSL context for HTTPS
                                 connections. Overrides ``validate_certificate``.
     :arg bool validate_certificate: (optional) If ``False``, urlfetch skips
@@ -1031,7 +1031,8 @@ def request(
         content_type, data = encode_multipart(data, files)
         reqheaders["Content-Type"] = content_type
     elif json is not None:
-        data = json_dumps(json)
+        # http.client encodes a str body as latin-1. JSON is UTF-8.
+        data = json_dumps(json, ensure_ascii=False).encode("utf-8")
         reqheaders["Content-Type"] = "application/json"
     elif isinstance(data, dict):
         data = urlencode(data, True)
