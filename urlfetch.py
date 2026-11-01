@@ -829,6 +829,24 @@ def match_no_proxy(host, no_proxy):
     return host_l == rule_l or host_l.endswith("." + rule_l)
 
 
+def _merge_headers(base, extra):
+    """Overlay extra onto base. Header names are case-insensitive.
+
+    An existing name keeps its spelling, so later lookups of Host, Cookie,
+    Authorization, and Content-Type still match. The new value replaces it.
+    """
+    if not extra:
+        return
+    folded = {name.lower(): name for name in base}
+    for name, value in extra.items():
+        current = folded.get(name.lower())
+        if current is None:
+            base[name] = value
+            folded[name.lower()] = name
+        else:
+            base[current] = value
+
+
 def request(
     url,
     method="GET",
@@ -985,7 +1003,7 @@ def request(
 
     reqheaders = {
         "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, identity, *",
+        "Accept-Encoding": "gzip, deflate",
         "User-Agent": random_useragent(randua),
         "Host": parsed_url["http_host"],
     }
@@ -1024,7 +1042,7 @@ def request(
         # what if the method is GET, HEAD or DELETE
         # just do not make so much decisions for users
 
-    reqheaders.update(headers)
+    _merge_headers(reqheaders, headers)
 
     start_time = time.time()
     conn, resp = perform(url, method, data, reqheaders, parsed_url)

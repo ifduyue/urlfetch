@@ -185,6 +185,37 @@ class GetTest(unittest.TestCase):
             f.seek(0)
             self.assertEqual(f.read(), open(os.path.join(os.path.dirname(__file__), 'test.file.gbk'), 'rb').read())
 
+    def _accept_encoding(self, headers):
+        matches = [
+            (key, value)
+            for key, value in headers.items()
+            if key.lower() == "accept-encoding"
+        ]
+        self.assertEqual(len(matches), 1)
+        return matches[0]
+
+    def test_default_accept_encoding(self):
+        r = urlfetch.get(testlib.url())
+        key, value = self._accept_encoding(r.reqheaders)
+        self.assertEqual(key, "Accept-Encoding")
+        self.assertEqual(value, "gzip, deflate")
+        sent = json.loads(r.text)["headers"]
+        self.assertEqual(self._accept_encoding(sent)[1], "gzip, deflate")
+
+    def test_accept_encoding_override_ignores_case(self):
+        r = urlfetch.get(testlib.url(), headers={"accept-encoding": "identity"})
+        key, value = self._accept_encoding(r.reqheaders)
+        self.assertEqual(key, "Accept-Encoding")
+        self.assertEqual(value, "identity")
+        sent = json.loads(r.text)["headers"]
+        self.assertEqual(self._accept_encoding(sent)[1], "identity")
+
+        session = urlfetch.Session(headers={"Accept-Encoding": "gzip"})
+        r = session.get(testlib.url(), headers={"accept-encoding": "identity"})
+        key, value = self._accept_encoding(r.reqheaders)
+        self.assertEqual(key, "Accept-Encoding")
+        self.assertEqual(value, "identity")
+
     def test_compressed_streaming(self):
         expected = b'urlfetch-compression-fixture'
 
