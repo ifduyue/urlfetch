@@ -95,9 +95,9 @@ class PostTest(unittest.TestCase):
         r = urlfetch.post(
                 testlib.test_server_host,
                 files = {
-                    'test.file1' : open(path('test.file')),
+                    'test.file1' : open(path('test.file'), encoding='utf-8'),
                     #'test.file2' : content,
-                    'test.file3' : ('wangxiaobo', open(path('test.file'))),
+                    'test.file3' : ('wangxiaobo', open(path('test.file'), encoding='utf-8')),
                     'test.file4' : ('wangtwo', content)
                 },
             )
@@ -129,9 +129,9 @@ class PostTest(unittest.TestCase):
                 data = data,
                 params = params,
                 files = {
-                    'test.file1' : open(path('test.file')),
+                    'test.file1' : open(path('test.file'), encoding='utf-8'),
                     #'test.file2' : content,
-                    'test.file3' : ('wangxiaobo', open(path('test.file'))),
+                    'test.file3' : ('wangxiaobo', open(path('test.file'), encoding='utf-8')),
                     'test.file4' : ('wangtwo', content)
                 },
             )

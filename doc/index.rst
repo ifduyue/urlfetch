@@ -8,6 +8,8 @@ urlfetch documentation
 urlfetch is a simple, lightweight and easy to use HTTP client for `Python <http://python.org/>`_.
 It is distributed as a single file module and has no dependencies other than the
 `Python Standard Library <http://docs.python.org/library/>`_.
+It requires Python 3.8 or newer and is tested on CPython 3.8 through 3.15,
+including the free-threaded 3.15 build, and on PyPy 3.10.
 
 
 Getting Started
