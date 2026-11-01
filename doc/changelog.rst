@@ -3,6 +3,15 @@ Changelog
 
 **Time flies!!**
 
+3.0.1 (2026-11-01)
+++++++++++++++++++++
+
+* Default ``Accept-Encoding`` is ``gzip, deflate``. The previous value
+  included ``*``, so a server could send an encoding the client cannot
+  decode.
+* Header names are matched case-insensitively. An existing name keeps
+  its spelling and the new value replaces it.
+
 3.0.0 (2026-08-24)
 ++++++++++++++++++++
 
