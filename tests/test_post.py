@@ -58,6 +58,14 @@ class PostTest(unittest.TestCase):
             ),
         )
 
+    def test_json_utf8(self):
+        payload = {'hello': '世界', 'n': 1, 'ok': True}
+        r = urlfetch.post(testlib.url('echo-body'), json=payload)
+        o = r.json
+        self.assertEqual(r.status, 200)
+        self.assertTrue(o['content_type'].startswith('application/json'))
+        self.assertEqual(json.loads(o['body']), payload)
+
     def test_post_query_string(self):
         d = testlib.randdict()
         data = urlfetch.urlencode(d)
